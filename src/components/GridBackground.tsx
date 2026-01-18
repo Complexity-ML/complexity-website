@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -17,7 +17,6 @@ function Grid() {
     for (let x = -gridSize; x <= gridSize; x++) {
       for (let z = -gridSize; z <= gridSize; z++) {
         positions.push(x * spacing, 0, z * spacing);
-        // Green color with slight variation
         colors.push(0.2 + Math.random() * 0.1, 0.8 + Math.random() * 0.2, 0.4 + Math.random() * 0.1);
       }
     }
@@ -28,11 +27,19 @@ function Grid() {
     };
   }, []);
 
-  useFrame((state, delta) => {
+  useEffect(() => {
+    if (!meshRef.current) return;
+    const geometry = meshRef.current.geometry;
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  }, [positions, colors]);
+
+  useFrame((_, delta) => {
     if (!meshRef.current) return;
     time.current += delta * 0.5;
 
     const positionAttr = meshRef.current.geometry.attributes.position;
+    if (!positionAttr) return;
     const array = positionAttr.array as Float32Array;
 
     for (let i = 0; i < array.length; i += 3) {
@@ -46,20 +53,7 @@ function Grid() {
 
   return (
     <points ref={meshRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={positions.length / 3}
-          array={positions}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-color"
-          count={colors.length / 3}
-          array={colors}
-          itemSize={3}
-        />
-      </bufferGeometry>
+      <bufferGeometry />
       <pointsMaterial
         size={0.05}
         vertexColors
@@ -74,25 +68,29 @@ function Grid() {
 function Lines() {
   const linesRef = useRef<THREE.LineSegments>(null);
 
-  const { positions } = useMemo(() => {
-    const positions: number[] = [];
+  const positions = useMemo(() => {
+    const pos: number[] = [];
     const gridSize = 40;
     const spacing = 1;
 
-    // Horizontal lines
     for (let z = -gridSize; z <= gridSize; z += 2) {
-      positions.push(-gridSize * spacing, 0, z * spacing);
-      positions.push(gridSize * spacing, 0, z * spacing);
+      pos.push(-gridSize * spacing, 0, z * spacing);
+      pos.push(gridSize * spacing, 0, z * spacing);
     }
 
-    // Vertical lines
     for (let x = -gridSize; x <= gridSize; x += 2) {
-      positions.push(x * spacing, 0, -gridSize * spacing);
-      positions.push(x * spacing, 0, gridSize * spacing);
+      pos.push(x * spacing, 0, -gridSize * spacing);
+      pos.push(x * spacing, 0, gridSize * spacing);
     }
 
-    return { positions: new Float32Array(positions) };
+    return new Float32Array(pos);
   }, []);
+
+  useEffect(() => {
+    if (!linesRef.current) return;
+    const geometry = linesRef.current.geometry;
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  }, [positions]);
 
   useFrame((state) => {
     if (!linesRef.current) return;
@@ -101,14 +99,7 @@ function Lines() {
 
   return (
     <lineSegments ref={linesRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={positions.length / 3}
-          array={positions}
-          itemSize={3}
-        />
-      </bufferGeometry>
+      <bufferGeometry />
       <lineBasicMaterial color="#22c55e" transparent opacity={0.15} />
     </lineSegments>
   );
@@ -125,7 +116,6 @@ export default function GridBackground() {
         <Grid />
         <Lines />
       </Canvas>
-      {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background pointer-events-none" />
     </div>
   );
