@@ -8,10 +8,20 @@ const GridBackground = dynamic(() => import("./GridBackground"), {
   loading: () => <div className="absolute inset-0 -z-10 bg-background" />,
 });
 
+const MuAnimation = dynamic(() => import("./MuAnimation"), {
+  ssr: false,
+  loading: () => null,
+});
+
 export default function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <GridBackground />
+
+      {/* Mu Dynamics Animation */}
+      <div className="absolute inset-0 z-0 opacity-40">
+        <MuAnimation />
+      </div>
 
       <div className="container mx-auto px-6 relative z-10">
         <motion.div
