@@ -18,8 +18,8 @@ export default function Hero() {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <GridBackground />
 
-      {/* Mu Dynamics Animation */}
-      <div className="absolute inset-0 z-0 opacity-40">
+      {/* Mu Dynamics Equation Ticker */}
+      <div className="absolute inset-0 z-0">
         <MuAnimation />
       </div>
 
