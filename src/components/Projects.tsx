@@ -17,6 +17,17 @@ const projects = [
     },
   },
   {
+    title: "Mu-Inference",
+    description:
+      "High-performance inference engine for Complexity models. KV cache, continuous batching, and OpenAI-compatible API.",
+    tags: ["Inference", "FastAPI", "KV-Cache", "Serving"],
+    status: "Active",
+    links: {
+      github: "https://github.com/Complexity-ML/complexity-inference",
+      pypi: "https://pypi.org/project/mu-inference/",
+    },
+  },
+  {
     title: "Pacific-Prime",
     description:
       "1.5B parameter language model trained with Complexity-Deep architecture. Mu-guided attention and token-routed experts.",
