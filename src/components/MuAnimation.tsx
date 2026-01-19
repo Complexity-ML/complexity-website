@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 const equations = [
@@ -23,15 +24,41 @@ function EquationStrip() {
 }
 
 export default function MuAnimation() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    let animationId: number;
+    let position = 0;
+    const speed = 0.5; // pixels per frame
+
+    const animate = () => {
+      position += speed;
+      // Reset when we've scrolled half (since we have 4 copies, 50% = 2 copies)
+      const halfWidth = el.scrollWidth / 2;
+      if (position >= halfWidth) {
+        position = 0;
+      }
+      el.style.transform = `translateX(-${position}px)`;
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animationId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationId);
+  }, []);
+
   return (
     <div className="relative w-full h-full">
-      {/* Scrolling equation ticker - CSS animation for seamless loop */}
+      {/* Scrolling equation ticker */}
       <div className="absolute bottom-12 left-0 right-0 overflow-hidden pointer-events-none">
         <motion.div
+          ref={scrollRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="flex whitespace-nowrap font-mono text-lg md:text-xl text-primary font-medium tracking-wide animate-scroll"
+          className="flex whitespace-nowrap font-mono text-lg md:text-xl text-primary font-medium tracking-wide"
         >
           <EquationStrip />
           <EquationStrip />
@@ -39,20 +66,6 @@ export default function MuAnimation() {
           <EquationStrip />
         </motion.div>
       </div>
-
-      <style jsx>{`
-        @keyframes scroll {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-        .animate-scroll {
-          animation: scroll 30s linear infinite;
-        }
-      `}</style>
     </div>
   );
 }
