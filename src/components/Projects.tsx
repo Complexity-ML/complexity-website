@@ -32,7 +32,7 @@ const projects = [
     description:
       "1.5B parameter language model trained with Complexity-Deep architecture. Mu-guided attention and token-routed experts.",
     tags: ["LLM", "1.5B", "BF16", "HuggingFace"],
-    status: "Training",
+    status: "Available",
     links: {
       huggingface: "https://huggingface.co/Pacific-Prime/pacific-prime",
     },
@@ -115,15 +115,15 @@ export default function Projects() {
                       variant={
                         project.status === "Active"
                           ? "default"
-                          : project.status === "Training"
-                          ? "secondary"
+                          : project.status === "Available"
+                          ? "default"
                           : "outline"
                       }
                       className={
                         project.status === "Active"
                           ? "bg-primary/20 text-primary border-primary/30"
-                          : project.status === "Training"
-                          ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                          : project.status === "Available"
+                          ? "bg-green-500/20 text-green-400 border-green-500/30"
                           : ""
                       }
                     >
