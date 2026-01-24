@@ -58,6 +58,16 @@ const projects = [
       github: "https://github.com/Complexity-ML/complexity-deep",
     },
   },
+  {
+    title: "Safety Dataset",
+    description:
+      "10K contrastive pairs for learning harm directions. Enables Representation Engineering for jailbreak-resistant LLMs.",
+    tags: ["Dataset", "Safety", "Contrastive", "10K"],
+    status: "Available",
+    links: {
+      huggingface: "https://huggingface.co/datasets/Pacific-Prime/safety_dataset",
+    },
+  },
 ];
 
 const containerVariants = {

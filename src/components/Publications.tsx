@@ -5,10 +5,19 @@ import { Card, CardContent } from "@/components/ui/card";
 
 const publications = [
   {
+    title: "Layer-Native Safety Clamping: Representation Engineering for Jailbreak-Resistant LLMs",
+    authors: "Boris Peyriguere",
+    venue: "Zenodo",
+    year: "2025",
+    doi: "10.5281/zenodo.18359832",
+    url: "https://zenodo.org/records/18359832",
+    abstract: "We propose Layer-Native Safety Clamping, a representation engineering approach that operates directly within the model's activation space. By learning harm directions and clamping activations, our method provides safety guarantees that cannot be bypassed through prompt manipulation.",
+  },
+  {
     title: "Complexity-Deep: Token-Routed MLP with Mu-Guided Dynamics for Efficient Transformer Architectures",
     authors: "Boris Peyriguere",
     venue: "Zenodo",
-    year: "2026",
+    year: "2025",
     doi: "10.5281/zenodo.18293026",
     url: "https://doi.org/10.5281/zenodo.18293026",
     abstract: "We present Complexity-Deep, a novel transformer architecture that combines deterministic token-routed MLP with mu-guided dynamics for efficient and stable training.",
