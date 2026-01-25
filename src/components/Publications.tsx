@@ -5,6 +5,15 @@ import { Card, CardContent } from "@/components/ui/card";
 
 const publications = [
   {
+    title: "GPU-64: A 64-bit Inference GPU with Native O(1) KV-Cache for Edge LLM Deployment",
+    authors: "Boris Peyriguere",
+    venue: "Zenodo",
+    year: "2025",
+    doi: "10.5281/zenodo.18364282",
+    url: "https://zenodo.org/records/18364282",
+    abstract: "GPU-64 is a power-efficient 64-bit GPU architecture optimized for LLM inference. Using on-chip CAM (Content-Addressable Memory) for KV-Cache, it achieves O(1) lookup latency instead of O(N), resulting in 4× faster inference at 75W TDP for edge deployment.",
+  },
+  {
     title: "Layer-Native Safety Clamping: Representation Engineering for Jailbreak-Resistant LLMs",
     authors: "Boris Peyriguere",
     venue: "Zenodo",
