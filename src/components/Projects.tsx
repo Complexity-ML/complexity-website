@@ -49,13 +49,13 @@ const projects = [
     },
   },
   {
-    title: "CGGR Kernels",
+    title: "GPU-64 Inference",
     description:
-      "Contiguous Group GEMM Routing - Triton kernels achieving 5-6x speedup for expert routing operations.",
-    tags: ["Triton", "CUDA", "Optimization"],
+      "64-bit GPU architecture with native O(1) KV-Cache using CAM. 4× faster LLM inference at 75W for edge deployment.",
+    tags: ["RTL", "SystemVerilog", "KV-Cache", "CAM", "Edge AI"],
     status: "Active",
     links: {
-      github: "https://github.com/Complexity-ML/complexity-deep",
+      github: "https://github.com/Complexity-ML/gpu64-inference",
     },
   },
   {
