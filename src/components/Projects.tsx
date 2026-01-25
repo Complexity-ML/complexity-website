@@ -52,8 +52,8 @@ const projects = [
     title: "GPU-64 Inference",
     description:
       "64-bit GPU architecture with native O(1) KV-Cache using CAM. 4× faster LLM inference at 75W for edge deployment.",
-    tags: ["RTL", "SystemVerilog", "KV-Cache", "CAM", "Edge AI"],
-    status: "Active",
+    tags: ["RTL", "SystemVerilog", "KV-Cache", "O(1)", "Edge AI"],
+    status: "Hardware",
     links: {
       github: "https://github.com/Complexity-ML/gpu64-inference",
     },
@@ -127,6 +127,8 @@ export default function Projects() {
                           ? "default"
                           : project.status === "Available"
                           ? "default"
+                          : project.status === "Hardware"
+                          ? "default"
                           : "outline"
                       }
                       className={
@@ -134,6 +136,8 @@ export default function Projects() {
                           ? "bg-primary/20 text-primary border-primary/30"
                           : project.status === "Available"
                           ? "bg-green-500/20 text-green-400 border-green-500/30"
+                          : project.status === "Hardware"
+                          ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
                           : ""
                       }
                     >
