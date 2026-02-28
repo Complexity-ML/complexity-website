@@ -199,6 +199,11 @@ export default function DemoPage() {
                   "Write a binary search function",
                   "Write a function to check if a number is prime",
                   "Remove duplicate elements from a list and return unique elements only",
+                  "Write a factorial function in Python",
+                  "Write a function to find the max element in a list",
+                  "Write a function to merge two sorted lists",
+                  "Write a function to convert celsius to fahrenheit",
+                  "Write a function to find the GCD of two numbers",
                 ].map((prompt) => (
                   <button
                     key={prompt}
