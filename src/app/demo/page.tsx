@@ -18,6 +18,7 @@ export default function DemoPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [temperature, setTemperature] = useState(0.7);
+  const [rtl, setRtl] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -168,6 +169,16 @@ export default function DemoPage() {
               </span>
             </div>
             <button
+              onClick={() => setRtl(!rtl)}
+              className={`text-xs px-3 py-1.5 rounded-md border transition-colors font-mono ${
+                rtl
+                  ? "border-primary/40 text-primary bg-primary/10"
+                  : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/20"
+              }`}
+            >
+              RTL
+            </button>
+            <button
               onClick={clearChat}
               className="text-xs px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors font-mono"
             >
@@ -178,7 +189,7 @@ export default function DemoPage() {
       </header>
 
       {/* Chat area */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto" dir={rtl ? "rtl" : "ltr"}>
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full min-h-[60vh]">
             <motion.div
@@ -325,6 +336,7 @@ export default function DemoPage() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Send a message..."
+                dir={rtl ? "rtl" : "ltr"}
                 rows={1}
                 className="w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-colors"
                 style={{ minHeight: "44px", maxHeight: "120px" }}

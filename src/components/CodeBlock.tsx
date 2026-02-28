@@ -37,8 +37,20 @@ export default function CodeBlock({ content }: { content: string }) {
     );
   }
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(trimmed);
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(trimmed);
+    } catch {
+      // Fallback for non-HTTPS contexts (e.g. HF Spaces)
+      const ta = document.createElement("textarea");
+      ta.value = trimmed;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
