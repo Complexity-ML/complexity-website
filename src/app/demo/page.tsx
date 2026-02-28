@@ -191,7 +191,7 @@ export default function DemoPage() {
                 Complexity Deep 1.58B — Python code helper powered by
                 Token-Routed i64 deterministic routing.
               </p>
-              <div className="flex flex-wrap justify-center gap-2 mt-6 max-w-2xl mx-auto">
+              <div className="flex flex-wrap justify-center gap-2 mt-8 max-w-5xl mx-auto px-4">
                 {[
                   "Write a fibonacci function in Python",
                   "Write a bubble sort function in Python",
