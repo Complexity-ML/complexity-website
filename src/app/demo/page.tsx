@@ -128,14 +128,14 @@ export default function DemoPage() {
               <p className="font-mono text-4xl text-primary mb-4">//</p>
               <h2 className="text-2xl font-bold mb-2">Pacific-i64</h2>
               <p className="text-muted-foreground text-sm max-w-md">
-                Complexity Deep 1.58B — Token-Routed MLP with i64 deterministic
-                routing and Mu-Guided INL Dynamics.
+                Complexity Deep 1.58B — Python code helper powered by
+                Token-Routed i64 deterministic routing.
               </p>
               <div className="flex flex-wrap justify-center gap-2 mt-6">
                 {[
-                  "What is token routing?",
-                  "Explain MoE architectures",
-                  "What is the capital of France?",
+                  "Write a fibonacci function",
+                  "Sort a list of dictionaries by key",
+                  "Read a CSV file with pandas",
                 ].map((prompt) => (
                   <button
                     key={prompt}
@@ -264,7 +264,7 @@ export default function DemoPage() {
             </button>
           </div>
           <p className="text-[10px] text-muted-foreground/40 text-center mt-2 font-mono">
-            Complexity Deep 1.58B — Token-Routed i64 — Open Source
+            Complexity Deep 1.58B — Python Code Helper — Token-Routed i64
           </p>
         </div>
       </div>
