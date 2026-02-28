@@ -39,13 +39,13 @@ export default function DemoPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/v1/chat/completions`, {
+      const res = await fetch(`${API_URL}/v1/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "pacific-i64",
-          messages: [{ role: "user", content: text }],
-          max_tokens: 512,
+          prompt: text,
+          max_tokens: 256,
           temperature: 0.7,
         }),
       });
@@ -56,7 +56,7 @@ export default function DemoPage() {
 
       const data = await res.json();
       const assistantContent =
-        data.choices?.[0]?.message?.content || "No response.";
+        data.choices?.[0]?.text || "No response.";
 
       setMessages([
         ...newMessages,
