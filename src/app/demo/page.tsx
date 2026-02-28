@@ -207,6 +207,10 @@ export default function DemoPage() {
                   "Write a function to check if a string is a palindrome",
                   "Write a function to compute the sum of a list of numbers",
                   "Write a function that takes a string and capitalizes the first letter of each word in the string",
+                  "Write a function to calculate the distance between two points",
+                  "Write a function to calculate the area of a triangle given base and height",
+                  "Write a function to find the LCM of two numbers",
+                  "Write a function to calculate the mean of a list of numbers",
                 ].map((prompt) => (
                   <button
                     key={prompt}
