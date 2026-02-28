@@ -211,6 +211,13 @@ export default function DemoPage() {
                   "Write a function to calculate the area of a triangle given base and height",
                   "Write a function to find the LCM of two numbers",
                   "Write a function to calculate the mean of a list of numbers",
+                  "Write a function to check if a number is even or odd",
+                  "Write a function to find the sum of digits of a number",
+                  "Write a function to count the number of digits in a number",
+                  "Write a function to find the minimum value in a list",
+                  "Write a function to calculate the absolute value of a number",
+                  "Write a function to multiply all elements in a list",
+                  "Write a function to count even numbers in a list",
                 ].map((prompt) => (
                   <button
                     key={prompt}
