@@ -48,6 +48,7 @@ export default function DemoPage() {
           messages: [{ role: "user", content: text }],
           max_tokens: 256,
           temperature,
+          stream: true,
         }),
       });
 
@@ -55,19 +56,60 @@ export default function DemoPage() {
         throw new Error(`Server error: ${res.status}`);
       }
 
-      const data = await res.json();
-      const assistantContent =
-        data.choices?.[0]?.message?.content || "No response.";
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("No response stream.");
 
-      setMessages([
-        ...newMessages,
-        { role: "assistant", content: assistantContent.trim() },
-      ]);
+      const decoder = new TextDecoder();
+      let assistantContent = "";
+
+      setMessages([...newMessages, { role: "assistant", content: "" }]);
+      setLoading(false);
+
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || !trimmed.startsWith("data: ")) continue;
+          const payload = trimmed.slice(6);
+          if (payload === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(payload);
+            const token =
+              parsed.choices?.[0]?.delta?.content ??
+              parsed.choices?.[0]?.text ??
+              "";
+            if (token) {
+              assistantContent += token;
+              const content = assistantContent;
+              setMessages([
+                ...newMessages,
+                { role: "assistant", content },
+              ]);
+            }
+          } catch {
+            // skip malformed chunks
+          }
+        }
+      }
+
+      if (!assistantContent.trim()) {
+        setMessages([
+          ...newMessages,
+          { role: "assistant", content: "No response." },
+        ]);
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to reach the model."
       );
-    } finally {
       setLoading(false);
     }
   };
