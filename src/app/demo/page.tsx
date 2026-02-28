@@ -251,7 +251,7 @@ export default function DemoPage() {
             </motion.div>
           </div>
         ) : (
-          <div dir={rtl ? "rtl" : "ltr"} className="container mx-auto max-w-3xl px-6 py-6 space-y-6">
+          <div dir={rtl ? "rtl" : "ltr"} className="container mx-auto max-w-5xl px-6 py-6 space-y-6">
             {messages.map((msg, i) => (
               <motion.div
                 key={i}
@@ -327,7 +327,7 @@ export default function DemoPage() {
 
       {/* Input bar */}
       <div className="border-t border-border/50 bg-background/80 backdrop-blur-lg">
-        <div className="container mx-auto max-w-3xl px-6 py-4">
+        <div className="container mx-auto max-w-5xl px-6 py-4">
           <div className="flex items-end gap-3">
             <div className="flex-1 relative">
               <textarea
