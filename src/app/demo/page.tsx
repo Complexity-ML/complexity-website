@@ -218,7 +218,7 @@ export default function DemoPage() {
                 Complexity Deep 1.58B — Python code helper powered by
                 Token-Routed i64 deterministic routing.
               </p>
-              <div className="flex flex-wrap justify-center gap-2 mt-8 max-w-5xl mx-auto px-4">
+              <div className="flex flex-wrap justify-center gap-2 mt-8 max-w-7xl mx-auto px-4">
                 {[
                   "Write a fibonacci function in Python",
                   "Write a bubble sort function in Python",
@@ -255,6 +255,8 @@ export default function DemoPage() {
                   "Write a Python script that makes an HTTP request using the requests library",
                   "Write a Python class to represent a bank account with deposit and withdraw methods",
                   "Write a Python function that uses datetime to get the current date and time",
+                  "Write a Python class to represent a stack with push and pop methods",
+                  "Write a Python class to represent a student with name and grades",
                 ].map((prompt) => (
                   <button
                     key={prompt}
@@ -271,7 +273,7 @@ export default function DemoPage() {
             </motion.div>
           </div>
         ) : (
-          <div dir={rtl ? "rtl" : "ltr"} className="container mx-auto max-w-5xl px-6 py-6 space-y-6">
+          <div dir={rtl ? "rtl" : "ltr"} className="container mx-auto max-w-7xl px-6 py-6 space-y-6">
             {messages.map((msg, i) => (
               <motion.div
                 key={i}
@@ -347,7 +349,7 @@ export default function DemoPage() {
 
       {/* Input bar */}
       <div className="border-t border-border/50 bg-background/80 backdrop-blur-lg">
-        <div className="container mx-auto max-w-5xl px-6 py-4">
+        <div className="container mx-auto max-w-7xl px-6 py-4">
           <div className="flex items-end gap-3">
             <div className="flex-1 relative">
               <textarea
