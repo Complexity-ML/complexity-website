@@ -16,6 +16,7 @@ export default function DemoPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [temperature, setTemperature] = useState(0.7);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -46,7 +47,7 @@ export default function DemoPage() {
           model: "pacific-i64",
           messages: [{ role: "user", content: text }],
           max_tokens: 256,
-          temperature: 0.7,
+          temperature,
         }),
       });
 
@@ -105,6 +106,23 @@ export default function DemoPage() {
             <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground font-mono">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
               pacific-i64
+            </div>
+            <div className="hidden sm:flex items-center gap-2">
+              <label className="text-[10px] font-mono text-muted-foreground">
+                temp
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={temperature}
+                onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                className="w-20 h-1 accent-primary cursor-pointer"
+              />
+              <span className="text-[10px] font-mono text-primary w-6 text-right">
+                {temperature.toFixed(2)}
+              </span>
             </div>
             <button
               onClick={clearChat}
