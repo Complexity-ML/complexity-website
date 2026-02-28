@@ -194,7 +194,7 @@ export default function DemoPage() {
               <div className="flex flex-wrap justify-center gap-2 mt-6 max-w-2xl mx-auto">
                 {[
                   "Write a fibonacci function in Python",
-                  "How to sort a list in Python?",
+                  "Write a bubble sort function in Python",
                   "Write a function to reverse a string",
                   "Write a binary search function",
                   "Write a function to check if a number is prime",
