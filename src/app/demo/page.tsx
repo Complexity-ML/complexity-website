@@ -235,6 +235,11 @@ export default function DemoPage() {
                   "Write a function to find the average of two numbers",
                   "Write a function to return the last element of a list",
                   "Write a function to concatenate two strings",
+                  "Write a function to convert a list of integers to a list of strings",
+                  "Write a function to count occurrences of an element in a list",
+                  "Write a Python script that makes an HTTP request using the requests library",
+                  "Write a Python class to represent a bank account with deposit and withdraw methods",
+                  "Write a Python function that uses datetime to get the current date and time",
                 ].map((prompt) => (
                   <button
                     key={prompt}
