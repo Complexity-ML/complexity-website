@@ -218,6 +218,11 @@ export default function DemoPage() {
                   "Write a function to calculate the absolute value of a number",
                   "Write a function to multiply all elements in a list",
                   "Write a function to count even numbers in a list",
+                  "Write a function to remove negative numbers from a list",
+                  "Write a function to find the intersection of two lists",
+                  "Write a function to find the average of two numbers",
+                  "Write a function to return the last element of a list",
+                  "Write a function to concatenate two strings",
                 ].map((prompt) => (
                   <button
                     key={prompt}
