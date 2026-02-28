@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import CodeBlock from "@/components/CodeBlock";
 
 interface Message {
   role: "user" | "assistant";
@@ -255,14 +256,18 @@ export default function DemoPage() {
                       : "bg-card border border-border/50 text-foreground"
                   }`}
                 >
-                  {msg.role === "assistant" && (
-                    <span className="text-[10px] font-mono text-primary/60 block mb-1">
-                      pacific-i64
-                    </span>
+                  {msg.role === "assistant" ? (
+                    <>
+                      <span className="text-[10px] font-mono text-primary/60 block mb-2">
+                        pacific-i64
+                      </span>
+                      <CodeBlock content={msg.content} />
+                    </>
+                  ) : (
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                      {msg.content}
+                    </p>
                   )}
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                    {msg.content}
-                  </p>
                 </div>
               </motion.div>
             ))}
