@@ -136,6 +136,9 @@ export default function DemoPage() {
                   "Write a fibonacci function in Python",
                   "How to sort a list in Python?",
                   "Write a function to reverse a string",
+                  "Write a binary search function",
+                  "Write a function to check if a number is prime",
+                  "Write a function to remove duplicates from a list",
                 ].map((prompt) => (
                   <button
                     key={prompt}
