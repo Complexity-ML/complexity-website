@@ -127,11 +127,11 @@ export default function DemoPage() {
             >
               <p className="font-mono text-4xl text-primary mb-4">//</p>
               <h2 className="text-2xl font-bold mb-2">Pacific-i64</h2>
-              <p className="text-muted-foreground text-sm max-w-md">
+              <p className="text-muted-foreground text-sm max-w-md mx-auto">
                 Complexity Deep 1.58B — Python code helper powered by
                 Token-Routed i64 deterministic routing.
               </p>
-              <div className="flex flex-wrap justify-center gap-2 mt-6">
+              <div className="flex flex-wrap justify-center gap-2 mt-6 max-w-2xl mx-auto">
                 {[
                   "Write a fibonacci function in Python",
                   "How to sort a list in Python?",
