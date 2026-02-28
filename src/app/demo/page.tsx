@@ -198,7 +198,7 @@ export default function DemoPage() {
                   "Write a function to reverse a string",
                   "Write a binary search function",
                   "Write a function to check if a number is prime",
-                  "Write a function to remove duplicates from a list",
+                  "Remove duplicate elements from a list and return unique elements only",
                 ].map((prompt) => (
                   <button
                     key={prompt}
