@@ -189,7 +189,7 @@ export default function DemoPage() {
       </header>
 
       {/* Chat area */}
-      <main className="flex-1 overflow-y-auto" dir={rtl ? "rtl" : "ltr"}>
+      <main className="flex-1 overflow-y-auto">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full min-h-[60vh]">
             <motion.div
@@ -251,7 +251,7 @@ export default function DemoPage() {
             </motion.div>
           </div>
         ) : (
-          <div className="container mx-auto max-w-3xl px-6 py-6 space-y-6">
+          <div dir={rtl ? "rtl" : "ltr"} className="container mx-auto max-w-3xl px-6 py-6 space-y-6">
             {messages.map((msg, i) => (
               <motion.div
                 key={i}
