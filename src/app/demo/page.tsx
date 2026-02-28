@@ -197,7 +197,7 @@ export default function DemoPage() {
                   "Write a bubble sort function in Python",
                   "Write a function to reverse a string",
                   "Write a binary search function",
-                  "Write a function to check if a number is prime",
+                  "Write a unittest class to test a function that adds two numbers",
                   "Remove duplicate elements from a list and return unique elements only",
                 ].map((prompt) => (
                   <button
