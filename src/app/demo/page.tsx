@@ -133,9 +133,9 @@ export default function DemoPage() {
               </p>
               <div className="flex flex-wrap justify-center gap-2 mt-6">
                 {[
-                  "def fibonacci(n):",
-                  "def hello_world():",
-                  "for i in range(10):",
+                  "Write a fibonacci function in Python",
+                  "How to sort a list in Python?",
+                  "Write a function to reverse a string",
                 ].map((prompt) => (
                   <button
                     key={prompt}
