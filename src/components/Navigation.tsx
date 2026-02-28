@@ -32,6 +32,12 @@ export default function Navigation() {
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
+            <Link
+              href="/demo"
+              className="text-sm text-primary font-medium hover:text-primary/80 transition-colors"
+            >
+              Demo
+            </Link>
             <a
               href="#projects"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"

@@ -1,0 +1,273 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
+import Link from "next/link";
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+export default function DemoPage() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const sendMessage = async () => {
+    const text = input.trim();
+    if (!text || loading) return;
+
+    setError(null);
+    const userMessage: Message = { role: "user", content: text };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setInput("");
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API_URL}/v1/chat/completions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "pacific-i64",
+          messages: [{ role: "user", content: text }],
+          max_tokens: 512,
+          temperature: 0.7,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      const assistantContent =
+        data.choices?.[0]?.message?.content || "No response.";
+
+      setMessages([
+        ...newMessages,
+        { role: "assistant", content: assistantContent.trim() },
+      ]);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to reach the model."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const clearChat = () => {
+    setMessages([]);
+    setError(null);
+    inputRef.current?.focus();
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Header */}
+      <header className="border-b border-border/50 bg-background/80 backdrop-blur-lg sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span className="text-primary font-mono text-lg">//</span>
+              <span className="font-bold text-lg">COMPLEXITY</span>
+            </Link>
+            <span className="text-border">/</span>
+            <span className="font-mono text-sm text-primary">demo</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground font-mono">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              pacific-i64
+            </div>
+            <button
+              onClick={clearChat}
+              className="text-xs px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors font-mono"
+            >
+              clear
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Chat area */}
+      <main className="flex-1 overflow-y-auto">
+        {messages.length === 0 ? (
+          <div className="flex items-center justify-center h-full min-h-[60vh]">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center"
+            >
+              <p className="font-mono text-4xl text-primary mb-4">//</p>
+              <h2 className="text-2xl font-bold mb-2">Pacific-i64</h2>
+              <p className="text-muted-foreground text-sm max-w-md">
+                Complexity Deep 1.58B — Token-Routed MLP with i64 deterministic
+                routing and Mu-Guided INL Dynamics.
+              </p>
+              <div className="flex flex-wrap justify-center gap-2 mt-6">
+                {[
+                  "What is token routing?",
+                  "Explain MoE architectures",
+                  "What is the capital of France?",
+                ].map((prompt) => (
+                  <button
+                    key={prompt}
+                    onClick={() => {
+                      setInput(prompt);
+                      inputRef.current?.focus();
+                    }}
+                    className="text-xs px-3 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        ) : (
+          <div className="container mx-auto max-w-3xl px-6 py-6 space-y-6">
+            {messages.map((msg, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[85%] rounded-xl px-4 py-3 ${
+                    msg.role === "user"
+                      ? "bg-primary/15 border border-primary/20 text-foreground"
+                      : "bg-card border border-border/50 text-foreground"
+                  }`}
+                >
+                  {msg.role === "assistant" && (
+                    <span className="text-[10px] font-mono text-primary/60 block mb-1">
+                      pacific-i64
+                    </span>
+                  )}
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                    {msg.content}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+
+            {loading && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-start"
+              >
+                <div className="bg-card border border-border/50 rounded-xl px-4 py-3">
+                  <span className="text-[10px] font-mono text-primary/60 block mb-1">
+                    pacific-i64
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse" />
+                    <span
+                      className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse"
+                      style={{ animationDelay: "0.15s" }}
+                    />
+                    <span
+                      className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse"
+                      style={{ animationDelay: "0.3s" }}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {error && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-center"
+              >
+                <div className="text-xs font-mono text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-2">
+                  {error}
+                </div>
+              </motion.div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+        )}
+      </main>
+
+      {/* Input bar */}
+      <div className="border-t border-border/50 bg-background/80 backdrop-blur-lg">
+        <div className="container mx-auto max-w-3xl px-6 py-4">
+          <div className="flex items-end gap-3">
+            <div className="flex-1 relative">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Send a message..."
+                rows={1}
+                className="w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-colors"
+                style={{ minHeight: "44px", maxHeight: "120px" }}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = "auto";
+                  target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
+                }}
+              />
+            </div>
+            <button
+              onClick={sendMessage}
+              disabled={!input.trim() || loading}
+              className="shrink-0 rounded-xl bg-primary text-primary-foreground px-4 py-3 text-sm font-medium hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 12h14m-7-7l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </div>
+          <p className="text-[10px] text-muted-foreground/40 text-center mt-2 font-mono">
+            Complexity Deep 1.58B — Token-Routed i64 — Open Source
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
