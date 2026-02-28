@@ -204,6 +204,9 @@ export default function DemoPage() {
                   "Write a function to merge two sorted lists",
                   "Write a function to convert celsius to fahrenheit",
                   "Write a function to find the GCD of two numbers",
+                  "Write a function to check if a string is a palindrome",
+                  "Write a function to compute the sum of a list of numbers",
+                  "Write a function that takes a string and capitalizes the first letter of each word in the string",
                 ].map((prompt) => (
                   <button
                     key={prompt}
