@@ -4,15 +4,111 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import CodeBlock from "@/components/CodeBlock";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+type Mode = "python" | "chat";
+
+const ENDPOINTS: Record<Mode, string> = {
+  python:
+    process.env.NEXT_PUBLIC_API_URL ||
+    "https://pacific-prime-pacific-i64-demo.hf.space",
+  chat:
+    process.env.NEXT_PUBLIC_CHAT_API_URL ||
+    "https://pacific-prime-pacific-i64-chat.hf.space",
+};
+
+const MODEL_NAMES: Record<Mode, string> = {
+  python: "pacific-i64",
+  chat: "pacific-chat",
+};
+
+const DESCRIPTIONS: Record<Mode, string> = {
+  python:
+    "Complexity Deep 1.58B — Python code helper powered by Token-Routed i64 deterministic routing.",
+  chat:
+    "Complexity Deep 1.58B — Conversational chat powered by Token-Routed i64 deterministic routing.",
+};
+
+const FOOTERS: Record<Mode, string> = {
+  python: "Complexity Deep 1.58B — Python Code Helper — Token-Routed i64",
+  chat: "Complexity Deep 1.58B — Chat Node — Token-Routed i64",
+};
+
+const SUGGESTIONS: Record<Mode, string[]> = {
+  python: [
+    "Write a fibonacci function in Python",
+    "Write a bubble sort function in Python",
+    "Write a function to reverse a string",
+    "Write a binary search function",
+    "Write a function to check if a number is prime",
+    "Remove duplicate elements from a list and return unique elements only",
+    "Write a factorial function in Python",
+    "Write a function to find the max element in a list",
+    "Write a function to merge two sorted lists",
+    "Write a function to convert celsius to fahrenheit",
+    "Write a function to find the GCD of two numbers",
+    "Write a function to check if a string is a palindrome",
+    "Write a function to compute the sum of a list of numbers",
+    "Write a function that takes a string and capitalizes the first letter of each word in the string",
+    "Write a function to calculate the distance between two points",
+    "Write a function to calculate the area of a triangle given base and height",
+    "Write a function to find the LCM of two numbers",
+    "Write a function to calculate the mean of a list of numbers",
+    "Write a function to check if a number is even or odd",
+    "Write a function to find the sum of digits of a number",
+    "Write a function to count the number of digits in a number",
+    "Write a function to find the minimum value in a list",
+    "Write a function to calculate the absolute value of a number",
+    "Write a function to multiply all elements in a list",
+    "Write a function to count even numbers in a list",
+    "Write a function to remove negative numbers from a list",
+    "Write a function to find the intersection of two lists",
+    "Write a function to find the average of two numbers",
+    "Write a function to return the last element of a list",
+    "Write a function to concatenate two strings",
+    "Write a function to convert a list of integers to a list of strings",
+    "Write a function to count occurrences of an element in a list",
+    "Write a Python script that makes an HTTP request using the requests library",
+    "Write a Python class to represent a bank account with deposit and withdraw methods",
+    "Write a Python function that uses datetime to get the current date and time",
+    "Write a Python class to represent a stack with push and pop methods",
+    "Write a Python class to represent a student with name and grades",
+  ],
+  chat: [
+    "Hello, how are you?",
+    "What is the capital of France?",
+    "Explain what machine learning is",
+    "Tell me a short story",
+    "What is the meaning of life?",
+    "Describe the solar system",
+    "What is artificial intelligence?",
+    "Explain how the internet works",
+    "What are the seasons of the year?",
+    "Tell me about the history of computers",
+  ],
+};
 
 export default function DemoPage() {
+  return (
+    <Suspense>
+      <DemoContent />
+    </Suspense>
+  );
+}
+
+function DemoContent() {
+  const searchParams = useSearchParams();
+  const initialMode = (searchParams.get("mode") as Mode) || "python";
+
+  const [mode, setMode] = useState<Mode>(
+    initialMode === "chat" ? "chat" : "python"
+  );
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,6 +141,15 @@ export default function DemoPage() {
     inputRef.current?.focus();
   }, []);
 
+  const switchMode = (newMode: Mode) => {
+    if (newMode === mode) return;
+    setMode(newMode);
+    setMessages([]);
+    setError(null);
+    setInput("");
+    inputRef.current?.focus();
+  };
+
   const sendMessage = async () => {
     const text = input.trim();
     if (!text || loading) return;
@@ -57,11 +162,11 @@ export default function DemoPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/v1/chat/completions`, {
+      const res = await fetch(`${ENDPOINTS[mode]}/v1/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "pacific-i64",
+          model: MODEL_NAMES[mode],
           messages: [{ role: "user", content: text }],
           max_tokens: 256,
           temperature,
@@ -144,6 +249,8 @@ export default function DemoPage() {
     inputRef.current?.focus();
   };
 
+  const modelLabel = MODEL_NAMES[mode];
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
@@ -162,9 +269,32 @@ export default function DemoPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Mode switch */}
+            <div className="flex items-center rounded-md border border-border overflow-hidden">
+              <button
+                onClick={() => switchMode("python")}
+                className={`text-xs px-3 py-1.5 font-mono transition-colors ${
+                  mode === "python"
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                python
+              </button>
+              <button
+                onClick={() => switchMode("chat")}
+                className={`text-xs px-3 py-1.5 font-mono transition-colors ${
+                  mode === "chat"
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                chat
+              </button>
+            </div>
             <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground font-mono">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              pacific-i64
+              {modelLabel}
             </div>
             <div className="hidden sm:flex items-center gap-2">
               <label className="text-[10px] font-mono text-muted-foreground">
@@ -213,51 +343,14 @@ export default function DemoPage() {
               className="text-center"
             >
               <p className="font-mono text-4xl text-primary mb-4">//</p>
-              <h2 className="text-2xl font-bold mb-2">Pacific-i64</h2>
+              <h2 className="text-2xl font-bold mb-2">
+                {mode === "python" ? "Pacific-i64" : "Chat-Node"}
+              </h2>
               <p className="text-muted-foreground text-sm max-w-md mx-auto">
-                Complexity Deep 1.58B — Python code helper powered by
-                Token-Routed i64 deterministic routing.
+                {DESCRIPTIONS[mode]}
               </p>
               <div className="flex flex-wrap justify-center gap-2 mt-8 max-w-7xl mx-auto px-4">
-                {[
-                  "Write a fibonacci function in Python",
-                  "Write a bubble sort function in Python",
-                  "Write a function to reverse a string",
-                  "Write a binary search function",
-                  "Write a function to check if a number is prime",
-                  "Remove duplicate elements from a list and return unique elements only",
-                  "Write a factorial function in Python",
-                  "Write a function to find the max element in a list",
-                  "Write a function to merge two sorted lists",
-                  "Write a function to convert celsius to fahrenheit",
-                  "Write a function to find the GCD of two numbers",
-                  "Write a function to check if a string is a palindrome",
-                  "Write a function to compute the sum of a list of numbers",
-                  "Write a function that takes a string and capitalizes the first letter of each word in the string",
-                  "Write a function to calculate the distance between two points",
-                  "Write a function to calculate the area of a triangle given base and height",
-                  "Write a function to find the LCM of two numbers",
-                  "Write a function to calculate the mean of a list of numbers",
-                  "Write a function to check if a number is even or odd",
-                  "Write a function to find the sum of digits of a number",
-                  "Write a function to count the number of digits in a number",
-                  "Write a function to find the minimum value in a list",
-                  "Write a function to calculate the absolute value of a number",
-                  "Write a function to multiply all elements in a list",
-                  "Write a function to count even numbers in a list",
-                  "Write a function to remove negative numbers from a list",
-                  "Write a function to find the intersection of two lists",
-                  "Write a function to find the average of two numbers",
-                  "Write a function to return the last element of a list",
-                  "Write a function to concatenate two strings",
-                  "Write a function to convert a list of integers to a list of strings",
-                  "Write a function to count occurrences of an element in a list",
-                  "Write a Python script that makes an HTTP request using the requests library",
-                  "Write a Python class to represent a bank account with deposit and withdraw methods",
-                  "Write a Python function that uses datetime to get the current date and time",
-                  "Write a Python class to represent a stack with push and pop methods",
-                  "Write a Python class to represent a student with name and grades",
-                ].map((prompt) => (
+                {SUGGESTIONS[mode].map((prompt) => (
                   <button
                     key={prompt}
                     onClick={() => {
@@ -292,9 +385,15 @@ export default function DemoPage() {
                   {msg.role === "assistant" ? (
                     <>
                       <span className="text-[10px] font-mono text-primary/60 block mb-2">
-                        pacific-i64
+                        {modelLabel}
                       </span>
-                      <CodeBlock content={msg.content} />
+                      {mode === "python" ? (
+                        <CodeBlock content={msg.content} />
+                      ) : (
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                          {msg.content}
+                        </p>
+                      )}
                     </>
                   ) : (
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -313,7 +412,7 @@ export default function DemoPage() {
               >
                 <div className="bg-card border border-border/50 rounded-xl px-4 py-3">
                   <span className="text-[10px] font-mono text-primary/60 block mb-1">
-                    pacific-i64
+                    {modelLabel}
                   </span>
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse" />
@@ -390,7 +489,7 @@ export default function DemoPage() {
             </button>
           </div>
           <p className="text-[10px] text-muted-foreground/40 text-center mt-2 font-mono">
-            Complexity Deep 1.58B — Python Code Helper — Token-Routed i64
+            {FOOTERS[mode]}
           </p>
         </div>
       </div>
