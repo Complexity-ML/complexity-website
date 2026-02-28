@@ -56,7 +56,7 @@ export default function CodeBlock({ content }: { content: string }) {
   };
 
   return (
-    <div className="rounded-lg overflow-hidden border border-border/30">
+    <div dir="ltr" className="rounded-lg overflow-hidden border border-border/30">
       <div className="flex items-center justify-between px-3 py-1.5 bg-white/[0.03] border-b border-border/20">
         <span className="text-[10px] font-mono text-muted-foreground/60">
           python
