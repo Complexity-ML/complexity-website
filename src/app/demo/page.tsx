@@ -261,10 +261,10 @@ export default function DemoPage() {
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] rounded-xl px-4 py-3 ${
+                  className={`rounded-xl px-4 py-3 ${
                     msg.role === "user"
-                      ? "bg-primary/15 border border-primary/20 text-foreground"
-                      : "bg-card border border-border/50 text-foreground"
+                      ? "max-w-[85%] bg-primary/15 border border-primary/20 text-foreground"
+                      : "w-full bg-card border border-border/50 text-foreground"
                   }`}
                 >
                   {msg.role === "assistant" ? (
