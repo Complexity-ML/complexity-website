@@ -17,14 +17,13 @@ const projects = [
     },
   },
   {
-    title: "Mu-Inference",
+    title: "vllm-i64",
     description:
-      "High-performance inference engine for Complexity models. KV cache, continuous batching, and OpenAI-compatible API.",
-    tags: ["Inference", "FastAPI", "KV-Cache", "Serving"],
+      "Integer-first token-routed inference engine. Paged KV cache with LRU eviction, continuous batching, and OpenAI-compatible API.",
+    tags: ["Inference", "i64", "KV-Cache", "Token-Routing"],
     status: "Active",
     links: {
-      github: "https://github.com/Complexity-ML/complexity-inference",
-      pypi: "https://pypi.org/project/mu-inference/",
+      github: "https://github.com/Complexity-ML/vllm-i64",
     },
   },
   {
@@ -49,13 +48,13 @@ const projects = [
     },
   },
   {
-    title: "GPU-64 Inference",
+    title: "gpu-i64",
     description:
       "64-bit GPU architecture with native O(1) KV-Cache using CAM. 4× faster LLM inference at 75W for edge deployment.",
     tags: ["RTL", "SystemVerilog", "KV-Cache", "O(1)", "Edge AI"],
     status: "Hardware",
     links: {
-      github: "https://github.com/Complexity-ML/gpu64-inference",
+      github: "https://github.com/Complexity-ML/gpu-i64",
     },
   },
   {
