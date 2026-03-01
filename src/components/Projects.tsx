@@ -33,7 +33,7 @@ const projects = [
     tags: ["LLM", "1.5B", "F32", "HuggingFace"],
     status: "Available",
     links: {
-      huggingface: "https://huggingface.co/Pacific-Prime/pacific-prime",
+      huggingface: "https://huggingface.co/Pacific-Prime",
     },
   },
   {
