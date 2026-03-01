@@ -406,6 +406,11 @@ function DemoContent() {
                     </div>
                   </div>
                 ))}
+                <p className="text-[10px] text-muted-foreground/30 text-center mt-4 font-mono">
+                  {mode === "chat"
+                    ? "1.58B parameter model — responses are creative and may be unpredictable"
+                    : "1.58B parameter model — outputs may require review"}
+                </p>
               </div>
             </motion.div>
           </div>
