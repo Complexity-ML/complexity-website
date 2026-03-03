@@ -147,6 +147,7 @@ function DemoContent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [temperature, setTemperature] = useState(0.6);
   const [topK, setTopK] = useState(40);
@@ -169,6 +170,7 @@ function DemoContent() {
   const userScrolledUp = useRef(false);
   const streamStartRef = useRef<number>(0);
   const tokenCountRef = useRef<number>(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const el = mainRef.current;
@@ -200,9 +202,23 @@ function DemoContent() {
     inputRef.current?.focus();
   };
 
+  const stopGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setStreaming(false);
+    setLoading(false);
+    // Finalize token stats
+    if (streamStartRef.current > 0) {
+      const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
+      setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
+    }
+  };
+
   const sendMessage = async () => {
     const text = input.trim();
-    if (!text || loading) return;
+    if (!text || loading || streaming) return;
 
     setError(null);
     const userMessage: Message = { role: "user", content: text };
@@ -210,6 +226,9 @@ function DemoContent() {
     setMessages(newMessages);
     setInput("");
     setLoading(true);
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     try {
       const res = await fetch(`${ENDPOINTS[mode]}/v1/chat/completions`, {
@@ -228,6 +247,7 @@ function DemoContent() {
           min_tokens: minTokens,
           stream: true,
         }),
+        signal: controller.signal,
       });
 
       if (!res.ok) {
@@ -247,6 +267,7 @@ function DemoContent() {
 
       setMessages([...newMessages, { role: "assistant", content: "" }]);
       setLoading(false);
+      setStreaming(true);
 
       let buffer = "";
       while (true) {
@@ -287,6 +308,8 @@ function DemoContent() {
       }
 
       // Finalize stats
+      setStreaming(false);
+      abortControllerRef.current = null;
       const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
       setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
 
@@ -297,14 +320,26 @@ function DemoContent() {
         ]);
       }
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        // User stopped generation — not an error
+        setStreaming(false);
+        abortControllerRef.current = null;
+        return;
+      }
       setError(
         err instanceof Error ? err.message : "Failed to reach the model."
       );
       setLoading(false);
+      setStreaming(false);
+      abortControllerRef.current = null;
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape" && streaming) {
+      e.preventDefault();
+      stopGeneration();
+    }
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
@@ -361,8 +396,16 @@ function DemoContent() {
               </button>
             </div>
             <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground font-mono">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span
+                className={`w-2 h-2 rounded-full animate-pulse transition-colors duration-500 ${streaming ? "" : "bg-primary"}`}
+                style={streaming ? { background: "oklch(0.65 0.2 300)", boxShadow: "0 0 8px oklch(0.65 0.2 300 / 50%)" } : undefined}
+              />
               {modelLabel}
+              {streaming && (
+                <span className="text-[10px] font-mono tracking-wider" style={{ color: "oklch(0.65 0.2 300)" }}>
+                  streaming
+                </span>
+              )}
             </div>
             <div className="hidden sm:flex items-center gap-2">
               <label className="text-[10px] font-mono text-muted-foreground">
@@ -580,34 +623,53 @@ function DemoContent() {
                 }}
               />
             </div>
-            <button
-              onClick={sendMessage}
-              disabled={!input.trim() || loading}
-              className="shrink-0 rounded-xl bg-primary text-primary-foreground px-4 py-3 text-sm font-medium hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            {streaming ? (
+              <button
+                onClick={stopGeneration}
+                className="shrink-0 group relative rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300 overflow-hidden"
+                style={{
+                  background: "linear-gradient(135deg, oklch(0.55 0.25 300), oklch(0.45 0.3 280))",
+                  boxShadow: "0 0 20px oklch(0.55 0.25 300 / 40%), 0 0 60px oklch(0.45 0.3 280 / 15%)",
+                }}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 12h14m-7-7l7 7-7 7"
-                />
-              </svg>
-            </button>
+                <span className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: "linear-gradient(135deg, oklch(0.6 0.25 300), oklch(0.5 0.3 280))" }} />
+                <span className="relative flex items-center gap-2 text-white">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="6" y="6" width="12" height="12" rx="2" strokeWidth={2.5} strokeLinecap="round" />
+                  </svg>
+                  <span className="text-xs font-mono tracking-wide">stop</span>
+                </span>
+              </button>
+            ) : (
+              <button
+                onClick={sendMessage}
+                disabled={!input.trim() || loading}
+                className="shrink-0 rounded-xl bg-primary text-primary-foreground px-4 py-3 text-sm font-medium hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 12h14m-7-7l7 7-7 7"
+                  />
+                </svg>
+              </button>
+            )}
           </div>
           <div className="flex items-center justify-between mt-2">
             <p className="text-[10px] text-muted-foreground/40 font-mono">
               {FOOTERS[mode]}
             </p>
             {tokenStats && tokenStats.tokens > 0 && (
-              <p className="text-[10px] font-mono text-primary/60 flex items-center gap-2">
+              <p className="text-[10px] font-mono flex items-center gap-2" style={{ color: tokenStats.streaming ? "oklch(0.65 0.2 300)" : "oklch(0.75 0.18 142 / 60%)" }}>
                 {tokenStats.streaming && (
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "oklch(0.65 0.2 300)" }} />
                 )}
                 <span>{tokenStats.tokens} tokens</span>
                 <span className="text-muted-foreground/40">&middot;</span>
@@ -615,7 +677,7 @@ function DemoContent() {
                 {tokenStats.elapsed > 0 && (
                   <>
                     <span className="text-muted-foreground/40">&middot;</span>
-                    <span className="text-primary/80">
+                    <span style={{ color: tokenStats.streaming ? "oklch(0.7 0.22 300)" : "oklch(0.75 0.18 142 / 80%)" }}>
                       {(tokenStats.tokens / tokenStats.elapsed).toFixed(1)} tok/s
                     </span>
                   </>
