@@ -632,7 +632,7 @@ function DemoContent() {
                 }}
               />
             </div>
-            {streaming ? (
+            {streaming || loading ? (
               <button
                 onClick={stopGeneration}
                 className="shrink-0 group relative rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300 overflow-hidden"
