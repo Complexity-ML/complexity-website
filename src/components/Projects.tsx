@@ -24,6 +24,7 @@ const projects = [
     status: "Active",
     links: {
       github: "https://github.com/Complexity-ML/vllm-i64",
+      demo: "/demo?mode=python",
     },
   },
   {
@@ -34,6 +35,7 @@ const projects = [
     status: "Available",
     links: {
       huggingface: "https://huggingface.co/Pacific-Prime",
+      demo: "/demo?mode=chat",
     },
   },
   {
@@ -194,6 +196,15 @@ export default function Projects() {
                       >
                         <span className="text-lg">🤗</span>
                         HuggingFace
+                      </a>
+                    )}
+                    {project.links.demo && (
+                      <a
+                        href={project.links.demo}
+                        className="text-sm text-primary/80 hover:text-primary transition-colors flex items-center gap-1.5 font-medium"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        Try Live
                       </a>
                     )}
                   </div>

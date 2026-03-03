@@ -499,6 +499,31 @@ function DemoContent() {
               <p className="text-muted-foreground text-sm max-w-md mx-auto">
                 {DESCRIPTIONS[mode]}
               </p>
+
+              {/* Architecture stats */}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mt-6 flex flex-wrap justify-center gap-3"
+              >
+                {[
+                  { label: "params", value: "1.58B" },
+                  { label: "routing", value: "i64 bit-mask" },
+                  { label: "experts", value: "4" },
+                  { label: "kv-cache", value: "paged + LRU" },
+                  { label: "engine", value: "vllm-i64" },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border/50 bg-card/30"
+                  >
+                    <span className="text-[10px] font-mono text-muted-foreground/60">{stat.label}</span>
+                    <span className="text-[10px] font-mono text-primary/80">{stat.value}</span>
+                  </div>
+                ))}
+              </motion.div>
+
               <div className="mt-8 max-w-7xl mx-auto px-4 space-y-6">
                 {SUGGESTIONS[mode].map((group) => (
                   <div key={group.label}>
@@ -676,22 +701,36 @@ function DemoContent() {
               {FOOTERS[mode]}
             </p>
             {tokenStats && tokenStats.tokens > 0 && (
-              <p className="text-[10px] font-mono flex items-center gap-2" style={{ color: tokenStats.streaming ? "oklch(0.65 0.2 300)" : "oklch(0.75 0.18 142 / 60%)" }}>
+              <div className="flex items-center gap-3">
+                {/* Streaming progress bar */}
                 {tokenStats.streaming && (
-                  <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "oklch(0.65 0.2 300)" }} />
+                  <div className="w-16 h-1 rounded-full bg-border/30 overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ background: "linear-gradient(90deg, oklch(0.65 0.2 300), oklch(0.7 0.22 280))" }}
+                      initial={{ width: "0%" }}
+                      animate={{ width: `${Math.min((tokenStats.tokens / maxTokens) * 100, 100)}%` }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </div>
                 )}
-                <span>{tokenStats.tokens} tokens</span>
-                <span className="text-muted-foreground/40">&middot;</span>
-                <span>{tokenStats.elapsed.toFixed(1)}s</span>
-                {tokenStats.elapsed > 0 && (
-                  <>
-                    <span className="text-muted-foreground/40">&middot;</span>
-                    <span style={{ color: tokenStats.streaming ? "oklch(0.7 0.22 300)" : "oklch(0.75 0.18 142 / 80%)" }}>
-                      {(tokenStats.tokens / tokenStats.elapsed).toFixed(1)} tok/s
-                    </span>
-                  </>
-                )}
-              </p>
+                <p className="text-[10px] font-mono flex items-center gap-2" style={{ color: tokenStats.streaming ? "oklch(0.65 0.2 300)" : "oklch(0.75 0.18 142 / 60%)" }}>
+                  {tokenStats.streaming && (
+                    <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "oklch(0.65 0.2 300)" }} />
+                  )}
+                  <span>{tokenStats.tokens} tokens</span>
+                  <span className="text-muted-foreground/40">&middot;</span>
+                  <span>{tokenStats.elapsed.toFixed(1)}s</span>
+                  {tokenStats.elapsed > 0 && (
+                    <>
+                      <span className="text-muted-foreground/40">&middot;</span>
+                      <span style={{ color: tokenStats.streaming ? "oklch(0.7 0.22 300)" : "oklch(0.75 0.18 142 / 80%)" }}>
+                        {(tokenStats.tokens / tokenStats.elapsed).toFixed(1)} tok/s
+                      </span>
+                    </>
+                  )}
+                </p>
+              </div>
             )}
           </div>
         </div>
