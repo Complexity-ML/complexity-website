@@ -195,10 +195,15 @@ function DemoContent() {
 
   const switchMode = (newMode: Mode) => {
     if (newMode === mode) return;
+    // Stop any active generation before switching
+    if (streaming || loading) {
+      stopGeneration();
+    }
     setMode(newMode);
     setMessages([]);
     setError(null);
     setInput("");
+    setTokenStats(null);
     inputRef.current?.focus();
   };
 
@@ -347,8 +352,12 @@ function DemoContent() {
   };
 
   const clearChat = () => {
+    if (streaming || loading) {
+      stopGeneration();
+    }
     setMessages([]);
     setError(null);
+    setTokenStats(null);
     inputRef.current?.focus();
   };
 
