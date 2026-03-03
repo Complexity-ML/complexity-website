@@ -158,10 +158,17 @@ function DemoContent() {
   const [maxTokens, setMaxTokens] = useState(256);
   const [showParams, setShowParams] = useState(false);
   const [rtl, setRtl] = useState(false);
+  const [tokenStats, setTokenStats] = useState<{
+    tokens: number;
+    elapsed: number;
+    streaming: boolean;
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const userScrolledUp = useRef(false);
+  const streamStartRef = useRef<number>(0);
+  const tokenCountRef = useRef<number>(0);
 
   useEffect(() => {
     const el = mainRef.current;
@@ -233,6 +240,11 @@ function DemoContent() {
       const decoder = new TextDecoder();
       let assistantContent = "";
 
+      // Token counter — start tracking
+      streamStartRef.current = performance.now();
+      tokenCountRef.current = 0;
+      setTokenStats({ tokens: 0, elapsed: 0, streaming: true });
+
       setMessages([...newMessages, { role: "assistant", content: "" }]);
       setLoading(false);
 
@@ -259,6 +271,9 @@ function DemoContent() {
               "";
             if (token) {
               assistantContent += token;
+              tokenCountRef.current++;
+              const elapsed = (performance.now() - streamStartRef.current) / 1000;
+              setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
               const content = assistantContent;
               setMessages([
                 ...newMessages,
@@ -270,6 +285,10 @@ function DemoContent() {
           }
         }
       }
+
+      // Finalize stats
+      const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
+      setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
 
       if (!assistantContent.trim()) {
         setMessages([
@@ -581,9 +600,29 @@ function DemoContent() {
               </svg>
             </button>
           </div>
-          <p className="text-[10px] text-muted-foreground/40 text-center mt-2 font-mono">
-            {FOOTERS[mode]}
-          </p>
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-[10px] text-muted-foreground/40 font-mono">
+              {FOOTERS[mode]}
+            </p>
+            {tokenStats && tokenStats.tokens > 0 && (
+              <p className="text-[10px] font-mono text-primary/60 flex items-center gap-2">
+                {tokenStats.streaming && (
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                )}
+                <span>{tokenStats.tokens} tokens</span>
+                <span className="text-muted-foreground/40">&middot;</span>
+                <span>{tokenStats.elapsed.toFixed(1)}s</span>
+                {tokenStats.elapsed > 0 && (
+                  <>
+                    <span className="text-muted-foreground/40">&middot;</span>
+                    <span className="text-primary/80">
+                      {(tokenStats.tokens / tokenStats.elapsed).toFixed(1)} tok/s
+                    </span>
+                  </>
+                )}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
