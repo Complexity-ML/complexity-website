@@ -149,6 +149,14 @@ function DemoContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [temperature, setTemperature] = useState(0.7);
+  const [topK, setTopK] = useState(50);
+  const [topP, setTopP] = useState(0.9);
+  const [minP, setMinP] = useState(0.05);
+  const [typicalP, setTypicalP] = useState(0.95);
+  const [repetitionPenalty, setRepetitionPenalty] = useState(1.1);
+  const [minTokens, setMinTokens] = useState(0);
+  const [maxTokens, setMaxTokens] = useState(256);
+  const [showParams, setShowParams] = useState(false);
   const [rtl, setRtl] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
@@ -203,8 +211,14 @@ function DemoContent() {
         body: JSON.stringify({
           model: MODEL_NAMES[mode],
           messages: [{ role: "user", content: text }],
-          max_tokens: 256,
+          max_tokens: maxTokens,
           temperature,
+          top_k: topK,
+          top_p: topP,
+          min_p: minP,
+          typical_p: typicalP,
+          repetition_penalty: repetitionPenalty,
+          min_tokens: minTokens,
           stream: true,
         }),
       });
@@ -338,7 +352,7 @@ function DemoContent() {
               <input
                 type="range"
                 min="0"
-                max="1"
+                max="2"
                 step="0.05"
                 value={temperature}
                 onChange={(e) => setTemperature(parseFloat(e.target.value))}
@@ -348,6 +362,16 @@ function DemoContent() {
                 {temperature.toFixed(2)}
               </span>
             </div>
+            <button
+              onClick={() => setShowParams(!showParams)}
+              className={`text-xs px-3 py-1.5 rounded-md border transition-colors font-mono ${
+                showParams
+                  ? "border-primary/40 text-primary bg-primary/10"
+                  : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/20"
+              }`}
+            >
+              params
+            </button>
             <button
               onClick={() => setRtl(!rtl)}
               className={`text-xs px-3 py-1.5 rounded-md border transition-colors font-mono ${
@@ -367,6 +391,26 @@ function DemoContent() {
           </div>
         </div>
       </header>
+
+      {/* Sampling params panel */}
+      {showParams && (
+        <div className="border-b border-border/50 bg-card/50 backdrop-blur-lg px-6 py-4">
+          <div className="container mx-auto max-w-7xl">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
+              <ParamControl label="top_k" value={topK} min={0} max={200} step={1} onChange={setTopK} />
+              <ParamControl label="top_p" value={topP} min={0} max={1} step={0.05} onChange={setTopP} />
+              <ParamControl label="min_p" value={minP} min={0} max={0.5} step={0.01} onChange={setMinP} />
+              <ParamControl label="typical_p" value={typicalP} min={0} max={1} step={0.05} onChange={setTypicalP} />
+              <ParamControl label="rep_penalty" value={repetitionPenalty} min={1} max={2} step={0.05} onChange={setRepetitionPenalty} />
+              <ParamControl label="min_tokens" value={minTokens} min={0} max={128} step={1} onChange={setMinTokens} />
+              <ParamControl label="max_tokens" value={maxTokens} min={16} max={1024} step={16} onChange={setMaxTokens} />
+            </div>
+            <p className="text-[10px] font-mono text-muted-foreground/40 mt-3">
+              min_p: dynamic threshold relative to top token probability &middot; typical_p: entropy-based selection (Meister et al. 2022) &middot; min_tokens: suppress EOS until N tokens generated
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Chat area */}
       <main ref={mainRef} className="flex-1 overflow-y-auto">
@@ -542,6 +586,44 @@ function DemoContent() {
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ParamControl({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-mono text-muted-foreground">
+          {label}
+        </label>
+        <span className="text-[10px] font-mono text-primary/80">
+          {Number.isInteger(step) ? value : value.toFixed(2)}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        className="w-full h-1 rounded-full appearance-none bg-secondary cursor-pointer accent-primary"
+      />
     </div>
   );
 }
