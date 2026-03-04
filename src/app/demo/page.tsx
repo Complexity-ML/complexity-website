@@ -171,6 +171,29 @@ function DemoContent() {
   const streamStartRef = useRef<number>(0);
   const tokenCountRef = useRef<number>(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [totalRequests, setTotalRequests] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchRequests = async () => {
+      try {
+        const [r1, r2] = await Promise.allSettled([
+          fetch(`${ENDPOINTS.python}/v1/metrics`).then((r) => r.json()),
+          fetch(`${ENDPOINTS.chat}/v1/metrics`).then((r) => r.json()),
+        ]);
+        if (cancelled) return;
+        let total = 0;
+        if (r1.status === "fulfilled") total += r1.value?.requests_served ?? 0;
+        if (r2.status === "fulfilled") total += r2.value?.requests_served ?? 0;
+        setTotalRequests(total);
+      } catch {
+        // ignore
+      }
+    };
+    fetchRequests();
+    const interval = setInterval(fetchRequests, 30_000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, []);
 
   useEffect(() => {
     const el = mainRef.current;
@@ -513,6 +536,7 @@ function DemoContent() {
                   { label: "experts", value: "4" },
                   { label: "kv-cache", value: "paged + LRU" },
                   { label: "engine", value: "vllm-i64" },
+                  { label: "requests", value: totalRequests !== null ? totalRequests.toLocaleString() : "—" },
                 ].map((stat) => (
                   <div
                     key={stat.label}
