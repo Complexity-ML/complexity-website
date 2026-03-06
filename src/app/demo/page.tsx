@@ -12,7 +12,7 @@ interface Message {
   content: string;
 }
 
-type Mode = "python" | "chat";
+type Mode = "python" | "chat" | "ros2";
 
 const ENDPOINTS: Record<Mode, string> = {
   python:
@@ -21,11 +21,15 @@ const ENDPOINTS: Record<Mode, string> = {
   chat:
     process.env.NEXT_PUBLIC_CHAT_API_URL ||
     "https://pacific-prime-pacific-i64-chat.hf.space",
+  ros2:
+    process.env.NEXT_PUBLIC_ROS2_API_URL ||
+    "https://pacific-prime-pacific-ros2.hf.space",
 };
 
 const MODEL_NAMES: Record<Mode, string> = {
   python: "pacific-i64",
   chat: "pacific-chat",
+  ros2: "pacific-ros2",
 };
 
 const DESCRIPTIONS: Record<Mode, string> = {
@@ -33,11 +37,14 @@ const DESCRIPTIONS: Record<Mode, string> = {
     "Complexity Deep 1.58B — Python code helper powered by Token-Routed i64 deterministic routing.",
   chat:
     "Complexity Deep 1.58B — Conversational chat powered by Token-Routed i64 deterministic routing.",
+  ros2:
+    "Complexity Deep 1.58B — ROS2 specialist powered by Token-Routed i64 deterministic routing.",
 };
 
 const FOOTERS: Record<Mode, string> = {
   python: "Complexity Deep 1.58B — Python Code Helper — Token-Routed i64",
   chat: "Complexity Deep 1.58B — Chat Node — Token-Routed i64",
+  ros2: "Complexity Deep 1.58B — ROS2 Specialist — Token-Routed i64",
 };
 
 interface SuggestionGroup {
@@ -127,6 +134,38 @@ const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
       ],
     },
   ],
+  ros2: [
+    {
+      label: "nodes & topics",
+      prompts: [
+        "Write a ROS2 publisher node in Python",
+        "Write a ROS2 subscriber node in Python",
+        "Create a ROS2 service server and client",
+        "Write a ROS2 action server",
+        "Create a ROS2 launch file in Python",
+        "Write a ROS2 node that publishes Twist messages",
+        "Create a ROS2 timer callback node",
+        "Write a ROS2 node with parameter declarations",
+        "Create a custom ROS2 message definition",
+        "Write a ROS2 lifecycle node",
+      ],
+    },
+    {
+      label: "robotics",
+      prompts: [
+        "Write a ROS2 node for obstacle avoidance",
+        "Create a ROS2 TF2 broadcaster",
+        "Write a ROS2 node that reads LaserScan data",
+        "Create a ROS2 node for sensor fusion",
+        "Write a ROS2 node to control a robotic arm",
+        "Create a ROS2 node for path planning",
+        "Write a ROS2 node that processes PointCloud2",
+        "Create a ROS2 node for odometry estimation",
+        "Write a ROS2 node for IMU data processing",
+        "Create a ROS2 node for camera image processing",
+      ],
+    },
+  ],
 };
 
 export default function DemoPage() {
@@ -142,7 +181,7 @@ function DemoContent() {
   const initialMode = (searchParams.get("mode") as Mode) || "python";
 
   const [mode, setMode] = useState<Mode>(
-    initialMode === "chat" ? "chat" : "python"
+    initialMode === "chat" ? "chat" : initialMode === "ros2" ? "ros2" : "python"
   );
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -177,14 +216,16 @@ function DemoContent() {
     let cancelled = false;
     const fetchRequests = async () => {
       try {
-        const [r1, r2] = await Promise.allSettled([
+        const [r1, r2, r3] = await Promise.allSettled([
           fetch(`${ENDPOINTS.python}/v1/metrics`).then((r) => r.json()),
           fetch(`${ENDPOINTS.chat}/v1/metrics`).then((r) => r.json()),
+          fetch(`${ENDPOINTS.ros2}/v1/metrics`).then((r) => r.json()),
         ]);
         if (cancelled) return;
         let total = 0;
         if (r1.status === "fulfilled") total += r1.value?.requests_served ?? 0;
         if (r2.status === "fulfilled") total += r2.value?.requests_served ?? 0;
+        if (r3.status === "fulfilled") total += r3.value?.requests_served ?? 0;
         setTotalRequests(total);
       } catch {
         // ignore
@@ -426,6 +467,16 @@ function DemoContent() {
               >
                 chat
               </button>
+              <button
+                onClick={() => switchMode("ros2")}
+                className={`text-xs px-3 py-1.5 font-mono transition-colors ${
+                  mode === "ros2"
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                ros2
+              </button>
             </div>
             <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground font-mono">
               <span
@@ -517,7 +568,7 @@ function DemoContent() {
             >
               <p className="font-mono text-4xl text-primary mb-4">//</p>
               <h2 className="text-2xl font-bold mb-2">
-                {mode === "python" ? "Pacific-i64" : "Chat-Node"}
+                {mode === "python" ? "Pacific-i64" : mode === "chat" ? "Chat-Node" : "ROS2-Node"}
               </h2>
               <p className="text-muted-foreground text-sm max-w-md mx-auto">
                 {DESCRIPTIONS[mode]}
@@ -573,6 +624,8 @@ function DemoContent() {
                 <p className="text-[10px] text-muted-foreground/30 text-center mt-4 font-mono">
                   {mode === "chat"
                     ? "1.58B parameter model — responses are creative and may be unpredictable"
+                    : mode === "ros2"
+                    ? "1.58B parameter model — ROS2 specialist, outputs may require review"
                     : "1.58B parameter model — outputs may require review"}
                 </p>
               </div>
@@ -600,7 +653,7 @@ function DemoContent() {
                       <span className="text-[10px] font-mono text-primary/60 block mb-2">
                         {modelLabel}
                       </span>
-                      {mode === "python" ? (
+                      {mode === "python" || mode === "ros2" ? (
                         <CodeBlock content={msg.content} />
                       ) : (
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">
