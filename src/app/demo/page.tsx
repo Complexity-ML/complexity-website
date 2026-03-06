@@ -464,9 +464,11 @@ function DemoContent() {
               </button>
               <button
                 onClick={() => switchMode("chat")}
-                disabled
-                title="Maintenance — LoRA fine-tuning in progress"
-                className="text-xs px-3 py-1.5 font-mono transition-colors text-muted-foreground/30 cursor-not-allowed line-through"
+                className={`text-xs px-3 py-1.5 font-mono transition-colors ${
+                  mode === "chat"
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
                 chat
               </button>
