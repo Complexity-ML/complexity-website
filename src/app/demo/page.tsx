@@ -14,6 +14,10 @@ interface Message {
 
 type Mode = "python" | "chat" | "ros2";
 
+const MAINTENANCE: Partial<Record<Mode, string>> = {
+  chat: "Chat model is currently under maintenance — LoRA fine-tuning in progress. Check back soon.",
+};
+
 const ENDPOINTS: Record<Mode, string> = {
   python:
     process.env.NEXT_PUBLIC_API_URL ||
@@ -181,7 +185,7 @@ function DemoContent() {
   const initialMode = (searchParams.get("mode") as Mode) || "python";
 
   const [mode, setMode] = useState<Mode>(
-    initialMode === "chat" ? "chat" : initialMode === "ros2" ? "ros2" : "python"
+    initialMode === "ros2" ? "ros2" : "python"
   );
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -259,6 +263,7 @@ function DemoContent() {
 
   const switchMode = (newMode: Mode) => {
     if (newMode === mode) return;
+    if (MAINTENANCE[newMode]) return;
     // Stop any active generation before switching
     if (streaming || loading) {
       stopGeneration();
@@ -285,9 +290,11 @@ function DemoContent() {
     }
   };
 
+  const maintenanceMsg = MAINTENANCE[mode];
+
   const sendMessage = async () => {
     const text = input.trim();
-    if (!text || loading || streaming) return;
+    if (!text || loading || streaming || maintenanceMsg) return;
 
     setError(null);
     const userMessage: Message = { role: "user", content: text };
@@ -459,11 +466,9 @@ function DemoContent() {
               </button>
               <button
                 onClick={() => switchMode("chat")}
-                className={`text-xs px-3 py-1.5 font-mono transition-colors ${
-                  mode === "chat"
-                    ? "bg-primary/15 text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                disabled
+                title="Maintenance — LoRA fine-tuning in progress"
+                className="text-xs px-3 py-1.5 font-mono transition-colors text-muted-foreground/30 cursor-not-allowed line-through"
               >
                 chat
               </button>
