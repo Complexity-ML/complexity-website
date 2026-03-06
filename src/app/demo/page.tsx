@@ -14,9 +14,7 @@ interface Message {
 
 type Mode = "python" | "chat" | "ros2";
 
-const MAINTENANCE: Partial<Record<Mode, string>> = {
-  chat: "Chat model is currently under maintenance — LoRA fine-tuning in progress. Check back soon.",
-};
+const MAINTENANCE: Partial<Record<Mode, string>> = {};
 
 const ENDPOINTS: Record<Mode, string> = {
   python:
