@@ -658,7 +658,7 @@ function DemoContent() {
                       <span className="text-[10px] font-mono text-primary/60 block mb-2">
                         {modelLabel}
                       </span>
-                      {mode === "python" || mode === "ros2" ? (
+                      {mode === "python" ? (
                         <CodeBlock content={msg.content} />
                       ) : (
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">
