@@ -138,6 +138,18 @@ export function useChat(initialMode: Mode) {
     return () => { cancelled = true; clearInterval(interval); };
   }, [clients, mode]);
 
+  // Abort any in-flight generation on page unload/refresh
+  useEffect(() => {
+    const onUnload = () => {
+      abortControllerRef.current?.abort();
+    };
+    window.addEventListener("beforeunload", onUnload);
+    return () => {
+      window.removeEventListener("beforeunload", onUnload);
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
   const stopGeneration = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
