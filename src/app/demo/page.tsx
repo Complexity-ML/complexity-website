@@ -147,7 +147,7 @@ function WelcomeScreen({
           transition={{ delay: 0.2 }}
           className="mt-6 overflow-x-auto"
         >
-          <div className="flex justify-center gap-2 sm:gap-3 px-4 min-w-max">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 px-4">
             {[
               { label: "params", value: "1.58B" },
               { label: "routing", value: "i64 bit-mask" },
