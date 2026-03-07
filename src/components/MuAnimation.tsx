@@ -52,13 +52,13 @@ export default function MuAnimation() {
   return (
     <div className="relative w-full h-full">
       {/* Scrolling equation ticker */}
-      <div className="absolute bottom-12 left-0 right-0 overflow-hidden pointer-events-none">
+      <div className="absolute bottom-24 sm:bottom-28 left-0 right-0 overflow-hidden pointer-events-none">
         <motion.div
           ref={scrollRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="flex whitespace-nowrap font-mono text-lg md:text-xl text-primary font-medium tracking-wide"
+          className="flex whitespace-nowrap font-mono text-sm sm:text-lg md:text-xl text-primary font-medium tracking-wide"
         >
           <EquationStrip />
           <EquationStrip />
