@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { Mode, SuggestionGroup } from "./config";
 import { DESCRIPTIONS, SUGGESTIONS } from "./config";
 
@@ -35,20 +34,18 @@ function SuggestionGroupBlock({
 }) {
   return (
     <div>
-      <p className="text-[10px] font-mono text-primary/50 uppercase tracking-widest mb-2">
+      <p className="text-[10px] font-mono text-primary/50 uppercase tracking-widest mb-3">
         {group.label}
       </p>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap justify-center gap-2">
         {group.prompts.map((prompt) => (
-          <Button
+          <button
             key={prompt}
-            variant="outline"
-            size="sm"
             onClick={() => onSelect(prompt)}
-            className="text-[11px] font-normal text-muted-foreground hover:text-foreground hover:border-primary/30 h-auto py-1.5 px-2.5 whitespace-normal text-left"
+            className="rounded-full bg-card/50 border border-border/50 px-3.5 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/60 hover:border-primary/30 transition-all cursor-pointer"
           >
             {prompt}
-          </Button>
+          </button>
         ))}
       </div>
     </div>
