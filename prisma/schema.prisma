@@ -19,6 +19,7 @@ model User {
   ownedTeams    Team[]         @relation("TeamOwner")
   teamMembers   TeamMember[]
   conversations Conversation[]
+  apiKeys       ApiKey[]
   createdAt     DateTime       @default(now())
 }
 
@@ -83,6 +84,19 @@ enum TeamMemberRole {
   OWNER
   ADMIN
   MEMBER
+}
+
+// ── API Keys ──
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  keyHash   String   @unique
+  prefix    String   // first 8 chars for display: "i64_ab12..."
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 // ── Chat tables ──
