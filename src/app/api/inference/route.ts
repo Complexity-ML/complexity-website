@@ -1,6 +1,7 @@
 export const runtime = "edge";
 
 import { getToken } from "next-auth/jwt";
+import { NextRequest } from "next/server";
 
 const ENDPOINTS: Record<string, string> = {
   python:
@@ -15,7 +16,7 @@ const ENDPOINTS: Record<string, string> = {
 };
 
 // POST /api/inference — proxy to vllm-i64 server
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const userId = token
     ? `${token.provider}::${token.providerAccountId}`
