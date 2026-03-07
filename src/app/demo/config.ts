@@ -12,18 +12,6 @@ export interface SuggestionGroup {
 
 export const MAINTENANCE: Partial<Record<Mode, string>> = {};
 
-export const ENDPOINTS: Record<Mode, string> = {
-  python:
-    process.env.NEXT_PUBLIC_API_URL ||
-    "https://pacific-prime-pacific-i64-demo.hf.space",
-  chat:
-    process.env.NEXT_PUBLIC_CHAT_API_URL ||
-    "https://pacific-prime-pacific-i64-chat.hf.space",
-  ros2:
-    process.env.NEXT_PUBLIC_ROS2_API_URL ||
-    "https://pacific-prime-pacific-ros2.hf.space",
-};
-
 export const MODEL_NAMES: Record<Mode, string> = {
   python: "pacific-i64",
   chat: "pacific-chat",

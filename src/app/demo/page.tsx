@@ -31,7 +31,7 @@ function DemoContent() {
   const initialMode = (searchParams.get("mode") as Mode) || "python";
   const userId = (session?.user as Record<string, unknown> | undefined)?.id as string | undefined;
 
-  const chat = useChat(initialMode === "ros2" ? "ros2" : "python", userId);
+  const chat = useChat(initialMode === "ros2" ? "ros2" : "python");
   const convos = useConversations(userId);
 
   const [showParams, setShowParams] = useState(false);

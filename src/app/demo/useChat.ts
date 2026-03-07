@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { I64Client } from "vllm-i64";
+import { useState, useRef, useEffect, useCallback } from "react";
 import type { Mode, Message } from "./config";
-import { ENDPOINTS, MODEL_NAMES, MAINTENANCE } from "./config";
+import { MODEL_NAMES, MAINTENANCE } from "./config";
 
 export interface SamplingParams {
   temperature: number;
@@ -43,13 +42,62 @@ const DEFAULT_PARAMS: SamplingParams = {
   maxTokens: 512,
 };
 
-export function useChat(initialMode: Mode, userId?: string) {
-  const clients = useMemo<Record<Mode, I64Client>>(() => ({
-    python: new I64Client(ENDPOINTS.python),
-    chat: new I64Client(ENDPOINTS.chat),
-    ros2: new I64Client(ENDPOINTS.ros2),
-  }), []);
+async function fetchMonitor(mode: string, endpoint: string): Promise<Record<string, unknown>> {
+  const res = await fetch(`/api/inference/monitor?mode=${mode}&endpoint=${endpoint}`);
+  if (!res.ok) throw new Error(`${res.status}`);
+  return res.json();
+}
 
+async function* streamFromProxy(
+  mode: string,
+  messages: { role: string; content: string }[],
+  options: Record<string, unknown>,
+  signal?: AbortSignal,
+): AsyncGenerator<string, void, undefined> {
+  const res = await fetch("/api/inference", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mode, messages, stream: true, ...options }),
+    signal,
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error("No response body");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || !trimmed.startsWith("data: ")) continue;
+      const data = trimmed.slice(6);
+      if (data === "[DONE]") return;
+
+      try {
+        const parsed = JSON.parse(data);
+        const content = parsed.choices?.[0]?.delta?.content;
+        if (content) yield content;
+      } catch {
+        // skip malformed SSE
+      }
+    }
+  }
+}
+
+export function useChat(initialMode: Mode) {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -69,34 +117,32 @@ export function useChat(initialMode: Mode, userId?: string) {
   const snapshotAvailable = useRef(true);
   const expertsAvailable = useRef(true);
 
-  // Health + metrics + snapshot + experts polling
+  // Health + metrics + snapshot + experts polling (via proxy)
   useEffect(() => {
     let cancelled = false;
     snapshotAvailable.current = true;
     expertsAvailable.current = true;
 
     const poll = async () => {
-      const client = clients[mode];
       try {
         const [healthRes, metricsResults, snapRes, expertsRes] = await Promise.allSettled([
-          client.monitor.health(),
+          fetchMonitor(mode, "health"),
           Promise.allSettled(
-            (["python", "chat", "ros2"] as Mode[]).map((m) => clients[m].monitor.metrics())
+            (["python", "chat", "ros2"] as Mode[]).map((m) => fetchMonitor(m, "metrics"))
           ),
-          snapshotAvailable.current ? client.monitor.snapshot() : Promise.reject("skipped"),
-          expertsAvailable.current ? client.monitor.experts() : Promise.reject("skipped"),
+          snapshotAvailable.current ? fetchMonitor(mode, "snapshot") : Promise.reject("skipped"),
+          expertsAvailable.current ? fetchMonitor(mode, "experts") : Promise.reject("skipped"),
         ]);
 
         if (cancelled) return;
 
-        // Health
         if (healthRes.status === "fulfilled") {
-          setHealthStatus(healthRes.value.status === "ok" ? "ok" : "degraded");
+          const h = healthRes.value as Record<string, string>;
+          setHealthStatus(h.status === "ok" ? "ok" : "degraded");
         } else {
           setHealthStatus("offline");
         }
 
-        // Total requests
         if (metricsResults.status === "fulfilled") {
           let total = 0;
           for (const r of metricsResults.value) {
@@ -105,25 +151,23 @@ export function useChat(initialMode: Mode, userId?: string) {
           setTotalRequests(total);
         }
 
-        // Snapshot — stop polling if endpoint unavailable
         if (snapRes.status === "fulfilled") {
-          const s = snapRes.value;
+          const s = snapRes.value as Record<string, Record<string, number>>;
           setSnapshot({
             tokPerS: s.perf?.tok_per_s ?? 0,
             gpuUtil: s.gpu?.utilization_pct ?? 0,
             gpuFreeMb: s.gpu?.free_mb ?? 0,
             gpuTotalMb: s.gpu?.total_mb ?? 0,
             kvUsagePct: s.kv_cache?.usage_pct ?? 0,
-            activeRequests: s.active_requests ?? 0,
+            activeRequests: (s as unknown as Record<string, number>).active_requests ?? 0,
             totalTokens: s.engine?.total_tokens_generated ?? 0,
           });
         } else if (snapshotAvailable.current) {
           snapshotAvailable.current = false;
         }
 
-        // Experts — stop polling if endpoint unavailable, keep last known distribution
         if (expertsRes.status === "fulfilled") {
-          const dist = expertsRes.value.distribution;
+          const dist = (expertsRes.value as Record<string, number[]>).distribution;
           if (dist && dist.length > 0) setExpertDist(dist);
         } else if (expertsAvailable.current) {
           expertsAvailable.current = false;
@@ -133,12 +177,10 @@ export function useChat(initialMode: Mode, userId?: string) {
       }
     };
     poll();
-    // Poll faster during streaming (2s) for live expert updates, slower at rest (10s)
     const interval = setInterval(poll, 2_000);
     return () => { cancelled = true; clearInterval(interval); };
-  }, [clients, mode]);
+  }, [mode]);
 
-  // Abort any in-flight generation on page unload/refresh
   useEffect(() => {
     const onUnload = () => {
       abortControllerRef.current?.abort();
@@ -214,7 +256,8 @@ export function useChat(initialMode: Mode, userId?: string) {
       setLoading(false);
       setStreaming(true);
 
-      const stream = clients[mode].chat.stream(
+      const stream = streamFromProxy(
+        mode,
         [{ role: "user", content: text }],
         {
           model: MODEL_NAMES[mode],
@@ -226,9 +269,8 @@ export function useChat(initialMode: Mode, userId?: string) {
           typical_p: params.typicalP,
           repetition_penalty: params.repetitionPenalty,
           min_tokens: params.minTokens,
-          signal: controller.signal,
-          ...(userId ? { user: userId } : {}),
         },
+        controller.signal,
       );
 
       for await (const token of stream) {
@@ -258,7 +300,7 @@ export function useChat(initialMode: Mode, userId?: string) {
       setStreaming(false);
       abortControllerRef.current = null;
     }
-  }, [input, loading, streaming, mode, messages, clients, params]);
+  }, [input, loading, streaming, mode, messages, params]);
 
   const updateParam = useCallback(<K extends keyof SamplingParams>(key: K, value: SamplingParams[K]) => {
     setParams((p) => ({ ...p, [key]: value }));
