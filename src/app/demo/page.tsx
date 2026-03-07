@@ -131,7 +131,7 @@ function WelcomeScreen({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center w-full max-w-4xl mx-auto px-4"
+        className="text-center w-full px-4 sm:px-0"
       >
         <p className="font-mono text-4xl text-primary mb-4">//</p>
         <h2 className="text-2xl font-bold mb-2">
@@ -164,7 +164,7 @@ function WelcomeScreen({
           </div>
         </motion.div>
 
-        <div className="mt-8 space-y-6">
+        <div className="mt-8 max-w-7xl mx-auto space-y-6">
           {SUGGESTIONS[mode].map((group) => (
             <div key={group.label}>
               <p className="text-[10px] font-mono text-primary/50 uppercase tracking-widest mb-3">
