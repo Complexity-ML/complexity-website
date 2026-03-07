@@ -64,6 +64,7 @@ function DemoContent() {
         showMonitor={showMonitor}
         rtl={rtl}
         health={chat.healthStatus}
+        expertDist={chat.expertDist}
         onSwitchMode={(m) => { chat.switchMode(m); inputRef.current?.focus(); }}
         onSetTemperature={(t) => chat.updateParam("temperature", t)}
         onToggleParams={() => setShowParams(!showParams)}

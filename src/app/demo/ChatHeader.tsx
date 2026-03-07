@@ -12,6 +12,7 @@ interface ChatHeaderProps {
   showMonitor: boolean;
   rtl: boolean;
   health: "ok" | "degraded" | "offline";
+  expertDist: number[] | null;
   onSwitchMode: (mode: Mode) => void;
   onSetTemperature: (t: number) => void;
   onToggleParams: () => void;
@@ -28,6 +29,7 @@ export function ChatHeader({
   showMonitor,
   rtl,
   health,
+  expertDist,
   onSwitchMode,
   onSetTemperature,
   onToggleParams,
@@ -87,6 +89,29 @@ export function ChatHeader({
               </span>
             )}
           </div>
+          {expertDist && expertDist.length > 0 && (
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-md border border-border/40 bg-card/20">
+              <span className="text-[10px] font-mono text-muted-foreground/50">experts</span>
+              <div className="flex items-end gap-0.5 h-6">
+                {expertDist.map((pct, i) => (
+                  <div
+                    key={i}
+                    className="w-2.5 rounded-sm transition-all duration-700"
+                    style={{
+                      height: `${Math.max(pct * 100, 12)}%`,
+                      background: `linear-gradient(to top, oklch(0.55 0.25 ${300 + i * 30}), oklch(0.7 0.2 ${300 + i * 30}))`,
+                      boxShadow: `0 0 4px oklch(0.65 0.2 ${300 + i * 30} / 30%)`,
+                      opacity: 0.7 + pct * 0.3,
+                    }}
+                    title={`Expert ${i}: ${(pct * 100).toFixed(1)}%`}
+                  />
+                ))}
+              </div>
+              <span className="text-[9px] font-mono text-muted-foreground/40">
+                {expertDist.map((pct) => `${(pct * 100).toFixed(0)}%`).join(" ")}
+              </span>
+            </div>
+          )}
           <div className="hidden sm:flex items-center gap-2">
             <label className="text-[10px] font-mono text-muted-foreground">temp</label>
             <input
