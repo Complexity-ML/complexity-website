@@ -121,9 +121,10 @@ export function useChat(initialMode: Mode) {
           snapshotAvailable.current = false;
         }
 
-        // Experts — stop polling if endpoint unavailable
+        // Experts — stop polling if endpoint unavailable, keep last known distribution
         if (expertsRes.status === "fulfilled") {
-          setExpertDist(expertsRes.value.distribution ?? null);
+          const dist = expertsRes.value.distribution;
+          if (dist && dist.length > 0) setExpertDist(dist);
         } else if (expertsAvailable.current) {
           expertsAvailable.current = false;
         }
