@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, Github, LogIn, LogOut } from "lucide-react";
+import { Menu, Github, LogIn } from "lucide-react";
 import { motion } from "framer-motion";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -83,7 +83,10 @@ export default function Navigation() {
 
             {/* Auth */}
             {session?.user ? (
-              <div className="hidden sm:flex items-center gap-2">
+              <Link
+                href="/account"
+                className="hidden sm:flex items-center gap-2 hover:opacity-80 transition-opacity"
+              >
                 {session.user.image && (
                   <Image
                     src={session.user.image}
@@ -96,15 +99,7 @@ export default function Navigation() {
                 <span className="text-sm text-muted-foreground max-w-[120px] truncate">
                   {session.user.name}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => signOut()}
-                  title="Sign out"
-                >
-                  <LogOut className="size-4" />
-                </Button>
-              </div>
+              </Link>
             ) : (
               <Button
                 variant="ghost"
@@ -146,29 +141,26 @@ export default function Navigation() {
                   ))}
                   <Separator className="my-2" />
                   {session?.user ? (
-                    <div className="flex items-center gap-2 px-2 py-1">
-                      {session.user.image && (
-                        <Image
-                          src={session.user.image}
-                          alt=""
-                          width={24}
-                          height={24}
-                          className="rounded-full"
-                        />
-                      )}
-                      <span className="text-sm truncate flex-1">
-                        {session.user.name}
-                      </span>
-                      <SheetClose asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => signOut()}
-                        >
-                          <LogOut className="size-4" />
-                        </Button>
-                      </SheetClose>
-                    </div>
+                    <SheetClose asChild>
+                      <Button
+                        variant="ghost"
+                        className="justify-start gap-2"
+                        asChild
+                      >
+                        <Link href="/account">
+                          {session.user.image && (
+                            <Image
+                              src={session.user.image}
+                              alt=""
+                              width={20}
+                              height={20}
+                              className="rounded-full"
+                            />
+                          )}
+                          Account
+                        </Link>
+                      </Button>
+                    </SheetClose>
                   ) : (
                     <SheetClose asChild>
                       <Button
