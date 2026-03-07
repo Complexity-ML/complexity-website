@@ -61,12 +61,15 @@ export function ChatInput({
     }
   };
 
+  const hasExperts = expertDist && expertDist.length > 0;
+
   return (
     <div className="relative border-t border-border/50 bg-background/80 backdrop-blur-lg">
-      {expertDist && expertDist.length > 0 && (
-        <ExpertBars distribution={expertDist} />
-      )}
-      <div className="container mx-auto max-w-7xl px-6 py-4">
+      {/* Desktop: absolute in left margin */}
+      {hasExperts && <ExpertBarsDesktop distribution={expertDist} />}
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 py-4">
+        {/* Mobile: inline above textarea */}
+        {hasExperts && <ExpertBarsMobile distribution={expertDist} />}
         <div className="flex items-end gap-3">
           <Textarea
             ref={inputRef}
@@ -102,7 +105,7 @@ export function ChatInput({
           )}
         </div>
         <div className="flex items-center justify-between mt-2">
-          <p className="text-[10px] text-muted-foreground/40 font-mono">{FOOTERS[mode]}</p>
+          <p className="text-[10px] text-muted-foreground/40 font-mono truncate">{FOOTERS[mode]}</p>
           {tokenStats && tokenStats.tokens > 0 && (
             <TokenStatsDisplay stats={tokenStats} maxTokens={maxTokens} />
           )}
@@ -112,7 +115,7 @@ export function ChatInput({
   );
 }
 
-function ExpertBars({ distribution }: { distribution: number[] }) {
+function ExpertBarsDesktop({ distribution }: { distribution: number[] }) {
   return (
     <div className="absolute left-4 top-1/2 -translate-y-1/2 hidden lg:flex flex-col items-center gap-3">
       <span className="text-[9px] font-mono text-muted-foreground/40">experts</span>
@@ -144,6 +147,28 @@ function ExpertBars({ distribution }: { distribution: number[] }) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function ExpertBarsMobile({ distribution }: { distribution: number[] }) {
+  return (
+    <div className="flex lg:hidden items-center justify-center gap-3 pb-3">
+      <span className="text-[9px] font-mono text-muted-foreground/40">experts</span>
+      {distribution.map((pct, i) => {
+        const colors = EXPERT_COLORS[i % EXPERT_COLORS.length];
+        return (
+          <div key={i} className="flex items-center gap-1">
+            <div
+              className="size-3 rounded-sm"
+              style={{ background: colors.glow }}
+            />
+            <span className="text-[10px] font-mono text-muted-foreground/50">
+              {(pct * 100).toFixed(0)}%
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }

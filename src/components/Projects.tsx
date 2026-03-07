@@ -1,8 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Github, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const projects = [
   {
@@ -52,7 +54,7 @@ const projects = [
   {
     title: "gpu-i64",
     description:
-      "64-bit GPU architecture with native O(1) KV-Cache using CAM. 4× faster LLM inference at 75W for edge deployment.",
+      "64-bit GPU architecture with native O(1) KV-Cache using CAM. 4\u00D7 faster LLM inference at 75W for edge deployment.",
     tags: ["RTL", "SystemVerilog", "KV-Cache", "O(1)", "Edge AI"],
     status: "Hardware",
     links: {
@@ -71,38 +73,36 @@ const projects = [
   },
 ];
 
+const statusStyles: Record<string, string> = {
+  Active: "bg-primary/20 text-primary border-primary/30",
+  Available: "bg-green-500/20 text-green-400 border-green-500/30",
+  Hardware: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+  Stable: "",
+};
+
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5 },
-  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
 export default function Projects() {
   return (
-    <section id="projects" className="py-24 px-6">
+    <section id="projects" className="py-16 sm:py-24 px-4 sm:px-6">
       <div className="container mx-auto max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mb-16"
+          className="mb-10 sm:mb-16"
         >
           <p className="text-primary font-mono text-sm mb-2">// PROJECTS</p>
-          <h2 className="text-3xl md:text-4xl font-bold">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">
             What We&apos;re Building
           </h2>
         </motion.div>
@@ -112,100 +112,67 @@ export default function Projects() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid md:grid-cols-2 gap-6"
+          className="grid sm:grid-cols-2 gap-4 sm:gap-6"
         >
           {projects.map((project) => (
             <motion.div key={project.title} variants={itemVariants}>
               <Card className="h-full bg-card/50 backdrop-blur border-border/50 hover:border-primary/50 transition-colors group">
                 <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-lg sm:text-xl group-hover:text-primary transition-colors">
                       {project.title}
                     </CardTitle>
                     <Badge
-                      variant={
-                        project.status === "Active"
-                          ? "default"
-                          : project.status === "Available"
-                          ? "default"
-                          : project.status === "Hardware"
-                          ? "default"
-                          : "outline"
-                      }
-                      className={
-                        project.status === "Active"
-                          ? "bg-primary/20 text-primary border-primary/30"
-                          : project.status === "Available"
-                          ? "bg-green-500/20 text-green-400 border-green-500/30"
-                          : project.status === "Hardware"
-                          ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
-                          : ""
-                      }
+                      variant={project.status === "Stable" ? "outline" : "default"}
+                      className={statusStyles[project.status]}
                     >
                       {project.status}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-muted-foreground">{project.description}</p>
+                  <p className="text-sm sm:text-base text-muted-foreground">{project.description}</p>
 
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {project.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-xs px-2 py-1 rounded bg-secondary text-secondary-foreground"
-                      >
+                      <Badge key={tag} variant="secondary" className="text-xs">
                         {tag}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
 
-                  <div className="flex gap-3 pt-2">
+                  <div className="flex flex-wrap gap-2 pt-2">
                     {project.links.github && (
-                      <a
-                        href={project.links.github}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-                      >
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                        </svg>
-                        GitHub
-                      </a>
+                      <Button variant="ghost" size="sm" asChild>
+                        <a href={project.links.github} target="_blank" rel="noopener noreferrer">
+                          <Github className="size-4" />
+                          GitHub
+                        </a>
+                      </Button>
                     )}
                     {project.links.pypi && (
-                      <a
-                        href={project.links.pypi}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-                      >
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 0L1.75 6v12L12 24l10.25-6V6L12 0zm-1.775 18l-4.9-2.85v-5.7L10.225 12v6zm1.55-7.2L6.875 8l4.9-2.85L16.675 8l-4.9 2.8zm6.45 4.35l-4.9 2.85v-6l4.9-2.85v6z"/>
-                        </svg>
-                        PyPI
-                      </a>
+                      <Button variant="ghost" size="sm" asChild>
+                        <a href={project.links.pypi} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="size-4" />
+                          PyPI
+                        </a>
+                      </Button>
                     )}
                     {project.links.huggingface && (
-                      <a
-                        href={project.links.huggingface}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-                      >
-                        <span className="text-lg">🤗</span>
-                        HuggingFace
-                      </a>
+                      <Button variant="ghost" size="sm" asChild>
+                        <a href={project.links.huggingface} target="_blank" rel="noopener noreferrer">
+                          <span className="text-base">🤗</span>
+                          HuggingFace
+                        </a>
+                      </Button>
                     )}
                     {project.links.demo && (
-                      <a
-                        href={project.links.demo}
-                        className="text-sm text-primary/80 hover:text-primary transition-colors flex items-center gap-1.5 font-medium"
-                      >
-                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                        Try Live
-                      </a>
+                      <Button variant="ghost" size="sm" className="text-primary" asChild>
+                        <a href={project.links.demo}>
+                          <span className="size-2 rounded-full bg-primary animate-pulse" />
+                          Try Live
+                        </a>
+                      </Button>
                     )}
                   </div>
                 </CardContent>
