@@ -145,21 +145,23 @@ function WelcomeScreen({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mt-6 flex flex-wrap justify-center gap-2 sm:gap-3 px-4"
+          className="mt-6 overflow-x-auto"
         >
-          {[
-            { label: "params", value: "1.58B" },
-            { label: "routing", value: "i64 bit-mask" },
-            { label: "experts", value: "4" },
-            { label: "kv-cache", value: "paged + LRU" },
-            { label: "engine", value: "vllm-i64" },
-            { label: "requests", value: totalRequests !== null ? totalRequests.toLocaleString() : "\u2014" },
-          ].map((stat) => (
-            <Badge key={stat.label} variant="outline" className="gap-1.5 font-mono text-xs sm:text-sm py-1.5 px-3 bg-card/30">
-              <span className="text-muted-foreground/60">{stat.label}</span>
-              <span className="text-primary/80">{stat.value}</span>
-            </Badge>
-          ))}
+          <div className="flex justify-center gap-2 sm:gap-3 px-4 min-w-max">
+            {[
+              { label: "params", value: "1.58B" },
+              { label: "routing", value: "i64 bit-mask" },
+              { label: "experts", value: "4" },
+              { label: "kv-cache", value: "paged + LRU" },
+              { label: "engine", value: "vllm-i64" },
+              { label: "requests", value: totalRequests !== null ? totalRequests.toLocaleString() : "\u2014" },
+            ].map((stat) => (
+              <Badge key={stat.label} variant="outline" className="gap-1.5 font-mono text-xs py-1.5 px-3 bg-card/30 shrink-0">
+                <span className="text-muted-foreground/60">{stat.label}</span>
+                <span className="text-primary/80">{stat.value}</span>
+              </Badge>
+            ))}
+          </div>
         </motion.div>
 
         <div className="mt-8 max-w-7xl mx-auto px-4 space-y-6">
