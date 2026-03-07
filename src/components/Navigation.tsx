@@ -84,7 +84,7 @@ export default function Navigation() {
             {/* Auth */}
             {session?.user ? (
               <Link
-                href="/account"
+                href="/dashboard"
                 className="hidden sm:flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 {session.user.image && (
@@ -147,7 +147,7 @@ export default function Navigation() {
                         className="justify-start gap-2"
                         asChild
                       >
-                        <Link href="/account">
+                        <Link href="/dashboard">
                           {session.user.image && (
                             <Image
                               src={session.user.image}
@@ -157,7 +157,7 @@ export default function Navigation() {
                               className="rounded-full"
                             />
                           )}
-                          Account
+                          Dashboard
                         </Link>
                       </Button>
                     </SheetClose>

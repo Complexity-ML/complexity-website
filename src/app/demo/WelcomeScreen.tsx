@@ -1,9 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import type { Mode, SuggestionGroup } from "./config";
+import { Card } from "@/components/ui/card";
+import type { Mode } from "./config";
 import { DESCRIPTIONS, SUGGESTIONS } from "./config";
 
 const STATS = [
@@ -26,88 +28,11 @@ const MODE_DISCLAIMERS: Record<Mode, string> = {
   ros2: "1.58B parameter model \u2014 ROS2 specialist, outputs may require review",
 };
 
-/* ── Stat Badges ── */
-function StatBadges({ totalRequests }: { totalRequests: number | null }) {
-  const allStats = [
-    ...STATS,
-    { label: "requests", value: totalRequests !== null ? totalRequests.toLocaleString() : "\u2014" },
-  ];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-      className="mt-6"
-    >
-      <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-        {allStats.map((stat) => (
-          <Badge
-            key={stat.label}
-            variant="outline"
-            className="gap-1.5 font-mono text-xs py-1.5 px-3 bg-card/30"
-          >
-            <span className="text-muted-foreground/60">{stat.label}</span>
-            <span className="text-primary/80">{stat.value}</span>
-          </Badge>
-        ))}
-      </div>
-    </motion.div>
-  );
+function pickRandom<T>(arr: T[], n: number): T[] {
+  const shuffled = [...arr].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, n);
 }
 
-/* ── Suggestion Group ── */
-function SuggestionGroupBlock({
-  group,
-  onSelect,
-}: {
-  group: SuggestionGroup;
-  onSelect: (prompt: string) => void;
-}) {
-  return (
-    <div>
-      <p className="text-[10px] font-mono text-primary/50 uppercase tracking-widest mb-3">
-        {group.label}
-      </p>
-      {/* mobile: vertical grid | desktop: horizontal flex wrap */}
-      <div className="grid grid-cols-1 sm:flex sm:flex-wrap sm:justify-center gap-2 max-h-48 sm:max-h-none overflow-y-auto sm:overflow-visible scrollbar-none">
-        {group.prompts.map((prompt) => (
-          <Button
-            key={prompt}
-            variant="outline"
-            size="sm"
-            onClick={() => onSelect(prompt)}
-            className="text-xs font-normal text-muted-foreground hover:text-foreground hover:border-primary/30 text-left sm:text-center whitespace-normal h-auto py-2"
-          >
-            {prompt}
-          </Button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ── Suggestions Panel ── */
-function SuggestionsPanel({
-  mode,
-  onSelect,
-}: {
-  mode: Mode;
-  onSelect: (prompt: string) => void;
-}) {
-  return (
-    <div className="mt-8 space-y-6">
-      {SUGGESTIONS[mode].map((group) => (
-        <SuggestionGroupBlock key={group.label} group={group} onSelect={onSelect} />
-      ))}
-      <p className="text-[10px] text-muted-foreground/30 text-center mt-4 font-mono">
-        {MODE_DISCLAIMERS[mode]}
-      </p>
-    </div>
-  );
-}
-
-/* ── Welcome Screen (main export) ── */
 export function WelcomeScreen({
   mode,
   totalRequests,
@@ -117,22 +42,72 @@ export function WelcomeScreen({
   totalRequests: number | null;
   onSelectPrompt: (prompt: string) => void;
 }) {
+  const allStats = [
+    ...STATS,
+    { label: "requests", value: totalRequests !== null ? totalRequests.toLocaleString() : "\u2014" },
+  ];
+
+  // Pick 4 random suggestions across all groups
+  const suggestions = useMemo(() => {
+    const all = SUGGESTIONS[mode].flatMap((g) => g.prompts);
+    return pickRandom(all, 4);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
+
   return (
-    <div className="flex items-center justify-center h-full min-h-[60vh] px-4 sm:px-6">
+    <div className="flex flex-col items-center justify-center h-full px-4 sm:px-6 py-8">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center w-full max-w-2xl mx-auto"
+        className="text-center w-full max-w-xl"
       >
-        <p className="font-mono text-4xl text-primary mb-4">//</p>
-        <h2 className="text-2xl font-bold mb-2">{MODE_TITLES[mode]}</h2>
-        <p className="text-muted-foreground text-sm max-w-md mx-auto">
+        <p className="font-mono text-4xl text-primary mb-3">//</p>
+        <h2 className="text-xl font-bold mb-1">{MODE_TITLES[mode]}</h2>
+        <p className="text-muted-foreground text-sm max-w-sm mx-auto">
           {DESCRIPTIONS[mode]}
         </p>
 
-        <StatBadges totalRequests={totalRequests} />
-        <SuggestionsPanel mode={mode} onSelect={onSelectPrompt} />
+        {/* Stats */}
+        <div className="flex flex-wrap justify-center gap-2 mt-5">
+          {allStats.map((stat) => (
+            <Badge
+              key={stat.label}
+              variant="outline"
+              className="gap-1.5 font-mono text-[10px] py-1 px-2.5 bg-card/30"
+            >
+              <span className="text-muted-foreground/60">{stat.label}</span>
+              <span className="text-primary/80">{stat.value}</span>
+            </Badge>
+          ))}
+        </div>
       </motion.div>
+
+      {/* Suggestion cards — 2x2 grid */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-8 w-full max-w-xl"
+      >
+        {suggestions.map((prompt) => (
+          <Card
+            key={prompt}
+            className="group cursor-pointer py-3 px-4 gap-2 hover:border-primary/40 transition-colors"
+            onClick={() => onSelectPrompt(prompt)}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-sm text-muted-foreground group-hover:text-foreground transition-colors text-left leading-snug">
+                {prompt}
+              </p>
+              <ArrowRight className="size-3.5 shrink-0 mt-0.5 text-muted-foreground/0 group-hover:text-primary transition-colors" />
+            </div>
+          </Card>
+        ))}
+      </motion.div>
+
+      <p className="text-[10px] text-muted-foreground/30 text-center mt-6 font-mono">
+        {MODE_DISCLAIMERS[mode]}
+      </p>
     </div>
   );
 }
