@@ -6,6 +6,7 @@ import Link from "next/link";
 import CodeBlock from "@/components/CodeBlock";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { I64Client } from "vllm-i64";
 
 interface Message {
   role: "user" | "assistant";
@@ -26,6 +27,12 @@ const ENDPOINTS: Record<Mode, string> = {
   ros2:
     process.env.NEXT_PUBLIC_ROS2_API_URL ||
     "https://pacific-prime-pacific-ros2.hf.space",
+};
+
+const CLIENTS: Record<Mode, I64Client> = {
+  python: new I64Client(ENDPOINTS.python),
+  chat: new I64Client(ENDPOINTS.chat),
+  ros2: new I64Client(ENDPOINTS.ros2),
 };
 
 const MODEL_NAMES: Record<Mode, string> = {
@@ -218,16 +225,14 @@ function DemoContent() {
     let cancelled = false;
     const fetchRequests = async () => {
       try {
-        const [r1, r2, r3] = await Promise.allSettled([
-          fetch(`${ENDPOINTS.python}/v1/metrics`).then((r) => r.json()),
-          fetch(`${ENDPOINTS.chat}/v1/metrics`).then((r) => r.json()),
-          fetch(`${ENDPOINTS.ros2}/v1/metrics`).then((r) => r.json()),
-        ]);
+        const results = await Promise.allSettled(
+          (["python", "chat", "ros2"] as Mode[]).map((m) => CLIENTS[m].monitor.metrics())
+        );
         if (cancelled) return;
         let total = 0;
-        if (r1.status === "fulfilled") total += r1.value?.requests_served ?? 0;
-        if (r2.status === "fulfilled") total += r2.value?.requests_served ?? 0;
-        if (r3.status === "fulfilled") total += r3.value?.requests_served ?? 0;
+        for (const r of results) {
+          if (r.status === "fulfilled") total += (r.value as Record<string, number>)?.requests_served ?? 0;
+        }
         setTotalRequests(total);
       } catch {
         // ignore
@@ -305,33 +310,6 @@ function DemoContent() {
     abortControllerRef.current = controller;
 
     try {
-      const res = await fetch(`${ENDPOINTS[mode]}/v1/chat/completions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: MODEL_NAMES[mode],
-          messages: [{ role: "user", content: text }],
-          max_tokens: maxTokens,
-          temperature,
-          top_k: topK,
-          top_p: topP,
-          min_p: minP,
-          typical_p: typicalP,
-          repetition_penalty: repetitionPenalty,
-          min_tokens: minTokens,
-          stream: true,
-        }),
-        signal: controller.signal,
-      });
-
-      if (!res.ok) {
-        throw new Error(`Server error: ${res.status}`);
-      }
-
-      const reader = res.body?.getReader();
-      if (!reader) throw new Error("No response stream.");
-
-      const decoder = new TextDecoder();
       let assistantContent = "";
 
       // Token counter — start tracking
@@ -343,42 +321,31 @@ function DemoContent() {
       setLoading(false);
       setStreaming(true);
 
-      let buffer = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      const stream = CLIENTS[mode].chat.stream(
+        [{ role: "user", content: text }],
+        {
+          model: MODEL_NAMES[mode],
+          max_tokens: maxTokens,
+          temperature,
+          top_k: topK,
+          top_p: topP,
+          min_p: minP,
+          typical_p: typicalP,
+          repetition_penalty: repetitionPenalty,
+          min_tokens: minTokens,
+          signal: controller.signal,
+        },
+      );
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed || !trimmed.startsWith("data: ")) continue;
-          const payload = trimmed.slice(6);
-          if (payload === "[DONE]") break;
-
-          try {
-            const parsed = JSON.parse(payload);
-            const token =
-              parsed.choices?.[0]?.delta?.content ??
-              parsed.choices?.[0]?.text ??
-              "";
-            if (token) {
-              assistantContent += token;
-              tokenCountRef.current++;
-              const elapsed = (performance.now() - streamStartRef.current) / 1000;
-              setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
-              const content = assistantContent;
-              setMessages([
-                ...newMessages,
-                { role: "assistant", content },
-              ]);
-            }
-          } catch {
-            // skip malformed chunks
-          }
-        }
+      for await (const token of stream) {
+        assistantContent += token;
+        tokenCountRef.current++;
+        const elapsed = (performance.now() - streamStartRef.current) / 1000;
+        setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
+        setMessages([
+          ...newMessages,
+          { role: "assistant", content: assistantContent },
+        ]);
       }
 
       // Finalize stats
