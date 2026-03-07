@@ -22,6 +22,16 @@ export interface TokenStats {
   streaming: boolean;
 }
 
+export interface MonitorData {
+  tokPerS: number;
+  gpuUtil: number;
+  gpuFreeMb: number;
+  gpuTotalMb: number;
+  kvUsagePct: number;
+  activeRequests: number;
+  totalTokens: number;
+}
+
 const DEFAULT_PARAMS: SamplingParams = {
   temperature: 0.6,
   topK: 40,
@@ -49,33 +59,73 @@ export function useChat(initialMode: Mode) {
   const [params, setParams] = useState<SamplingParams>(DEFAULT_PARAMS);
   const [tokenStats, setTokenStats] = useState<TokenStats | null>(null);
   const [totalRequests, setTotalRequests] = useState<number | null>(null);
+  const [healthStatus, setHealthStatus] = useState<"ok" | "degraded" | "offline">("offline");
+  const [snapshot, setSnapshot] = useState<MonitorData | null>(null);
+  const [expertDist, setExpertDist] = useState<number[] | null>(null);
 
   const streamStartRef = useRef(0);
   const tokenCountRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Metrics polling
+  // Health + metrics + snapshot + experts polling
   useEffect(() => {
     let cancelled = false;
-    const fetchRequests = async () => {
+    const poll = async () => {
+      const client = clients[mode];
       try {
-        const results = await Promise.allSettled(
-          (["python", "chat", "ros2"] as Mode[]).map((m) => clients[m].monitor.metrics())
-        );
+        const [healthRes, metricsResults, snapRes, expertsRes] = await Promise.allSettled([
+          client.monitor.health(),
+          Promise.allSettled(
+            (["python", "chat", "ros2"] as Mode[]).map((m) => clients[m].monitor.metrics())
+          ),
+          client.monitor.snapshot(),
+          client.monitor.experts(),
+        ]);
+
         if (cancelled) return;
-        let total = 0;
-        for (const r of results) {
-          if (r.status === "fulfilled") total += (r.value as Record<string, number>)?.requests_served ?? 0;
+
+        // Health
+        if (healthRes.status === "fulfilled") {
+          setHealthStatus(healthRes.value.status === "ok" ? "ok" : "degraded");
+        } else {
+          setHealthStatus("offline");
         }
-        setTotalRequests(total);
+
+        // Total requests
+        if (metricsResults.status === "fulfilled") {
+          let total = 0;
+          for (const r of metricsResults.value) {
+            if (r.status === "fulfilled") total += (r.value as Record<string, number>)?.requests_served ?? 0;
+          }
+          setTotalRequests(total);
+        }
+
+        // Snapshot
+        if (snapRes.status === "fulfilled") {
+          const s = snapRes.value;
+          setSnapshot({
+            tokPerS: s.perf?.tok_per_s ?? 0,
+            gpuUtil: s.gpu?.utilization_pct ?? 0,
+            gpuFreeMb: s.gpu?.free_mb ?? 0,
+            gpuTotalMb: s.gpu?.total_mb ?? 0,
+            kvUsagePct: s.kv_cache?.usage_pct ?? 0,
+            activeRequests: s.active_requests ?? 0,
+            totalTokens: s.engine?.total_tokens_generated ?? 0,
+          });
+        }
+
+        // Experts
+        if (expertsRes.status === "fulfilled") {
+          setExpertDist(expertsRes.value.distribution ?? null);
+        }
       } catch {
-        // ignore
+        if (!cancelled) setHealthStatus("offline");
       }
     };
-    fetchRequests();
-    const interval = setInterval(fetchRequests, 30_000);
+    poll();
+    const interval = setInterval(poll, 10_000);
     return () => { cancelled = true; clearInterval(interval); };
-  }, [clients]);
+  }, [clients, mode]);
 
   const stopGeneration = useCallback(() => {
     if (abortControllerRef.current) {
@@ -194,6 +244,9 @@ export function useChat(initialMode: Mode) {
     updateParam,
     tokenStats,
     totalRequests,
+    healthStatus,
+    snapshot,
+    expertDist,
     switchMode,
     clearChat,
     sendMessage,

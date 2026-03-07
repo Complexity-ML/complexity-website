@@ -10,6 +10,7 @@ import { ChatHeader } from "./ChatHeader";
 import { ParamPanel } from "./ParamPanel";
 import { ChatMessage, LoadingBubble, ErrorBanner } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
+import { MonitorPanel } from "./MonitorPanel";
 
 export default function DemoPage() {
   return (
@@ -26,6 +27,7 @@ function DemoContent() {
   const chat = useChat(initialMode === "ros2" ? "ros2" : "python");
 
   const [showParams, setShowParams] = useState(false);
+  const [showMonitor, setShowMonitor] = useState(false);
   const [rtl, setRtl] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -59,15 +61,25 @@ function DemoContent() {
         streaming={chat.streaming}
         temperature={chat.params.temperature}
         showParams={showParams}
+        showMonitor={showMonitor}
         rtl={rtl}
+        health={chat.healthStatus}
         onSwitchMode={(m) => { chat.switchMode(m); inputRef.current?.focus(); }}
         onSetTemperature={(t) => chat.updateParam("temperature", t)}
         onToggleParams={() => setShowParams(!showParams)}
+        onToggleMonitor={() => setShowMonitor(!showMonitor)}
         onToggleRtl={() => setRtl(!rtl)}
         onClear={() => { chat.clearChat(); inputRef.current?.focus(); }}
       />
 
       {showParams && <ParamPanel params={chat.params} onUpdate={chat.updateParam} />}
+      {showMonitor && (
+        <MonitorPanel
+          health={chat.healthStatus}
+          snapshot={chat.snapshot}
+          expertDist={chat.expertDist}
+        />
+      )}
 
       <main ref={mainRef} className="flex-1 overflow-y-auto">
         {chat.messages.length === 0 ? (

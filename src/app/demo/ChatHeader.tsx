@@ -9,10 +9,13 @@ interface ChatHeaderProps {
   streaming: boolean;
   temperature: number;
   showParams: boolean;
+  showMonitor: boolean;
   rtl: boolean;
+  health: "ok" | "degraded" | "offline";
   onSwitchMode: (mode: Mode) => void;
   onSetTemperature: (t: number) => void;
   onToggleParams: () => void;
+  onToggleMonitor: () => void;
   onToggleRtl: () => void;
   onClear: () => void;
 }
@@ -22,10 +25,13 @@ export function ChatHeader({
   streaming,
   temperature,
   showParams,
+  showMonitor,
   rtl,
+  health,
   onSwitchMode,
   onSetTemperature,
   onToggleParams,
+  onToggleMonitor,
   onToggleRtl,
   onClear,
 }: ChatHeaderProps) {
@@ -65,8 +71,14 @@ export function ChatHeader({
           </div>
           <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground font-mono">
             <span
-              className={`w-2 h-2 rounded-full animate-pulse transition-colors duration-500 ${streaming ? "" : "bg-primary"}`}
-              style={streaming ? { background: "oklch(0.65 0.2 300)", boxShadow: "0 0 8px oklch(0.65 0.2 300 / 50%)" } : undefined}
+              className="w-2 h-2 rounded-full transition-colors duration-500"
+              style={streaming
+                ? { background: "oklch(0.65 0.2 300)", boxShadow: "0 0 8px oklch(0.65 0.2 300 / 50%)", animation: "pulse 2s infinite" }
+                : {
+                    background: health === "ok" ? "oklch(0.75 0.18 142)" : health === "degraded" ? "oklch(0.75 0.18 85)" : "oklch(0.55 0.2 25)",
+                    boxShadow: health === "ok" ? "0 0 6px oklch(0.75 0.18 142 / 50%)" : health === "degraded" ? "0 0 6px oklch(0.75 0.18 85 / 50%)" : "none",
+                  }
+              }
             />
             {modelLabel}
             {streaming && (
@@ -91,6 +103,7 @@ export function ChatHeader({
             </span>
           </div>
           <ToggleButton active={showParams} onClick={onToggleParams} label="params" />
+          <ToggleButton active={showMonitor} onClick={onToggleMonitor} label="monitor" />
           <ToggleButton active={rtl} onClick={onToggleRtl} label="RTL" />
           <button
             onClick={onClear}
