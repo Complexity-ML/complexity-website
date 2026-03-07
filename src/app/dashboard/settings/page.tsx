@@ -10,7 +10,10 @@ import { Separator } from "@/components/ui/separator";
 export default function SettingsPage() {
   const { data: session } = useSession();
   const user = session?.user;
-  const userId = (user as Record<string, unknown> | undefined)?.id as string | undefined;
+  const rawId = (user as Record<string, unknown> | undefined)?.id as string | undefined;
+  const maskedId = rawId
+    ? rawId.replace(/^(.{8}).*(.{4})$/, "$1••••••$2")
+    : undefined;
 
   return (
     <div className="space-y-8">
@@ -55,7 +58,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <span className="text-sm">User ID</span>
             <Badge variant="outline" className="font-mono text-xs">
-              {userId}
+              {maskedId}
             </Badge>
           </div>
           <Separator />
