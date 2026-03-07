@@ -145,7 +145,7 @@ function WelcomeScreen({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mt-6 flex flex-wrap justify-center gap-3"
+          className="mt-6 flex flex-wrap justify-center gap-2 sm:gap-3 px-4"
         >
           {[
             { label: "params", value: "1.58B" },
@@ -155,7 +155,7 @@ function WelcomeScreen({
             { label: "engine", value: "vllm-i64" },
             { label: "requests", value: totalRequests !== null ? totalRequests.toLocaleString() : "\u2014" },
           ].map((stat) => (
-            <Badge key={stat.label} variant="outline" className="gap-1.5 font-mono text-[10px] bg-card/30">
+            <Badge key={stat.label} variant="outline" className="gap-1.5 font-mono text-xs sm:text-sm py-1.5 px-3 bg-card/30">
               <span className="text-muted-foreground/60">{stat.label}</span>
               <span className="text-primary/80">{stat.value}</span>
             </Badge>
