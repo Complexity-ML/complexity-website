@@ -1,19 +1,17 @@
 "use client";
 
 import { useState, useRef, useEffect, Suspense } from "react";
-import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import type { Mode } from "./config";
-import { DESCRIPTIONS, SUGGESTIONS, MAINTENANCE } from "./config";
+import { MAINTENANCE } from "./config";
 import { useChat } from "./useChat";
 import { ChatHeader } from "./ChatHeader";
 import { ParamPanel } from "./ParamPanel";
 import { ChatMessage, LoadingBubble, ErrorBanner } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { MonitorPanel } from "./MonitorPanel";
+import { WelcomeScreen } from "./WelcomeScreen";
 
 export default function DemoPage() {
   return (
@@ -117,83 +115,4 @@ function DemoContent() {
   );
 }
 
-function WelcomeScreen({
-  mode,
-  totalRequests,
-  onSelectPrompt,
-}: {
-  mode: Mode;
-  totalRequests: number | null;
-  onSelectPrompt: (prompt: string) => void;
-}) {
-  return (
-    <div className="flex items-center justify-center h-full min-h-[60vh]">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center w-full px-4 sm:px-0"
-      >
-        <p className="font-mono text-4xl text-primary mb-4">//</p>
-        <h2 className="text-2xl font-bold mb-2">
-          {mode === "python" ? "Pacific-i64" : mode === "chat" ? "Chat-Node" : "ROS2-Node"}
-        </h2>
-        <p className="text-muted-foreground text-sm max-w-md mx-auto">
-          {DESCRIPTIONS[mode]}
-        </p>
 
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mt-6 overflow-x-auto"
-        >
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 px-4">
-            {[
-              { label: "params", value: "1.58B" },
-              { label: "routing", value: "i64 bit-mask" },
-              { label: "experts", value: "4" },
-              { label: "kv-cache", value: "paged + LRU" },
-              { label: "engine", value: "vllm-i64" },
-              { label: "requests", value: totalRequests !== null ? totalRequests.toLocaleString() : "\u2014" },
-            ].map((stat) => (
-              <Badge key={stat.label} variant="outline" className="gap-1.5 font-mono text-xs py-1.5 px-3 bg-card/30 shrink-0">
-                <span className="text-muted-foreground/60">{stat.label}</span>
-                <span className="text-primary/80">{stat.value}</span>
-              </Badge>
-            ))}
-          </div>
-        </motion.div>
-
-        <div className="mt-8 max-w-7xl mx-auto space-y-6">
-          {SUGGESTIONS[mode].map((group) => (
-            <div key={group.label}>
-              <p className="text-[10px] font-mono text-primary/50 uppercase tracking-widest mb-3">
-                {group.label}
-              </p>
-              <div className="grid grid-cols-1 sm:flex sm:flex-wrap sm:justify-center gap-2 max-h-48 sm:max-h-none overflow-y-auto sm:overflow-visible scrollbar-none">
-                {group.prompts.map((prompt) => (
-                  <Button
-                    key={prompt}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onSelectPrompt(prompt)}
-                    className="text-xs font-normal text-muted-foreground hover:text-foreground hover:border-primary/30 text-left sm:text-center whitespace-normal h-auto py-2"
-                  >
-                    {prompt}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          ))}
-          <p className="text-[10px] text-muted-foreground/30 text-center mt-4 font-mono">
-            {mode === "chat"
-              ? "1.58B parameter model \u2014 responses are creative and may be unpredictable"
-              : mode === "ros2"
-              ? "1.58B parameter model \u2014 ROS2 specialist, outputs may require review"
-              : "1.58B parameter model \u2014 outputs may require review"}
-          </p>
-        </div>
-      </motion.div>
-    </div>
-  );
-}
