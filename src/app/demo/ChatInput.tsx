@@ -13,6 +13,7 @@ interface ChatInputProps {
   streaming: boolean;
   maxTokens: number;
   tokenStats: TokenStats | null;
+  expertDist: number[] | null;
   onInputChange: (value: string) => void;
   onSend: () => void;
   onStop: () => void;
@@ -26,6 +27,7 @@ export function ChatInput({
   streaming,
   maxTokens,
   tokenStats,
+  expertDist,
   onInputChange,
   onSend,
   onStop,
@@ -47,7 +49,30 @@ export function ChatInput({
   };
 
   return (
-    <div className="border-t border-border/50 bg-background/80 backdrop-blur-lg">
+    <div className="border-t border-border/50 bg-background/80 backdrop-blur-lg relative">
+      {expertDist && expertDist.length > 0 && (
+        <div className="absolute left-4 bottom-4 hidden lg:flex items-end gap-1">
+          <span className="text-[9px] font-mono text-muted-foreground/30 mr-1">experts</span>
+          <div className="flex items-end gap-0.5 h-8">
+            {expertDist.map((pct, i) => (
+              <div
+                key={i}
+                className="w-2.5 rounded-sm transition-all duration-700"
+                style={{
+                  height: `${Math.max(pct * 100, 12)}%`,
+                  background: `linear-gradient(to top, oklch(0.55 0.25 ${300 + i * 30}), oklch(0.7 0.2 ${300 + i * 30}))`,
+                  boxShadow: `0 0 4px oklch(0.65 0.2 ${300 + i * 30} / 30%)`,
+                  opacity: 0.7 + pct * 0.3,
+                }}
+                title={`Expert ${i}: ${(pct * 100).toFixed(1)}%`}
+              />
+            ))}
+          </div>
+          <span className="text-[9px] font-mono text-muted-foreground/30 ml-1">
+            {expertDist.map((pct) => `${(pct * 100).toFixed(0)}%`).join(" ")}
+          </span>
+        </div>
+      )}
       <div className="container mx-auto max-w-7xl px-6 py-4">
         <div className="flex items-end gap-3">
           <div className="flex-1 relative">

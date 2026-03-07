@@ -61,7 +61,6 @@ function DemoContent() {
         showParams={showParams}
         showMonitor={showMonitor}
         health={chat.healthStatus}
-        expertDist={chat.expertDist}
         onSwitchMode={(m) => { chat.switchMode(m); inputRef.current?.focus(); }}
         onToggleParams={() => setShowParams(!showParams)}
         onToggleMonitor={() => setShowMonitor(!showMonitor)}
@@ -103,6 +102,7 @@ function DemoContent() {
         streaming={chat.streaming}
         maxTokens={chat.params.maxTokens}
         tokenStats={chat.tokenStats}
+        expertDist={chat.expertDist}
         onInputChange={chat.setInput}
         onSend={chat.sendMessage}
         onStop={chat.stopGeneration}
