@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { Mode, Message } from "./config";
-import { MODEL_NAMES, MAINTENANCE } from "./config";
+import { ENDPOINTS, MODEL_NAMES, MAINTENANCE } from "./config";
 
 export interface SamplingParams {
   temperature: number;
@@ -43,21 +43,26 @@ const DEFAULT_PARAMS: SamplingParams = {
 };
 
 async function fetchMonitor(mode: string, endpoint: string): Promise<Record<string, unknown>> {
-  const res = await fetch(`/api/inference/monitor?mode=${mode}&endpoint=${endpoint}`);
+  const baseUrl = ENDPOINTS[mode as Mode];
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  const res = await fetch(`${baseUrl}/v1/monitor/${endpoint}`, { signal: controller.signal });
+  clearTimeout(timeout);
   if (!res.ok) throw new Error(`${res.status}`);
   return res.json();
 }
 
-async function* streamFromProxy(
-  mode: string,
+async function* streamChat(
+  mode: Mode,
   messages: { role: string; content: string }[],
   options: Record<string, unknown>,
   signal?: AbortSignal,
 ): AsyncGenerator<string, void, undefined> {
-  const res = await fetch("/api/inference", {
+  const baseUrl = ENDPOINTS[mode];
+  const res = await fetch(`${baseUrl}/v1/chat/completions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ mode, messages, stream: true, ...options }),
+    body: JSON.stringify({ messages, stream: true, ...options }),
     signal,
   });
 
@@ -256,7 +261,7 @@ export function useChat(initialMode: Mode) {
       setLoading(false);
       setStreaming(true);
 
-      const stream = streamFromProxy(
+      const stream = streamChat(
         mode,
         [{ role: "user", content: text }],
         {
