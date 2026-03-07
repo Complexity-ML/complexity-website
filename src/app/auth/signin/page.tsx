@@ -1,10 +1,13 @@
 "use client";
 
 import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function SignInPage() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-sm space-y-6 px-4">
@@ -21,7 +24,7 @@ export default function SignInPage() {
           <Button
             variant="outline"
             className="w-full gap-2"
-            onClick={() => signIn("github", { callbackUrl: "/demo" })}
+            onClick={() => signIn("github", { callbackUrl })}
           >
             <Github className="size-5" />
             Continue with GitHub
@@ -30,7 +33,7 @@ export default function SignInPage() {
           <Button
             variant="outline"
             className="w-full gap-2"
-            onClick={() => signIn("google", { callbackUrl: "/demo" })}
+            onClick={() => signIn("google", { callbackUrl })}
           >
             <svg className="size-5" viewBox="0 0 24 24">
               <path
