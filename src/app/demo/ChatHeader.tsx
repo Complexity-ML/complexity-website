@@ -50,6 +50,10 @@ export function ChatHeader({
             <span className="font-bold text-lg hidden sm:inline">COMPLEXITY</span>
           </Link>
           <Separator orientation="vertical" className="h-5 hidden sm:block" />
+          <Link href="/dashboard" className="font-mono text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">
+            dashboard
+          </Link>
+          <Separator orientation="vertical" className="h-5 hidden sm:block" />
           <span className="font-mono text-sm text-primary hidden sm:inline">demo</span>
         </div>
 
