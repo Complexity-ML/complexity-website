@@ -1,7 +1,7 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { useRouter, usePathname } from "next/navigation";
+import { useSession, signIn } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -16,14 +16,13 @@ const NAV = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin");
+      signIn(undefined, { callbackUrl: pathname });
     }
-  }, [status, router]);
+  }, [status, pathname]);
 
   if (status === "loading" || status === "unauthenticated") {
     return (
