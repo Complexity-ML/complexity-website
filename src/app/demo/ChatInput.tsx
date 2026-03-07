@@ -65,8 +65,9 @@ export function ChatInput({
 
   return (
     <div className="relative border-t border-border/50 bg-background/80 backdrop-blur-lg">
-      {/* Desktop: absolute in left margin */}
+      {/* Desktop: left margin (full) + right margin (compact reminder) */}
       {hasExperts && <ExpertBarsDesktop distribution={expertDist} />}
+      {hasExperts && <ExpertBarsRight distribution={expertDist} />}
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 py-4">
         {/* Mobile: inline above textarea */}
         {hasExperts && <ExpertBarsMobile distribution={expertDist} />}
@@ -147,6 +148,32 @@ function ExpertBarsDesktop({ distribution }: { distribution: number[] }) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function ExpertBarsRight({ distribution }: { distribution: number[] }) {
+  return (
+    <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden lg:flex items-end gap-1">
+      {distribution.map((pct, i) => {
+        const colors = EXPERT_COLORS[i % EXPERT_COLORS.length];
+        return (
+          <Tooltip key={i}>
+            <TooltipTrigger asChild>
+              <div
+                className="w-2 rounded-sm transition-all duration-700 opacity-60"
+                style={{
+                  height: `${Math.max(pct * 100 * 0.4, 3)}px`,
+                  background: colors.glow,
+                }}
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              E{i}: {(pct * 100).toFixed(0)}%
+            </TooltipContent>
+          </Tooltip>
+        );
+      })}
     </div>
   );
 }
