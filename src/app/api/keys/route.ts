@@ -59,6 +59,14 @@ export async function GET(req: Request) {
 
   const url = new URL(req.url);
   if (url.searchParams.get("reveal") === "true") {
+    if (!existing.encryptedKey) {
+      return NextResponse.json({
+        has_key: true,
+        error: "Legacy key — please regenerate to enable reveal.",
+        prefix: existing.prefix,
+        created_at: existing.createdAt,
+      });
+    }
     const apiKey = decrypt(existing.encryptedKey);
     return NextResponse.json({
       has_key: true,
