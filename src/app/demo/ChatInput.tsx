@@ -62,11 +62,11 @@ export function ChatInput({
   };
 
   return (
-    <div className="border-t border-border/50 bg-background/80 backdrop-blur-lg">
+    <div className="relative border-t border-border/50 bg-background/80 backdrop-blur-lg">
+      {expertDist && expertDist.length > 0 && (
+        <ExpertBars distribution={expertDist} />
+      )}
       <div className="container mx-auto max-w-7xl px-6 py-4">
-        {expertDist && expertDist.length > 0 && (
-          <ExpertBars distribution={expertDist} />
-        )}
         <div className="flex items-end gap-3">
           <Textarea
             ref={inputRef}
@@ -114,34 +114,36 @@ export function ChatInput({
 
 function ExpertBars({ distribution }: { distribution: number[] }) {
   return (
-    <div className="flex items-end justify-center gap-4 mb-4">
-      <span className="text-[10px] font-mono text-muted-foreground/40 self-end">experts</span>
-      {distribution.map((pct, i) => {
-        const colors = EXPERT_COLORS[i % EXPERT_COLORS.length];
-        return (
-          <Tooltip key={i}>
-            <TooltipTrigger asChild>
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-[10px] font-mono text-muted-foreground/50">
-                  {(pct * 100).toFixed(0)}%
-                </span>
-                <div
-                  className="w-5 rounded-sm transition-all duration-700"
-                  style={{
-                    height: `${Math.max(pct * 100 * 0.6, 4)}px`,
-                    background: `linear-gradient(to top, ${colors.bar}, ${colors.tip})`,
-                    boxShadow: `0 0 6px color-mix(in oklch, ${colors.glow}, transparent 60%)`,
-                  }}
-                />
-                <span className="text-[9px] font-mono text-muted-foreground/30">E{i}</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              Expert {i}: {(pct * 100).toFixed(1)}%
-            </TooltipContent>
-          </Tooltip>
-        );
-      })}
+    <div className="absolute left-4 top-1/2 -translate-y-1/2 hidden lg:flex flex-col items-center gap-3">
+      <span className="text-[9px] font-mono text-muted-foreground/40">experts</span>
+      <div className="flex items-end gap-2">
+        {distribution.map((pct, i) => {
+          const colors = EXPERT_COLORS[i % EXPERT_COLORS.length];
+          return (
+            <Tooltip key={i}>
+              <TooltipTrigger asChild>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-[10px] font-mono text-muted-foreground/50">
+                    {(pct * 100).toFixed(0)}%
+                  </span>
+                  <div
+                    className="w-5 rounded-sm transition-all duration-700"
+                    style={{
+                      height: `${Math.max(pct * 100 * 0.6, 4)}px`,
+                      background: `linear-gradient(to top, ${colors.bar}, ${colors.tip})`,
+                      boxShadow: `0 0 6px color-mix(in oklch, ${colors.glow}, transparent 60%)`,
+                    }}
+                  />
+                  <span className="text-[9px] font-mono text-muted-foreground/30">E{i}</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                Expert {i}: {(pct * 100).toFixed(1)}%
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
+      </div>
     </div>
   );
 }
