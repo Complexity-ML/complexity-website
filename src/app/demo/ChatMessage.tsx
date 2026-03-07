@@ -60,10 +60,20 @@ export function LoadingBubble({ mode }: { mode: Mode }) {
           <Badge variant="secondary" className="mb-1 font-mono text-[10px] text-primary/60 bg-transparent border-none p-0">
             {MODEL_NAMES[mode]}
           </Badge>
-          <div className="flex items-center gap-1.5">
-            <span className="size-1.5 rounded-full bg-primary/50 animate-pulse" />
-            <span className="size-1.5 rounded-full bg-primary/50 animate-pulse [animation-delay:150ms]" />
-            <span className="size-1.5 rounded-full bg-primary/50 animate-pulse [animation-delay:300ms]" />
+          <div className="flex items-center gap-1 h-5">
+            {[0, 1, 2].map((i) => (
+              <motion.span
+                key={i}
+                className="size-2 rounded-full bg-primary/60"
+                animate={{ y: [0, -6, 0] }}
+                transition={{
+                  duration: 0.6,
+                  repeat: Infinity,
+                  delay: i * 0.15,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
           </div>
         </CardContent>
       </Card>
