@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import CodeBlock from "@/components/CodeBlock";
@@ -27,12 +27,6 @@ const ENDPOINTS: Record<Mode, string> = {
   ros2:
     process.env.NEXT_PUBLIC_ROS2_API_URL ||
     "https://pacific-prime-pacific-ros2.hf.space",
-};
-
-const CLIENTS: Record<Mode, I64Client> = {
-  python: new I64Client(ENDPOINTS.python),
-  chat: new I64Client(ENDPOINTS.chat),
-  ros2: new I64Client(ENDPOINTS.ros2),
 };
 
 const MODEL_NAMES: Record<Mode, string> = {
@@ -189,6 +183,12 @@ function DemoContent() {
   const searchParams = useSearchParams();
   const initialMode = (searchParams.get("mode") as Mode) || "python";
 
+  const clients = useMemo<Record<Mode, I64Client>>(() => ({
+    python: new I64Client(ENDPOINTS.python),
+    chat: new I64Client(ENDPOINTS.chat),
+    ros2: new I64Client(ENDPOINTS.ros2),
+  }), []);
+
   const [mode, setMode] = useState<Mode>(
     initialMode === "ros2" ? "ros2" : "python"
   );
@@ -226,7 +226,7 @@ function DemoContent() {
     const fetchRequests = async () => {
       try {
         const results = await Promise.allSettled(
-          (["python", "chat", "ros2"] as Mode[]).map((m) => CLIENTS[m].monitor.metrics())
+          (["python", "chat", "ros2"] as Mode[]).map((m) => clients[m].monitor.metrics())
         );
         if (cancelled) return;
         let total = 0;
@@ -321,7 +321,7 @@ function DemoContent() {
       setLoading(false);
       setStreaming(true);
 
-      const stream = CLIENTS[mode].chat.stream(
+      const stream = clients[mode].chat.stream(
         [{ role: "user", content: text }],
         {
           model: MODEL_NAMES[mode],
