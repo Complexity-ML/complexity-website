@@ -89,12 +89,13 @@ enum TeamMemberRole {
 // ── API Keys ──
 
 model ApiKey {
-  id        String   @id @default(cuid())
-  userId    String
-  keyHash   String   @unique
-  prefix    String   // first 8 chars for display: "i64_ab12..."
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  userId       String
+  keyHash      String   @unique
+  encryptedKey String   // AES-256-GCM encrypted raw key
+  prefix       String   // first 12 chars for display: "i64_ab12cd34..."
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
 
   @@index([userId])
 }

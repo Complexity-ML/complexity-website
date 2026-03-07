@@ -1,16 +1,18 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Copy, Check, Key, RefreshCw } from "lucide-react";
+import { Copy, Check, Key, RefreshCw, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 export default function KeysPage() {
   const [prefix, setPrefix] = useState<string | null>(null);
   const [hasKey, setHasKey] = useState(false);
-  const [newKey, setNewKey] = useState<string | null>(null);
+  const [fullKey, setFullKey] = useState<string | null>(null);
+  const [showKey, setShowKey] = useState(false);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [revealing, setRevealing] = useState(false);
 
   useEffect(() => {
     fetch("/api/keys")
@@ -24,31 +26,51 @@ export default function KeysPage() {
       .catch(() => {});
   }, []);
 
-  const generate = useCallback(async () => {
-    if (hasKey && !confirm("Regenerate your API key? The old key will stop working immediately and your partition will change.")) {
+  const revealKey = useCallback(async () => {
+    if (fullKey) {
+      setShowKey(true);
+      return;
+    }
+    setRevealing(true);
+    try {
+      const res = await fetch("/api/keys?reveal=true");
+      const data = await res.json();
+      if (data.api_key) {
+        setFullKey(data.api_key);
+        setShowKey(true);
+      }
+    } finally {
+      setRevealing(false);
+    }
+  }, [fullKey]);
+
+  const regenerate = useCallback(async () => {
+    if (!confirm("Regenerate your API key? The old key will stop working immediately and your partition will change.")) {
       return;
     }
     setLoading(true);
-    setNewKey(null);
+    setFullKey(null);
+    setShowKey(false);
     try {
       const res = await fetch("/api/keys", { method: "POST" });
       const data = await res.json();
       if (data.api_key) {
-        setNewKey(data.api_key);
+        setFullKey(data.api_key);
         setPrefix(data.prefix);
         setHasKey(true);
+        setShowKey(true);
       }
     } finally {
       setLoading(false);
     }
-  }, [hasKey]);
+  }, []);
 
   const copyKey = useCallback(() => {
-    if (!newKey) return;
-    navigator.clipboard.writeText(newKey);
+    if (!fullKey) return;
+    navigator.clipboard.writeText(fullKey);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, [newKey]);
+  }, [fullKey]);
 
   return (
     <div className="space-y-8">
@@ -67,7 +89,7 @@ export default function KeysPage() {
             <div>
               <p className="text-sm font-medium">API Key</p>
               <p className="text-xs text-muted-foreground">
-                {hasKey ? "Regenerating invalidates the old key and changes your partition." : "Generate a key to use the API."}
+                {hasKey ? "Your key is stored securely. You can reveal or regenerate it." : "Generate a key to use the API."}
               </p>
             </div>
           </div>
@@ -76,38 +98,45 @@ export default function KeysPage() {
         <Separator />
 
         <div className="px-5 py-4 space-y-4">
-          {/* Current key prefix */}
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm">Current key</p>
-              <p className="text-xs text-muted-foreground font-mono mt-1">
-                {prefix ?? "No key generated yet"}
-              </p>
-            </div>
-            <Button onClick={generate} disabled={loading} variant="outline" size="sm" className="gap-2">
-              <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />
-              {hasKey ? "Regenerate" : "Generate"}
-            </Button>
-          </div>
-
-          {/* New key display (shown once after generation) */}
-          {newKey && (
+          {hasKey ? (
             <>
-              <Separator />
-              <div className="space-y-2">
-                <p className="text-xs text-amber-500 font-medium">
-                  Save this key now — it won&apos;t be shown again.
-                </p>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-muted px-3 py-2.5 rounded-md text-xs font-mono break-all select-all">
-                    {newKey}
-                  </code>
+              {/* Key display */}
+              <div className="flex items-center gap-2">
+                <code className="flex-1 bg-muted px-3 py-2.5 rounded-md text-xs font-mono break-all select-all">
+                  {showKey && fullKey ? fullKey : `${prefix}${"•".repeat(40)}`}
+                </code>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={showKey ? () => setShowKey(false) : revealKey}
+                  disabled={revealing}
+                >
+                  {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </Button>
+                {fullKey && (
                   <Button variant="outline" size="icon" className="shrink-0" onClick={copyKey}>
                     {copied ? <Check className="size-4 text-green-500" /> : <Copy className="size-4" />}
                   </Button>
-                </div>
+                )}
+              </div>
+
+              {/* Regenerate */}
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">
+                  Regenerating invalidates the old key and changes your partition.
+                </p>
+                <Button onClick={regenerate} disabled={loading} variant="outline" size="sm" className="gap-2 shrink-0">
+                  <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />
+                  Regenerate
+                </Button>
               </div>
             </>
+          ) : (
+            <Button onClick={regenerate} disabled={loading} variant="outline" className="gap-2">
+              <Key className="size-4" />
+              {loading ? "Generating..." : "Generate API Key"}
+            </Button>
           )}
         </div>
       </div>
