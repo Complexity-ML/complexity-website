@@ -170,20 +170,18 @@ function WelcomeScreen({
               <p className="text-[10px] font-mono text-primary/50 uppercase tracking-widest mb-3">
                 {group.label}
               </p>
-              <div className="overflow-x-auto sm:overflow-visible -mx-4 px-4">
-                <div className="flex sm:flex-wrap sm:justify-center gap-2 min-w-max sm:min-w-0">
-                  {group.prompts.map((prompt) => (
-                    <Button
-                      key={prompt}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onSelectPrompt(prompt)}
-                      className="text-xs font-normal text-muted-foreground hover:text-foreground hover:border-primary/30 shrink-0 sm:shrink"
-                    >
-                      {prompt}
-                    </Button>
-                  ))}
-                </div>
+              <div className="flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-2 max-h-48 sm:max-h-none overflow-y-auto sm:overflow-visible scrollbar-none">
+                {group.prompts.map((prompt) => (
+                  <Button
+                    key={prompt}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onSelectPrompt(prompt)}
+                    className="text-xs font-normal text-muted-foreground hover:text-foreground hover:border-primary/30 justify-start sm:justify-center"
+                  >
+                    {prompt}
+                  </Button>
+                ))}
               </div>
             </div>
           ))}
