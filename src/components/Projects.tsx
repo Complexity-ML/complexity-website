@@ -30,7 +30,7 @@ const projects = [
     },
   },
   {
-    title: "Pacific-Prime",
+    title: "Pacific-i64",
     description:
       "1.5B parameter language model trained with Complexity-Deep architecture. Mu-guided attention and token-routed experts.",
     tags: ["LLM", "1.5B", "F32", "HuggingFace"],
