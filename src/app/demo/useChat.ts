@@ -133,7 +133,8 @@ export function useChat(initialMode: Mode) {
       }
     };
     poll();
-    const interval = setInterval(poll, 10_000);
+    // Poll faster during streaming (2s) for live expert updates, slower at rest (10s)
+    const interval = setInterval(poll, 2_000);
     return () => { cancelled = true; clearInterval(interval); };
   }, [clients, mode]);
 
@@ -166,6 +167,7 @@ export function useChat(initialMode: Mode) {
     setMessages([]);
     setError(null);
     setTokenStats(null);
+    setExpertDist(null);
   }, [streaming, loading, stopGeneration]);
 
   const sendMessage = useCallback(async () => {
@@ -173,6 +175,7 @@ export function useChat(initialMode: Mode) {
     if (!text || loading || streaming || MAINTENANCE[mode]) return;
 
     setError(null);
+    setExpertDist(null);
     const userMessage: Message = { role: "user", content: text };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
