@@ -188,8 +188,8 @@ export function useChat(initialMode: Mode, userId?: string) {
     setTokenStats(null);
   }, []);
 
-  const sendMessage = useCallback(async () => {
-    const text = input.trim();
+  const sendMessage = useCallback(async (directText?: string) => {
+    const text = (directText ?? input).trim();
     if (!text || loading || streaming || MAINTENANCE[mode]) return;
 
     setError(null);

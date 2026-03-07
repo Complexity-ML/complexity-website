@@ -155,11 +155,14 @@ function DemoContent() {
         {/* Chat area */}
         <div className="flex-1 flex flex-col min-w-0">
           <main ref={mainRef} className="flex-1 overflow-y-auto">
-            {chat.messages.length === 0 ? (
+            {chat.messages.length === 0 && !chat.loading && !chat.streaming ? (
               <WelcomeScreen
                 mode={chat.mode}
                 totalRequests={chat.totalRequests}
-                onSelectPrompt={(prompt) => { chat.setInput(prompt); inputRef.current?.focus(); }}
+                onSelectPrompt={(prompt) => {
+                  if (!convos.activeId) convos.createConversation(chat.mode);
+                  chat.sendMessage(prompt);
+                }}
               />
             ) : (
               <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 space-y-4">
