@@ -68,7 +68,7 @@ export function ChatInput({
       {/* Desktop: left margin (full) + right margin (compact reminder) */}
       {hasExperts && <ExpertBarsDesktop distribution={expertDist} />}
       {hasExperts && <ExpertBarsRight distribution={expertDist} />}
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 py-4">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
         {/* Mobile: inline above textarea */}
         {hasExperts && <ExpertBarsMobile distribution={expertDist} />}
         <div className="flex items-end gap-3">

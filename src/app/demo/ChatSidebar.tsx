@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Plus, Trash2, MessageSquare, PanelLeftClose, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -26,7 +27,7 @@ function timeAgo(ts: number): string {
   return `${days}d`;
 }
 
-export function ChatSidebar({
+export const ChatSidebar = memo(function ChatSidebar({
   conversations,
   activeId,
   collapsed,
@@ -112,4 +113,4 @@ export function ChatSidebar({
       )}
     </aside>
   );
-}
+});

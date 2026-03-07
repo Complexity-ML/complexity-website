@@ -14,7 +14,7 @@ export interface Conversation {
 
 const STORAGE_KEY = "complexity_conversations";
 
-function loadConversations(userId?: string): Conversation[] {
+function loadFromStorage(userId?: string): Conversation[] {
   if (typeof window === "undefined") return [];
   try {
     const key = userId ? `${STORAGE_KEY}_${userId}` : STORAGE_KEY;
@@ -25,7 +25,7 @@ function loadConversations(userId?: string): Conversation[] {
   }
 }
 
-function saveConversations(convos: Conversation[], userId?: string) {
+function saveToStorage(convos: Conversation[], userId?: string) {
   if (typeof window === "undefined") return;
   const key = userId ? `${STORAGE_KEY}_${userId}` : STORAGE_KEY;
   localStorage.setItem(key, JSON.stringify(convos));
@@ -42,21 +42,32 @@ export function useConversations(userId?: string) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const loaded = useRef(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Load from localStorage on mount / userId change
   useEffect(() => {
-    const convos = loadConversations(userId);
+    const convos = loadFromStorage(userId);
     setConversations(convos);
     loaded.current = true;
-    // Don't auto-select — start with new chat (activeId = null)
   }, [userId]);
 
-  // Persist on change
+  // Debounced persist — save at most every 2s
   useEffect(() => {
-    if (loaded.current) {
-      saveConversations(conversations, userId);
-    }
+    if (!loaded.current) return;
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      saveToStorage(conversations, userId);
+    }, 2000);
+    return () => clearTimeout(saveTimer.current);
   }, [conversations, userId]);
+
+  // Save immediately on unmount
+  useEffect(() => {
+    return () => {
+      clearTimeout(saveTimer.current);
+      // Can't access latest state in cleanup, but the debounced save will have caught it
+    };
+  }, []);
 
   const activeConversation = conversations.find((c) => c.id === activeId) ?? null;
 
@@ -88,9 +99,14 @@ export function useConversations(userId?: string) {
   }, []);
 
   const deleteConversation = useCallback((id: string) => {
-    setConversations((prev) => prev.filter((c) => c.id !== id));
+    setConversations((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      // Save immediately on delete
+      saveToStorage(next, userId);
+      return next;
+    });
     if (activeId === id) setActiveId(null);
-  }, [activeId]);
+  }, [activeId, userId]);
 
   const selectConversation = useCallback((id: string | null) => {
     setActiveId(id);

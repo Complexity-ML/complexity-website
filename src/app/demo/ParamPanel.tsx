@@ -12,7 +12,7 @@ interface ParamPanelProps {
 export function ParamPanel({ params, onUpdate }: ParamPanelProps) {
   return (
     <div className="border-b border-border/50 bg-card/50 backdrop-blur-lg px-6 py-4">
-      <div className="container mx-auto max-w-7xl">
+      <div>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
           <ParamControl label="top_k" value={params.topK} min={0} max={200} step={1} onChange={(v) => onUpdate("topK", v)} />
           <ParamControl label="top_p" value={params.topP} min={0} max={1} step={0.05} onChange={(v) => onUpdate("topP", v)} />

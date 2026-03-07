@@ -15,7 +15,7 @@ interface MonitorPanelProps {
 export function MonitorPanel({ health, snapshot, expertDist }: MonitorPanelProps) {
   return (
     <div className="border-b border-border/50 bg-card/30 backdrop-blur-lg px-6 py-3">
-      <div className="container mx-auto max-w-7xl flex flex-wrap items-center gap-6">
+      <div className="flex flex-wrap items-center gap-6">
         <Badge
           variant="outline"
           className="gap-1.5 font-mono text-[10px]"

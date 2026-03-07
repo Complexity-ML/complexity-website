@@ -55,13 +55,19 @@ function DemoContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [convos.activeId]);
 
-  // Save messages to active conversation when they change
+  // Save messages only when streaming/loading finishes (not on every token)
+  const prevStreaming = useRef(false);
   useEffect(() => {
+    const wasActive = prevStreaming.current;
+    prevStreaming.current = chat.streaming || chat.loading;
+    // Save when streaming just stopped, or on first message (title generation)
     if (convos.activeId && chat.messages.length > 0) {
-      convos.updateMessages(convos.activeId, chat.messages);
+      if ((wasActive && !chat.streaming && !chat.loading) || chat.messages.length <= 2) {
+        convos.updateMessages(convos.activeId, chat.messages);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chat.messages]);
+  }, [chat.messages, chat.streaming, chat.loading]);
 
   // Auto-scroll
   useEffect(() => {
@@ -156,7 +162,7 @@ function DemoContent() {
                 onSelectPrompt={(prompt) => { chat.setInput(prompt); inputRef.current?.focus(); }}
               />
             ) : (
-              <div className="container mx-auto max-w-7xl px-6 py-6 space-y-6">
+              <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 space-y-4">
                 {chat.messages.map((msg, i) => (
                   <ChatMessage key={i} message={msg} mode={chat.mode} />
                 ))}
