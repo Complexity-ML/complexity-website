@@ -1,48 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import { useSession } from "next-auth/react";
-import { Copy, Check, Key, Eye, EyeOff } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Copy, Check, Key, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
-interface KeyData {
-  api_key: string;
-  user_id: string;
-  prefix: string;
-}
-
 export default function KeysPage() {
-  const { data: session } = useSession();
-  const [keyData, setKeyData] = useState<KeyData | null>(null);
-  const [showKey, setShowKey] = useState(false);
+  const [prefix, setPrefix] = useState<string | null>(null);
+  const [hasKey, setHasKey] = useState(false);
+  const [newKey, setNewKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const userId = (session?.user as Record<string, unknown> | undefined)?.id as string | undefined;
+  useEffect(() => {
+    fetch("/api/keys")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.has_key) {
+          setHasKey(true);
+          setPrefix(data.prefix);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
-  const revealKey = async () => {
+  const generate = useCallback(async () => {
+    if (hasKey && !confirm("Regenerate your API key? The old key will stop working immediately and your partition will change.")) {
+      return;
+    }
     setLoading(true);
+    setNewKey(null);
     try {
-      const res = await fetch("/api/keys");
-      if (res.ok) {
-        const data = await res.json();
-        setKeyData(data);
-        setShowKey(true);
+      const res = await fetch("/api/keys", { method: "POST" });
+      const data = await res.json();
+      if (data.api_key) {
+        setNewKey(data.api_key);
+        setPrefix(data.prefix);
+        setHasKey(true);
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [hasKey]);
 
-  const copyKey = () => {
-    if (keyData) {
-      navigator.clipboard.writeText(keyData.api_key);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
+  const copyKey = useCallback(() => {
+    if (!newKey) return;
+    navigator.clipboard.writeText(newKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [newKey]);
 
   return (
     <div className="space-y-8">
@@ -59,54 +65,49 @@ export default function KeysPage() {
           <div className="flex items-center gap-3">
             <Key className="size-4 text-primary" />
             <div>
-              <p className="text-sm font-medium">Default key</p>
+              <p className="text-sm font-medium">API Key</p>
               <p className="text-xs text-muted-foreground">
-                Deterministic — always the same for your account
+                {hasKey ? "Regenerating invalidates the old key and changes your partition." : "Generate a key to use the API."}
               </p>
             </div>
           </div>
-          <Badge variant="outline" className="font-mono text-xs">
-            {userId ? `${userId.slice(0, 16)}...` : "—"}
-          </Badge>
         </div>
 
         <Separator />
 
         <div className="px-5 py-4 space-y-4">
-          {keyData && showKey ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <code className="flex-1 bg-muted px-3 py-2.5 rounded-md text-xs font-mono break-all select-all">
-                  {keyData.api_key}
-                </code>
-                <Button variant="outline" size="icon" className="shrink-0" onClick={() => setShowKey(false)}>
-                  <EyeOff className="size-4" />
-                </Button>
-                <Button variant="outline" size="icon" className="shrink-0" onClick={copyKey}>
-                  {copied ? <Check className="size-4 text-green-500" /> : <Copy className="size-4" />}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Keep this key secret. Do not share it or commit it to version control.
+          {/* Current key prefix */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm">Current key</p>
+              <p className="text-xs text-muted-foreground font-mono mt-1">
+                {prefix ?? "No key generated yet"}
               </p>
             </div>
-          ) : keyData ? (
-            <div className="flex items-center gap-2">
-              <code className="flex-1 bg-muted px-3 py-2.5 rounded-md text-xs font-mono text-muted-foreground">
-                {keyData.prefix}{"•".repeat(26)}
-              </code>
-              <Button variant="outline" size="icon" className="shrink-0" onClick={() => setShowKey(true)}>
-                <Eye className="size-4" />
-              </Button>
-              <Button variant="outline" size="icon" className="shrink-0" onClick={copyKey}>
-                {copied ? <Check className="size-4 text-green-500" /> : <Copy className="size-4" />}
-              </Button>
-            </div>
-          ) : (
-            <Button onClick={revealKey} disabled={loading} variant="outline" className="gap-2">
-              <Key className="size-4" />
-              {loading ? "Loading..." : "Reveal API Key"}
+            <Button onClick={generate} disabled={loading} variant="outline" size="sm" className="gap-2">
+              <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />
+              {hasKey ? "Regenerate" : "Generate"}
             </Button>
+          </div>
+
+          {/* New key display (shown once after generation) */}
+          {newKey && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <p className="text-xs text-amber-500 font-medium">
+                  Save this key now — it won&apos;t be shown again.
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 bg-muted px-3 py-2.5 rounded-md text-xs font-mono break-all select-all">
+                    {newKey}
+                  </code>
+                  <Button variant="outline" size="icon" className="shrink-0" onClick={copyKey}>
+                    {copied ? <Check className="size-4 text-green-500" /> : <Copy className="size-4" />}
+                  </Button>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -119,7 +120,7 @@ export default function KeysPage() {
             <span className="text-xs font-mono text-muted-foreground">cURL</span>
           </div>
           <pre className="px-4 py-3 text-xs font-mono overflow-x-auto">{`curl -X POST https://api.complexity.ml/v1/chat/completions \\
-  -H "Authorization: Bearer sk-i64-..." \\
+  -H "Authorization: Bearer i64_..." \\
   -H "Content-Type: application/json" \\
   -d '{
     "model": "pacific-prime-chat",
@@ -134,14 +135,14 @@ export default function KeysPage() {
           </div>
           <pre className="px-4 py-3 text-xs font-mono overflow-x-auto">{`import { I64Client } from "vllm-i64";
 
-const client = new I64Client({ apiKey: "sk-i64-..." });
-
-const stream = client.chat.stream({
-  messages: [{ role: "user", content: "Hello" }],
+const client = new I64Client("https://api.complexity.ml", {
+  apiKey: "i64_...",
 });
 
-for await (const chunk of stream) {
-  process.stdout.write(chunk.choices[0]?.delta?.content ?? "");
+for await (const chunk of client.chat.stream(
+  [{ role: "user", content: "Hello" }],
+)) {
+  process.stdout.write(chunk);
 }`}</pre>
         </div>
       </div>
