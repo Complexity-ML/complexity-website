@@ -154,26 +154,36 @@ function ExpertBarsDesktop({ distribution }: { distribution: number[] }) {
 
 function ExpertBarsRight({ distribution }: { distribution: number[] }) {
   return (
-    <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden lg:flex items-end gap-1">
-      {distribution.map((pct, i) => {
-        const colors = EXPERT_COLORS[i % EXPERT_COLORS.length];
-        return (
-          <Tooltip key={i}>
-            <TooltipTrigger asChild>
-              <div
-                className="w-2 rounded-sm transition-all duration-700 opacity-60"
-                style={{
-                  height: `${Math.max(pct * 100 * 0.4, 3)}px`,
-                  background: colors.glow,
-                }}
-              />
-            </TooltipTrigger>
-            <TooltipContent>
-              E{i}: {(pct * 100).toFixed(0)}%
-            </TooltipContent>
-          </Tooltip>
-        );
-      })}
+    <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden lg:flex flex-col items-center gap-3">
+      <span className="text-[9px] font-mono text-muted-foreground/40">experts</span>
+      <div className="flex items-end gap-2">
+        {distribution.map((pct, i) => {
+          const colors = EXPERT_COLORS[i % EXPERT_COLORS.length];
+          return (
+            <Tooltip key={i}>
+              <TooltipTrigger asChild>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-[10px] font-mono text-muted-foreground/50">
+                    {(pct * 100).toFixed(0)}%
+                  </span>
+                  <div
+                    className="w-5 rounded-sm transition-all duration-700"
+                    style={{
+                      height: `${Math.max(pct * 100 * 0.6, 4)}px`,
+                      background: `linear-gradient(to top, ${colors.bar}, ${colors.tip})`,
+                      boxShadow: `0 0 6px color-mix(in oklch, ${colors.glow}, transparent 60%)`,
+                    }}
+                  />
+                  <span className="text-[9px] font-mono text-muted-foreground/30">E{i}</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                Expert {i}: {(pct * 100).toFixed(1)}%
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
+      </div>
     </div>
   );
 }
