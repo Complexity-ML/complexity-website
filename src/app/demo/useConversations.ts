@@ -12,24 +12,7 @@ export interface Conversation {
   updatedAt: number;
 }
 
-const STORAGE_KEY = "complexity_conversations";
-
-function loadFromStorage(userId?: string): Conversation[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const key = userId ? `${STORAGE_KEY}_${userId}` : STORAGE_KEY;
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveToStorage(convos: Conversation[], userId?: string) {
-  if (typeof window === "undefined") return;
-  const key = userId ? `${STORAGE_KEY}_${userId}` : STORAGE_KEY;
-  localStorage.setItem(key, JSON.stringify(convos));
-}
+const MAX_CONVERSATIONS = 10;
 
 function generateTitle(messages: Message[]): string {
   const first = messages.find((m) => m.role === "user");
@@ -43,74 +26,153 @@ export function useConversations(userId?: string) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const loaded = useRef(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const isAuthenticated = !!userId;
 
-  // Load from localStorage on mount / userId change
+  // Load conversations on mount
   useEffect(() => {
-    const convos = loadFromStorage(userId);
-    setConversations(convos);
-    loaded.current = true;
-  }, [userId]);
+    loaded.current = false;
+    if (!isAuthenticated) {
+      setConversations([]);
+      loaded.current = true;
+      return;
+    }
 
-  // Debounced persist — save at most every 2s
-  useEffect(() => {
-    if (!loaded.current) return;
-    clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      saveToStorage(conversations, userId);
-    }, 2000);
-    return () => clearTimeout(saveTimer.current);
-  }, [conversations, userId]);
-
-  // Save immediately on unmount
-  useEffect(() => {
-    return () => {
-      clearTimeout(saveTimer.current);
-      // Can't access latest state in cleanup, but the debounced save will have caught it
-    };
-  }, []);
+    fetch("/api/conversations")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.conversations) {
+          setConversations(
+            data.conversations.map((c: Record<string, unknown>) => ({
+              id: c.id,
+              title: c.title,
+              mode: c.mode as Mode,
+              messages: [], // loaded on select
+              createdAt: new Date(c.createdAt as string).getTime(),
+              updatedAt: new Date(c.updatedAt as string).getTime(),
+            })),
+          );
+        }
+        loaded.current = true;
+      })
+      .catch(() => {
+        loaded.current = true;
+      });
+  }, [isAuthenticated]);
 
   const activeConversation = conversations.find((c) => c.id === activeId) ?? null;
 
-  const createConversation = useCallback((mode: Mode): string => {
-    const id = `conv_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const conv: Conversation = {
-      id,
-      title: "New chat",
-      mode,
-      messages: [],
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
-    setConversations((prev) => [conv, ...prev]);
-    setActiveId(id);
-    return id;
-  }, []);
+  const createConversation = useCallback(
+    (mode: Mode): string => {
+      if (!isAuthenticated) return "";
 
-  const updateMessages = useCallback((id: string, messages: Message[]) => {
-    setConversations((prev) =>
-      prev.map((c) => {
-        if (c.id !== id) return c;
-        const title = c.title === "New chat" && messages.length > 0
-          ? generateTitle(messages)
-          : c.title;
-        return { ...c, messages, title, updatedAt: Date.now() };
+      if (conversations.length >= MAX_CONVERSATIONS) {
+        return "";
+      }
+
+      // Optimistic local ID, replaced by server ID
+      const tempId = `temp_${Date.now()}`;
+      const conv: Conversation = {
+        id: tempId,
+        title: "New chat",
+        mode,
+        messages: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      setConversations((prev) => [conv, ...prev]);
+      setActiveId(tempId);
+
+      fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode }),
       })
-    );
-  }, []);
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.conversation) {
+            const serverId = data.conversation.id;
+            setConversations((prev) =>
+              prev.map((c) => (c.id === tempId ? { ...c, id: serverId } : c)),
+            );
+            setActiveId((prev) => (prev === tempId ? serverId : prev));
+          }
+        })
+        .catch(() => {
+          // Rollback
+          setConversations((prev) => prev.filter((c) => c.id !== tempId));
+          setActiveId(null);
+        });
 
-  const deleteConversation = useCallback((id: string) => {
-    setConversations((prev) => {
-      const next = prev.filter((c) => c.id !== id);
-      // Save immediately on delete
-      saveToStorage(next, userId);
-      return next;
-    });
-    if (activeId === id) setActiveId(null);
-  }, [activeId, userId]);
+      return tempId;
+    },
+    [isAuthenticated, conversations.length],
+  );
 
-  const selectConversation = useCallback((id: string | null) => {
-    setActiveId(id);
-  }, []);
+  const updateMessages = useCallback(
+    (id: string, messages: Message[]) => {
+      if (!isAuthenticated || id.startsWith("temp_")) return;
+
+      const title = generateTitle(messages);
+      setConversations((prev) =>
+        prev.map((c) => {
+          if (c.id !== id) return c;
+          const newTitle = c.title === "New chat" && messages.length > 0 ? title : c.title;
+          return { ...c, messages, title: newTitle, updatedAt: Date.now() };
+        }),
+      );
+
+      // Debounced save to DB
+      clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => {
+        fetch(`/api/conversations/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, messages }),
+        }).catch(() => {});
+      }, 2000);
+    },
+    [isAuthenticated],
+  );
+
+  const deleteConversation = useCallback(
+    (id: string) => {
+      setConversations((prev) => prev.filter((c) => c.id !== id));
+      if (activeId === id) setActiveId(null);
+
+      if (isAuthenticated && !id.startsWith("temp_")) {
+        fetch(`/api/conversations/${id}`, { method: "DELETE" }).catch(() => {});
+      }
+    },
+    [activeId, isAuthenticated],
+  );
+
+  const selectConversation = useCallback(
+    (id: string | null) => {
+      setActiveId(id);
+
+      // Lazy-load messages if not yet loaded
+      if (id && isAuthenticated && !id.startsWith("temp_")) {
+        const conv = conversations.find((c) => c.id === id);
+        if (conv && conv.messages.length === 0) {
+          fetch(`/api/conversations/${id}`)
+            .then((r) => r.json())
+            .then((data) => {
+              if (data.conversation?.messages) {
+                setConversations((prev) =>
+                  prev.map((c) =>
+                    c.id === id ? { ...c, messages: data.conversation.messages } : c,
+                  ),
+                );
+              }
+            })
+            .catch(() => {});
+        }
+      }
+    },
+    [isAuthenticated, conversations],
+  );
+
+  const isFull = conversations.length >= MAX_CONVERSATIONS;
 
   return {
     conversations,
@@ -120,5 +182,6 @@ export function useConversations(userId?: string) {
     updateMessages,
     deleteConversation,
     selectConversation,
+    isFull,
   };
 }

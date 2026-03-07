@@ -90,6 +90,7 @@ function DemoContent() {
   // When user sends first message in a new chat, auto-create conversation
   const handleSend = useCallback(() => {
     if (!convos.activeId && chat.input.trim()) {
+      if (convos.isFull) return;
       convos.createConversation(chat.mode);
     }
     chat.sendMessage();
@@ -160,7 +161,10 @@ function DemoContent() {
                 mode={chat.mode}
                 totalRequests={chat.totalRequests}
                 onSelectPrompt={(prompt) => {
-                  if (!convos.activeId) convos.createConversation(chat.mode);
+                  if (!convos.activeId) {
+                    if (convos.isFull) return;
+                    convos.createConversation(chat.mode);
+                  }
                   chat.sendMessage(prompt);
                 }}
               />

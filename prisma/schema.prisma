@@ -16,9 +16,10 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  ownedTeams    Team[]       @relation("TeamOwner")
+  ownedTeams    Team[]         @relation("TeamOwner")
   teamMembers   TeamMember[]
-  createdAt     DateTime     @default(now())
+  conversations Conversation[]
+  createdAt     DateTime       @default(now())
 }
 
 model Account {
@@ -82,4 +83,31 @@ enum TeamMemberRole {
   OWNER
   ADMIN
   MEMBER
+}
+
+// ── Chat tables ──
+
+model Conversation {
+  id        String    @id @default(cuid())
+  userId    String
+  title     String    @default("New chat")
+  mode      String    @default("python")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  ChatMessage[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId, updatedAt])
+}
+
+model ChatMessage {
+  id             String       @id @default(cuid())
+  conversationId String
+  role           String
+  content        String
+  orderIndex     Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, orderIndex])
 }
