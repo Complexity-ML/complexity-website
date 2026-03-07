@@ -122,7 +122,7 @@ export function WelcomeScreen({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center w-full max-w-5xl"
+        className="text-center w-full max-w-7xl"
       >
         <p className="font-mono text-4xl text-primary mb-4">//</p>
         <h2 className="text-2xl font-bold mb-2">{MODE_TITLES[mode]}</h2>
