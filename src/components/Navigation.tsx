@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, Github } from "lucide-react";
+import Image from "next/image";
+import { Menu, Github, LogIn, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
+import { useSession, signIn, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -23,6 +25,7 @@ const NAV_LINKS = [
 ];
 
 export default function Navigation() {
+  const { data: session } = useSession();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -76,6 +79,42 @@ export default function Navigation() {
               </a>
             </Button>
 
+            {/* Auth */}
+            {session?.user ? (
+              <div className="hidden sm:flex items-center gap-2">
+                {session.user.image && (
+                  <Image
+                    src={session.user.image}
+                    alt=""
+                    width={28}
+                    height={28}
+                    className="rounded-full"
+                  />
+                )}
+                <span className="text-sm text-muted-foreground max-w-[120px] truncate">
+                  {session.user.name}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => signOut()}
+                  title="Sign out"
+                >
+                  <LogOut className="size-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => signIn()}
+                className="hidden sm:flex gap-1.5"
+              >
+                <LogIn className="size-4" />
+                Sign in
+              </Button>
+            )}
+
             {/* Mobile hamburger */}
             <Sheet>
               <SheetTrigger asChild>
@@ -103,6 +142,43 @@ export default function Navigation() {
                       </Button>
                     </SheetClose>
                   ))}
+                  <Separator className="my-2" />
+                  {session?.user ? (
+                    <div className="flex items-center gap-2 px-2 py-1">
+                      {session.user.image && (
+                        <Image
+                          src={session.user.image}
+                          alt=""
+                          width={24}
+                          height={24}
+                          className="rounded-full"
+                        />
+                      )}
+                      <span className="text-sm truncate flex-1">
+                        {session.user.name}
+                      </span>
+                      <SheetClose asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => signOut()}
+                        >
+                          <LogOut className="size-4" />
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  ) : (
+                    <SheetClose asChild>
+                      <Button
+                        variant="ghost"
+                        className="justify-start gap-2"
+                        onClick={() => signIn()}
+                      >
+                        <LogIn className="size-4" />
+                        Sign in
+                      </Button>
+                    </SheetClose>
+                  )}
                 </nav>
               </SheetContent>
             </Sheet>

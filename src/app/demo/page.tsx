@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import type { Mode } from "./config";
 import { MAINTENANCE } from "./config";
@@ -25,9 +26,11 @@ export default function DemoPage() {
 
 function DemoContent() {
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
   const initialMode = (searchParams.get("mode") as Mode) || "python";
+  const userId = (session?.user as Record<string, unknown> | undefined)?.id as string | undefined;
 
-  const chat = useChat(initialMode === "ros2" ? "ros2" : "python");
+  const chat = useChat(initialMode === "ros2" ? "ros2" : "python", userId);
 
   const [showParams, setShowParams] = useState(false);
   const [showMonitor, setShowMonitor] = useState(false);

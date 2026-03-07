@@ -43,7 +43,7 @@ const DEFAULT_PARAMS: SamplingParams = {
   maxTokens: 512,
 };
 
-export function useChat(initialMode: Mode) {
+export function useChat(initialMode: Mode, userId?: string) {
   const clients = useMemo<Record<Mode, I64Client>>(() => ({
     python: new I64Client(ENDPOINTS.python),
     chat: new I64Client(ENDPOINTS.chat),
@@ -221,6 +221,7 @@ export function useChat(initialMode: Mode) {
           repetition_penalty: params.repetitionPenalty,
           min_tokens: params.minTokens,
           signal: controller.signal,
+          ...(userId ? { user: userId } : {}),
         },
       );
 
