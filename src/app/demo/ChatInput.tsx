@@ -11,7 +11,6 @@ interface ChatInputProps {
   input: string;
   loading: boolean;
   streaming: boolean;
-  rtl: boolean;
   maxTokens: number;
   tokenStats: TokenStats | null;
   onInputChange: (value: string) => void;
@@ -25,7 +24,6 @@ export function ChatInput({
   input,
   loading,
   streaming,
-  rtl,
   maxTokens,
   tokenStats,
   onInputChange,
@@ -59,7 +57,6 @@ export function ChatInput({
               onChange={(e) => onInputChange(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Send a message..."
-              dir={rtl ? "rtl" : "ltr"}
               rows={1}
               className="w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-colors"
               style={{ minHeight: "44px", maxHeight: "120px" }}
@@ -73,8 +70,9 @@ export function ChatInput({
           {streaming || loading ? (
             <button
               onClick={onStop}
-              className="shrink-0 group relative rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300 overflow-hidden"
+              className="shrink-0 group relative rounded-xl px-4 text-sm font-medium transition-all duration-300 overflow-hidden"
               style={{
+                height: "44px",
                 background: "linear-gradient(135deg, oklch(0.55 0.25 300), oklch(0.45 0.3 280))",
                 boxShadow: "0 0 20px oklch(0.55 0.25 300 / 40%), 0 0 60px oklch(0.45 0.3 280 / 15%)",
               }}
@@ -91,7 +89,8 @@ export function ChatInput({
             <button
               onClick={onSend}
               disabled={!input.trim() || loading}
-              className="shrink-0 rounded-xl bg-primary text-primary-foreground px-4 py-3 text-sm font-medium hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="shrink-0 rounded-xl bg-primary text-primary-foreground px-4 text-sm font-medium hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              style={{ height: "44px" }}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-7-7l7 7-7 7" />

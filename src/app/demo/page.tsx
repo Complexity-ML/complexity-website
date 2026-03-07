@@ -28,7 +28,6 @@ function DemoContent() {
 
   const [showParams, setShowParams] = useState(false);
   const [showMonitor, setShowMonitor] = useState(false);
-  const [rtl, setRtl] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -59,17 +58,13 @@ function DemoContent() {
       <ChatHeader
         mode={chat.mode}
         streaming={chat.streaming}
-        temperature={chat.params.temperature}
         showParams={showParams}
         showMonitor={showMonitor}
-        rtl={rtl}
         health={chat.healthStatus}
         expertDist={chat.expertDist}
         onSwitchMode={(m) => { chat.switchMode(m); inputRef.current?.focus(); }}
-        onSetTemperature={(t) => chat.updateParam("temperature", t)}
         onToggleParams={() => setShowParams(!showParams)}
         onToggleMonitor={() => setShowMonitor(!showMonitor)}
-        onToggleRtl={() => setRtl(!rtl)}
         onClear={() => { chat.clearChat(); inputRef.current?.focus(); }}
       />
 
@@ -90,7 +85,7 @@ function DemoContent() {
             onSelectPrompt={(prompt) => { chat.setInput(prompt); inputRef.current?.focus(); }}
           />
         ) : (
-          <div dir={rtl ? "rtl" : "ltr"} className="container mx-auto max-w-7xl px-6 py-6 space-y-6">
+          <div className="container mx-auto max-w-7xl px-6 py-6 space-y-6">
             {chat.messages.map((msg, i) => (
               <ChatMessage key={i} message={msg} mode={chat.mode} />
             ))}
@@ -106,7 +101,6 @@ function DemoContent() {
         input={chat.input}
         loading={chat.loading}
         streaming={chat.streaming}
-        rtl={rtl}
         maxTokens={chat.params.maxTokens}
         tokenStats={chat.tokenStats}
         onInputChange={chat.setInput}

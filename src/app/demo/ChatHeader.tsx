@@ -7,34 +7,26 @@ import { MODEL_NAMES, MAINTENANCE } from "./config";
 interface ChatHeaderProps {
   mode: Mode;
   streaming: boolean;
-  temperature: number;
   showParams: boolean;
   showMonitor: boolean;
-  rtl: boolean;
   health: "ok" | "degraded" | "offline";
   expertDist: number[] | null;
   onSwitchMode: (mode: Mode) => void;
-  onSetTemperature: (t: number) => void;
   onToggleParams: () => void;
   onToggleMonitor: () => void;
-  onToggleRtl: () => void;
   onClear: () => void;
 }
 
 export function ChatHeader({
   mode,
   streaming,
-  temperature,
   showParams,
   showMonitor,
-  rtl,
   health,
   expertDist,
   onSwitchMode,
-  onSetTemperature,
   onToggleParams,
   onToggleMonitor,
-  onToggleRtl,
   onClear,
 }: ChatHeaderProps) {
   const modelLabel = MODEL_NAMES[mode];
@@ -112,24 +104,8 @@ export function ChatHeader({
               </span>
             </div>
           )}
-          <div className="hidden sm:flex items-center gap-2">
-            <label className="text-[10px] font-mono text-muted-foreground">temp</label>
-            <input
-              type="range"
-              min="0"
-              max="2"
-              step="0.05"
-              value={temperature}
-              onChange={(e) => onSetTemperature(parseFloat(e.target.value))}
-              className="w-20 h-1 accent-primary cursor-pointer"
-            />
-            <span className="text-[10px] font-mono text-primary w-6 text-right">
-              {temperature.toFixed(2)}
-            </span>
-          </div>
           <ToggleButton active={showParams} onClick={onToggleParams} label="params" />
           <ToggleButton active={showMonitor} onClick={onToggleMonitor} label="monitor" />
-          <ToggleButton active={rtl} onClick={onToggleRtl} label="RTL" />
           <button
             onClick={onClear}
             className="text-xs px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors font-mono"
