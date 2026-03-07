@@ -66,10 +66,15 @@ export function useChat(initialMode: Mode) {
   const streamStartRef = useRef(0);
   const tokenCountRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const snapshotAvailable = useRef(true);
+  const expertsAvailable = useRef(true);
 
   // Health + metrics + snapshot + experts polling
   useEffect(() => {
     let cancelled = false;
+    snapshotAvailable.current = true;
+    expertsAvailable.current = true;
+
     const poll = async () => {
       const client = clients[mode];
       try {
@@ -78,8 +83,8 @@ export function useChat(initialMode: Mode) {
           Promise.allSettled(
             (["python", "chat", "ros2"] as Mode[]).map((m) => clients[m].monitor.metrics())
           ),
-          client.monitor.snapshot(),
-          client.monitor.experts(),
+          snapshotAvailable.current ? client.monitor.snapshot() : Promise.reject("skipped"),
+          expertsAvailable.current ? client.monitor.experts() : Promise.reject("skipped"),
         ]);
 
         if (cancelled) return;
@@ -100,7 +105,7 @@ export function useChat(initialMode: Mode) {
           setTotalRequests(total);
         }
 
-        // Snapshot
+        // Snapshot — stop polling if endpoint unavailable
         if (snapRes.status === "fulfilled") {
           const s = snapRes.value;
           setSnapshot({
@@ -112,11 +117,15 @@ export function useChat(initialMode: Mode) {
             activeRequests: s.active_requests ?? 0,
             totalTokens: s.engine?.total_tokens_generated ?? 0,
           });
+        } else if (snapshotAvailable.current) {
+          snapshotAvailable.current = false;
         }
 
-        // Experts
+        // Experts — stop polling if endpoint unavailable
         if (expertsRes.status === "fulfilled") {
           setExpertDist(expertsRes.value.distribution ?? null);
+        } else if (expertsAvailable.current) {
+          expertsAvailable.current = false;
         }
       } catch {
         if (!cancelled) setHealthStatus("offline");
