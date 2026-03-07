@@ -45,10 +45,12 @@ export default function Navigation() {
     >
       <div className="container mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-primary font-mono text-lg">//</span>
-            <span className="font-bold text-lg">COMPLEXITY</span>
-          </Link>
+          <div className="flex-1 flex items-center">
+            <Link href="/" className="flex items-center gap-2">
+              <span className="text-primary font-mono text-lg">//</span>
+              <span className="font-bold text-lg">COMPLEXITY</span>
+            </Link>
+          </div>
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8">
@@ -67,7 +69,7 @@ export default function Navigation() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex-1 flex items-center justify-end gap-2">
             <Button variant="ghost" size="icon" asChild>
               <a href="https://github.com/Complexity-ML" target="_blank" rel="noopener noreferrer">
                 <Github className="size-5" />

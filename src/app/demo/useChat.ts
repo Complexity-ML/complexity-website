@@ -182,6 +182,12 @@ export function useChat(initialMode: Mode, userId?: string) {
     setExpertDist(null);
   }, [streaming, loading, stopGeneration]);
 
+  const loadMessages = useCallback((msgs: Message[]) => {
+    setMessages(msgs);
+    setError(null);
+    setTokenStats(null);
+  }, []);
+
   const sendMessage = useCallback(async () => {
     const text = input.trim();
     if (!text || loading || streaming || MAINTENANCE[mode]) return;
@@ -275,6 +281,7 @@ export function useChat(initialMode: Mode, userId?: string) {
     expertDist,
     switchMode,
     clearChat,
+    loadMessages,
     sendMessage,
     stopGeneration,
   };
