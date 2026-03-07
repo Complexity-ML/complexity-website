@@ -1,11 +1,20 @@
 "use client";
 
+import { Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function SignInPage() {
+  return (
+    <Suspense>
+      <SignInContent />
+    </Suspense>
+  );
+}
+
+function SignInContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   return (
