@@ -170,14 +170,14 @@ function WelcomeScreen({
               <p className="text-[10px] font-mono text-primary/50 uppercase tracking-widest mb-3">
                 {group.label}
               </p>
-              <div className="flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-2 max-h-48 sm:max-h-none overflow-y-auto sm:overflow-visible scrollbar-none">
+              <div className="grid grid-cols-1 sm:flex sm:flex-wrap sm:justify-center gap-2 max-h-48 sm:max-h-none overflow-y-auto sm:overflow-visible scrollbar-none">
                 {group.prompts.map((prompt) => (
                   <Button
                     key={prompt}
                     variant="outline"
                     size="sm"
                     onClick={() => onSelectPrompt(prompt)}
-                    className="text-xs font-normal text-muted-foreground hover:text-foreground hover:border-primary/30 justify-start sm:justify-center"
+                    className="text-xs font-normal text-muted-foreground hover:text-foreground hover:border-primary/30 text-left sm:text-center whitespace-normal h-auto py-2"
                   >
                     {prompt}
                   </Button>
