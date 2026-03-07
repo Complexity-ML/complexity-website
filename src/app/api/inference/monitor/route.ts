@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 const ENDPOINTS: Record<string, string> = {
   python:
     process.env.API_URL ||
@@ -33,9 +35,14 @@ export async function GET(req: Request) {
   }
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
     const upstream = await fetch(`${baseUrl}/v1/monitor/${endpoint}`, {
-      signal: AbortSignal.timeout(5000),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
+
     const data = await upstream.json();
     return new Response(JSON.stringify(data), {
       status: upstream.status,

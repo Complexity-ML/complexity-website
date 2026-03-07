@@ -1,5 +1,6 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+export const runtime = "edge";
+
+import { getToken } from "next-auth/jwt";
 
 const ENDPOINTS: Record<string, string> = {
   python:
@@ -15,9 +16,9 @@ const ENDPOINTS: Record<string, string> = {
 
 // POST /api/inference — proxy to vllm-i64 server
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user
-    ? (session.user as Record<string, unknown>).id as string
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const userId = token
+    ? `${token.provider}::${token.providerAccountId}`
     : undefined;
 
   const body = await req.json();
@@ -49,7 +50,6 @@ export async function POST(req: Request) {
       headers: {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
-        Connection: "keep-alive",
       },
     });
   }
