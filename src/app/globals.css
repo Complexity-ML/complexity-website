@@ -46,6 +46,16 @@
   --radius-4xl: calc(var(--radius) + 16px);
   --color-accent-green: var(--accent-green);
   --color-accent-purple: var(--accent-purple);
+  --color-accent-purple-light: var(--accent-purple-light);
+  --color-accent-purple-deep: var(--accent-purple-deep);
+  --color-accent-purple-bg: var(--accent-purple-bg);
+  --color-health-ok: var(--health-ok);
+  --color-health-degraded: var(--health-degraded);
+  --color-health-offline: var(--health-offline);
+  --color-expert-0: var(--expert-0);
+  --color-expert-1: var(--expert-1);
+  --color-expert-2: var(--expert-2);
+  --color-expert-3: var(--expert-3);
 }
 
 :root {
@@ -70,6 +80,24 @@
   --ring: oklch(0.75 0.18 142);
   --accent-green: oklch(0.75 0.18 142);
   --accent-purple: oklch(0.65 0.2 300);
+  --accent-purple-light: oklch(0.7 0.22 300);
+  --accent-purple-deep: oklch(0.55 0.25 300);
+  --accent-purple-bg: oklch(0.45 0.3 280);
+  --health-ok: oklch(0.75 0.18 142);
+  --health-degraded: oklch(0.75 0.18 85);
+  --health-offline: oklch(0.55 0.2 25);
+  --expert-0: oklch(0.65 0.2 300);
+  --expert-1: oklch(0.65 0.2 330);
+  --expert-2: oklch(0.65 0.2 360);
+  --expert-3: oklch(0.65 0.2 390);
+  --expert-0-light: oklch(0.7 0.2 300);
+  --expert-1-light: oklch(0.7 0.2 330);
+  --expert-2-light: oklch(0.7 0.2 360);
+  --expert-3-light: oklch(0.7 0.2 390);
+  --expert-0-deep: oklch(0.55 0.25 300);
+  --expert-1-deep: oklch(0.55 0.25 330);
+  --expert-2-deep: oklch(0.55 0.25 360);
+  --expert-3-deep: oklch(0.55 0.25 390);
   --chart-1: oklch(0.75 0.18 142);
   --chart-2: oklch(0.65 0.2 300);
   --chart-3: oklch(0.7 0.15 200);

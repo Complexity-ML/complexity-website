@@ -1,7 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import CodeBlock from "@/components/CodeBlock";
+import { cn } from "@/lib/utils";
 import type { Mode, Message } from "./config";
 import { MODEL_NAMES } from "./config";
 
@@ -18,30 +21,33 @@ export function ChatMessage({ message, mode }: ChatMessageProps) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+      className={cn("flex", isUser ? "justify-end" : "justify-start")}
     >
-      <div
-        className={`rounded-xl px-4 py-3 ${
+      <Card
+        className={cn(
+          "rounded-xl py-3 gap-0 shadow-none",
           isUser
-            ? "max-w-[85%] bg-primary/15 border border-primary/20 text-foreground"
-            : "w-full bg-card border border-border/50 text-foreground"
-        }`}
-      >
-        {isUser ? (
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-        ) : (
-          <>
-            <span className="text-[10px] font-mono text-primary/60 block mb-2">
-              {MODEL_NAMES[mode]}
-            </span>
-            {mode === "python" ? (
-              <CodeBlock content={message.content} />
-            ) : (
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-            )}
-          </>
+            ? "max-w-[85%] bg-primary/15 border-primary/20"
+            : "w-full bg-card border-border/50",
         )}
-      </div>
+      >
+        <CardContent className="px-4 py-0">
+          {isUser ? (
+            <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          ) : (
+            <>
+              <Badge variant="secondary" className="mb-2 font-mono text-[10px] text-primary/60 bg-transparent border-none p-0">
+                {MODEL_NAMES[mode]}
+              </Badge>
+              {mode === "python" ? (
+                <CodeBlock content={message.content} />
+              ) : (
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }
@@ -49,16 +55,18 @@ export function ChatMessage({ message, mode }: ChatMessageProps) {
 export function LoadingBubble({ mode }: { mode: Mode }) {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-      <div className="bg-card border border-border/50 rounded-xl px-4 py-3">
-        <span className="text-[10px] font-mono text-primary/60 block mb-1">
-          {MODEL_NAMES[mode]}
-        </span>
-        <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse" />
-          <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse" style={{ animationDelay: "0.15s" }} />
-          <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse" style={{ animationDelay: "0.3s" }} />
-        </div>
-      </div>
+      <Card className="rounded-xl py-3 gap-0 shadow-none bg-card border-border/50">
+        <CardContent className="px-4 py-0">
+          <Badge variant="secondary" className="mb-1 font-mono text-[10px] text-primary/60 bg-transparent border-none p-0">
+            {MODEL_NAMES[mode]}
+          </Badge>
+          <div className="flex items-center gap-1.5">
+            <span className="size-1.5 rounded-full bg-primary/50 animate-pulse" />
+            <span className="size-1.5 rounded-full bg-primary/50 animate-pulse [animation-delay:150ms]" />
+            <span className="size-1.5 rounded-full bg-primary/50 animate-pulse [animation-delay:300ms]" />
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }
@@ -66,9 +74,9 @@ export function LoadingBubble({ mode }: { mode: Mode }) {
 export function ErrorBanner({ message }: { message: string }) {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-center">
-      <div className="text-xs font-mono text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-2">
+      <Badge variant="destructive" className="font-mono text-xs px-4 py-2 rounded-lg">
         {message}
-      </div>
+      </Badge>
     </motion.div>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { Slider } from "@/components/ui/slider";
+import { Separator } from "@/components/ui/separator";
 import type { SamplingParams } from "./useChat";
 
 interface ParamPanelProps {
@@ -20,7 +22,8 @@ export function ParamPanel({ params, onUpdate }: ParamPanelProps) {
           <ParamControl label="min_tokens" value={params.minTokens} min={0} max={128} step={1} onChange={(v) => onUpdate("minTokens", v)} />
           <ParamControl label="max_tokens" value={params.maxTokens} min={16} max={1024} step={16} onChange={(v) => onUpdate("maxTokens", v)} />
         </div>
-        <p className="text-[10px] font-mono text-muted-foreground/40 mt-3">
+        <Separator className="my-3 opacity-30" />
+        <p className="text-[10px] font-mono text-muted-foreground/40">
           min_p: dynamic threshold relative to top token probability &middot; typical_p: entropy-based selection (Meister et al. 2022) &middot; min_tokens: suppress EOS until N tokens generated
         </p>
       </div>
@@ -44,21 +47,19 @@ function ParamControl({
   onChange: (v: number) => void;
 }) {
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="text-[10px] font-mono text-muted-foreground">{label}</label>
         <span className="text-[10px] font-mono text-primary/80">
           {Number.isInteger(step) ? value : value.toFixed(2)}
         </span>
       </div>
-      <input
-        type="range"
+      <Slider
         min={min}
         max={max}
         step={step}
-        value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-1 rounded-full appearance-none bg-secondary cursor-pointer accent-primary"
+        value={[value]}
+        onValueChange={([v]) => onChange(v)}
       />
     </div>
   );

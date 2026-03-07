@@ -1,6 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Toggle } from "@/components/ui/toggle";
+import { cn } from "@/lib/utils";
 import type { Mode } from "./config";
 import { MODEL_NAMES, MAINTENANCE } from "./config";
 
@@ -40,70 +46,85 @@ export function ChatHeader({
             <span className="text-primary font-mono text-lg">//</span>
             <span className="font-bold text-lg">COMPLEXITY</span>
           </Link>
-          <span className="text-border">/</span>
+          <Separator orientation="vertical" className="h-5" />
           <span className="font-mono text-sm text-primary">demo</span>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center rounded-md border border-border overflow-hidden">
+          <ToggleGroup
+            type="single"
+            value={mode}
+            onValueChange={(v) => { if (v) onSwitchMode(v as Mode); }}
+            variant="outline"
+            size="sm"
+          >
             {(["python", "chat", "ros2"] as Mode[]).map((m) => (
-              <button
+              <ToggleGroupItem
                 key={m}
-                onClick={() => onSwitchMode(m)}
+                value={m}
                 disabled={!!MAINTENANCE[m]}
-                className={`text-xs px-3 py-1.5 font-mono transition-colors ${
-                  mode === m
-                    ? "bg-primary/15 text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className="font-mono text-xs"
               >
                 {m}
-              </button>
+              </ToggleGroupItem>
             ))}
-          </div>
-          <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground font-mono">
-            <span
-              className="w-2 h-2 rounded-full transition-colors duration-500"
-              style={streaming
-                ? { background: "oklch(0.65 0.2 300)", boxShadow: "0 0 8px oklch(0.65 0.2 300 / 50%)", animation: "pulse 2s infinite" }
-                : {
-                    background: health === "ok" ? "oklch(0.75 0.18 142)" : health === "degraded" ? "oklch(0.75 0.18 85)" : "oklch(0.55 0.2 25)",
-                    boxShadow: health === "ok" ? "0 0 6px oklch(0.75 0.18 142 / 50%)" : health === "degraded" ? "0 0 6px oklch(0.75 0.18 85 / 50%)" : "none",
-                  }
-              }
-            />
-            {modelLabel}
+          </ToggleGroup>
+
+          <div className="hidden sm:flex items-center gap-2">
+            <Badge variant="outline" className="gap-1.5 font-mono text-xs">
+              <span
+                className={cn(
+                  "size-2 rounded-full",
+                  streaming && "animate-pulse",
+                )}
+                style={{
+                  background: streaming
+                    ? "var(--accent-purple)"
+                    : `var(--health-${health})`,
+                  boxShadow: health !== "offline" || streaming
+                    ? `0 0 6px ${streaming ? "var(--accent-purple)" : `var(--health-${health})`}`
+                    : "none",
+                }}
+              />
+              {modelLabel}
+            </Badge>
             {streaming && (
-              <span className="text-[10px] font-mono tracking-wider" style={{ color: "oklch(0.65 0.2 300)" }}>
+              <Badge className="bg-accent-purple/15 text-accent-purple border-accent-purple/30 font-mono text-[10px]">
                 streaming
-              </span>
+              </Badge>
             )}
           </div>
-          <ToggleButton active={showParams} onClick={onToggleParams} label="params" />
-          <ToggleButton active={showMonitor} onClick={onToggleMonitor} label="monitor" />
-          <button
+
+          <Toggle
+            variant="outline"
+            size="sm"
+            pressed={showParams}
+            onPressedChange={onToggleParams}
+            className="font-mono text-xs"
+          >
+            params
+          </Toggle>
+
+          <Toggle
+            variant="outline"
+            size="sm"
+            pressed={showMonitor}
+            onPressedChange={onToggleMonitor}
+            className="font-mono text-xs"
+          >
+            monitor
+          </Toggle>
+
+          <Button
+            variant="outline"
+            size="sm"
             onClick={onClear}
-            className="text-xs px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors font-mono"
+            className="font-mono text-xs"
           >
             clear
-          </button>
+          </Button>
         </div>
       </div>
     </header>
-  );
-}
-
-function ToggleButton({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`text-xs px-3 py-1.5 rounded-md border transition-colors font-mono ${
-        active
-          ? "border-primary/40 text-primary bg-primary/10"
-          : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/20"
-      }`}
-    >
-      {label}
-    </button>
   );
 }

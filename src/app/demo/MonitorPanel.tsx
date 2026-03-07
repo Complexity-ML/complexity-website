@@ -1,5 +1,9 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import type { MonitorData } from "./useChat";
 
 interface MonitorPanelProps {
@@ -12,97 +16,97 @@ export function MonitorPanel({ health, snapshot, expertDist }: MonitorPanelProps
   return (
     <div className="border-b border-border/50 bg-card/30 backdrop-blur-lg px-6 py-3">
       <div className="container mx-auto max-w-7xl flex flex-wrap items-center gap-6">
-        {/* Health dot */}
-        <div className="flex items-center gap-2">
+        <Badge
+          variant="outline"
+          className="gap-1.5 font-mono text-[10px]"
+        >
           <span
-            className="w-2 h-2 rounded-full"
+            className="size-2 rounded-full"
             style={{
-              background:
-                health === "ok" ? "oklch(0.75 0.18 142)" :
-                health === "degraded" ? "oklch(0.75 0.18 85)" :
-                "oklch(0.55 0.2 25)",
-              boxShadow:
-                health === "ok" ? "0 0 6px oklch(0.75 0.18 142 / 50%)" :
-                health === "degraded" ? "0 0 6px oklch(0.75 0.18 85 / 50%)" :
-                "0 0 6px oklch(0.55 0.2 25 / 50%)",
+              background: `var(--health-${health})`,
+              boxShadow: health !== "offline"
+                ? `0 0 6px var(--health-${health})`
+                : "none",
             }}
           />
-          <span className="text-[10px] font-mono text-muted-foreground">
-            {health}
-          </span>
-        </div>
+          {health}
+        </Badge>
 
         {snapshot && (
           <>
-            {/* tok/s */}
             <Stat label="tok/s" value={snapshot.tokPerS.toFixed(1)} />
 
-            {/* GPU */}
             {snapshot.gpuTotalMb > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-muted-foreground/60">gpu</span>
-                <div className="w-16 h-1.5 rounded-full bg-border/30 overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${snapshot.gpuUtil}%`,
-                      background: snapshot.gpuUtil > 90
-                        ? "oklch(0.65 0.2 25)"
-                        : snapshot.gpuUtil > 70
-                        ? "oklch(0.75 0.18 85)"
-                        : "oklch(0.75 0.18 142)",
-                    }}
-                  />
-                </div>
-                <span className="text-[10px] font-mono text-primary/70">{snapshot.gpuUtil.toFixed(0)}%</span>
-              </div>
+              <MetricBar
+                label="gpu"
+                value={snapshot.gpuUtil}
+                variant={snapshot.gpuUtil > 90 ? "danger" : snapshot.gpuUtil > 70 ? "warning" : "ok"}
+              />
             )}
 
-            {/* KV cache */}
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-muted-foreground/60">kv</span>
-              <div className="w-16 h-1.5 rounded-full bg-border/30 overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-500"
-                  style={{
-                    width: `${snapshot.kvUsagePct}%`,
-                    background: snapshot.kvUsagePct > 90
-                      ? "oklch(0.65 0.2 25)"
-                      : snapshot.kvUsagePct > 70
-                      ? "oklch(0.75 0.18 85)"
-                      : "oklch(0.65 0.2 300)",
-                  }}
-                />
-              </div>
-              <span className="text-[10px] font-mono text-primary/70">{snapshot.kvUsagePct.toFixed(0)}%</span>
-            </div>
+            <MetricBar
+              label="kv"
+              value={snapshot.kvUsagePct}
+              variant={snapshot.kvUsagePct > 90 ? "danger" : snapshot.kvUsagePct > 70 ? "warning" : "accent"}
+            />
 
-            {/* Active requests */}
             <Stat label="active" value={String(snapshot.activeRequests)} />
           </>
         )}
 
-        {/* Expert routing distribution */}
         {expertDist && expertDist.length > 0 && (
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-mono text-muted-foreground/60">experts</span>
             <div className="flex items-end gap-0.5 h-4">
               {expertDist.map((pct, i) => (
-                <div
-                  key={i}
-                  className="w-2 rounded-sm transition-all duration-500"
-                  style={{
-                    height: `${Math.max(pct * 100, 8)}%`,
-                    background: `oklch(0.65 0.2 ${300 + i * 30})`,
-                    opacity: 0.7 + pct * 0.3,
-                  }}
-                  title={`Expert ${i}: ${(pct * 100).toFixed(1)}%`}
-                />
+                <Tooltip key={i}>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={cn("w-2 rounded-sm transition-all duration-500")}
+                      style={{
+                        height: `${Math.max(pct * 100, 8)}%`,
+                        background: `var(--expert-${i % 4})`,
+                        opacity: 0.7 + pct * 0.3,
+                      }}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Expert {i}: {(pct * 100).toFixed(1)}%
+                  </TooltipContent>
+                </Tooltip>
               ))}
             </div>
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function MetricBar({
+  label,
+  value,
+  variant,
+}: {
+  label: string;
+  value: number;
+  variant: "ok" | "warning" | "danger" | "accent";
+}) {
+  const indicatorColor = {
+    ok: "[&>[data-slot=progress-indicator]]:bg-health-ok",
+    warning: "[&>[data-slot=progress-indicator]]:bg-health-degraded",
+    danger: "[&>[data-slot=progress-indicator]]:bg-health-offline",
+    accent: "[&>[data-slot=progress-indicator]]:bg-accent-purple",
+  }[variant];
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] font-mono text-muted-foreground/60">{label}</span>
+      <Progress
+        value={value}
+        className={cn("w-16 h-1.5 bg-border/30", indicatorColor)}
+      />
+      <span className="text-[10px] font-mono text-primary/70">{value.toFixed(0)}%</span>
     </div>
   );
 }

@@ -3,6 +3,9 @@
 import { useState, useRef, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import type { Mode } from "./config";
 import { DESCRIPTIONS, SUGGESTIONS, MAINTENANCE } from "./config";
 import { useChat } from "./useChat";
@@ -15,7 +18,9 @@ import { MonitorPanel } from "./MonitorPanel";
 export default function DemoPage() {
   return (
     <Suspense>
-      <DemoContent />
+      <TooltipProvider>
+        <DemoContent />
+      </TooltipProvider>
     </Suspense>
   );
 }
@@ -148,15 +153,12 @@ function WelcomeScreen({
             { label: "experts", value: "4" },
             { label: "kv-cache", value: "paged + LRU" },
             { label: "engine", value: "vllm-i64" },
-            { label: "requests", value: totalRequests !== null ? totalRequests.toLocaleString() : "—" },
+            { label: "requests", value: totalRequests !== null ? totalRequests.toLocaleString() : "\u2014" },
           ].map((stat) => (
-            <div
-              key={stat.label}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border/50 bg-card/30"
-            >
-              <span className="text-[10px] font-mono text-muted-foreground/60">{stat.label}</span>
-              <span className="text-[10px] font-mono text-primary/80">{stat.value}</span>
-            </div>
+            <Badge key={stat.label} variant="outline" className="gap-1.5 font-mono text-[10px] bg-card/30">
+              <span className="text-muted-foreground/60">{stat.label}</span>
+              <span className="text-primary/80">{stat.value}</span>
+            </Badge>
           ))}
         </motion.div>
 
@@ -168,23 +170,25 @@ function WelcomeScreen({
               </p>
               <div className="flex flex-wrap justify-center gap-2">
                 {group.prompts.map((prompt) => (
-                  <button
+                  <Button
                     key={prompt}
+                    variant="outline"
+                    size="sm"
                     onClick={() => onSelectPrompt(prompt)}
-                    className="text-xs px-3 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
+                    className="text-xs font-normal text-muted-foreground hover:text-foreground hover:border-primary/30"
                   >
                     {prompt}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
           ))}
           <p className="text-[10px] text-muted-foreground/30 text-center mt-4 font-mono">
             {mode === "chat"
-              ? "1.58B parameter model — responses are creative and may be unpredictable"
+              ? "1.58B parameter model \u2014 responses are creative and may be unpredictable"
               : mode === "ros2"
-              ? "1.58B parameter model — ROS2 specialist, outputs may require review"
-              : "1.58B parameter model — outputs may require review"}
+              ? "1.58B parameter model \u2014 ROS2 specialist, outputs may require review"
+              : "1.58B parameter model \u2014 outputs may require review"}
           </p>
         </div>
       </motion.div>
