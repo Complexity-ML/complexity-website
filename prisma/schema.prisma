@@ -20,6 +20,7 @@ model User {
   teamMembers   TeamMember[]
   conversations Conversation[]
   apiKeys       ApiKey[]
+  externalKeys  ExternalKey[]
   createdAt     DateTime       @default(now())
 }
 
@@ -97,6 +98,21 @@ model ApiKey {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
 
+  @@index([userId])
+}
+
+// ── External API Keys (user-provided, AES-256-GCM encrypted) ──
+
+model ExternalKey {
+  id           String   @id @default(cuid())
+  userId       String
+  provider     String   // "openai", "anthropic", "google", "mistral"
+  encryptedKey String   // AES-256-GCM encrypted API key
+  prefix       String   // first 8 chars for display: "sk-ab12..."
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, provider])
   @@index([userId])
 }
 
