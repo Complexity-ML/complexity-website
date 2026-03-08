@@ -30,7 +30,7 @@
     "react-dom": "19.2.3",
     "tailwind-merge": "^3.4.0",
     "three": "^0.182.0",
-    "vllm-i64": "^0.4.0"
+    "vllm-i64": "^0.5.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
