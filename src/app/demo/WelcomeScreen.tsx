@@ -17,12 +17,14 @@ const MODE_TITLES: Record<Mode, string> = {
   python: "Pacific-i64",
   chat: "Chat-Node",
   ros2: "ROS2-Node",
+  agent: "Agent",
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
   python: "1.58B parameter model \u2014 outputs may require review",
   chat: "1.58B parameter model \u2014 responses are creative and may be unpredictable",
   ros2: "1.58B parameter model \u2014 ROS2 specialist, outputs may require review",
+  agent: "Uses your API key (BYOK) \u2014 configure at /dashboard/keys",
 };
 
 function SuggestionGroupBlock({
@@ -61,7 +63,14 @@ export function WelcomeScreen({
   totalRequests: number | null;
   onSelectPrompt: (prompt: string) => void;
 }) {
-  const allStats = [
+  const agentStats = [
+    { label: "tools", value: "sandbox + RAG" },
+    { label: "providers", value: "OpenAI, Anthropic, Google, Mistral" },
+    { label: "sandbox", value: "L2 isolated" },
+    { label: "auth", value: "BYOK" },
+  ];
+
+  const allStats = mode === "agent" ? agentStats : [
     ...STATS,
     { label: "requests", value: totalRequests !== null ? totalRequests.toLocaleString() : "\u2014" },
   ];

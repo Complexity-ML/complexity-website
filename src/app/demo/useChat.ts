@@ -63,8 +63,8 @@ export function useChat(initialMode: Mode) {
   const snapshotAvailable = useRef(true);
   const expertsAvailable = useRef(true);
 
-  // SDK clients — one per mode
-  const clients = useMemo(() => ({
+  // SDK clients — one per non-agent mode
+  const clients: Record<string, I64Client> = useMemo(() => ({
     python: new I64Client(ENDPOINTS.python, { timeoutMs: 5000 }),
     chat: new I64Client(ENDPOINTS.chat, { timeoutMs: 5000 }),
     ros2: new I64Client(ENDPOINTS.ros2, { timeoutMs: 5000 }),

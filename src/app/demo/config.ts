@@ -1,4 +1,4 @@
-export type Mode = "python" | "chat" | "ros2";
+export type Mode = "python" | "chat" | "ros2" | "agent";
 
 export interface Message {
   role: "user" | "assistant";
@@ -16,12 +16,14 @@ export const ENDPOINTS: Record<Mode, string> = {
   python: process.env.NEXT_PUBLIC_API_URL || "https://pacific-prime-pacific-i64-demo.hf.space",
   chat: process.env.NEXT_PUBLIC_CHAT_API_URL || "https://pacific-prime-pacific-i64-chat.hf.space",
   ros2: process.env.NEXT_PUBLIC_ROS2_API_URL || "https://pacific-prime-pacific-ros2.hf.space",
+  agent: "/api/proxy/agent",
 };
 
 export const MODEL_NAMES: Record<Mode, string> = {
   python: "pacific-i64",
   chat: "pacific-chat",
   ros2: "pacific-ros2",
+  agent: "agent",
 };
 
 export const DESCRIPTIONS: Record<Mode, string> = {
@@ -31,12 +33,15 @@ export const DESCRIPTIONS: Record<Mode, string> = {
     "Complexity Deep 1.58B — Conversational chat powered by Token-Routed i64 deterministic routing.",
   ros2:
     "Complexity Deep 1.58B — ROS2 specialist powered by Token-Routed i64 deterministic routing.",
+  agent:
+    "AI Agent — Executes code, searches documents, and reasons step-by-step using your API key.",
 };
 
 export const FOOTERS: Record<Mode, string> = {
   python: "Complexity Deep 1.58B — Python Code Helper — Token-Routed i64",
   chat: "Complexity Deep 1.58B — Chat Node — Token-Routed i64",
   ros2: "Complexity Deep 1.58B — ROS2 Specialist — Token-Routed i64",
+  agent: "Agent — Sandbox + RAG — BYOK",
 };
 
 export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
@@ -118,6 +123,27 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
         "Describe the solar system",
         "Explain how the internet works",
         "Why do we dream?",
+      ],
+    },
+  ],
+  agent: [
+    {
+      label: "code execution",
+      prompts: [
+        "Calculate the first 50 prime numbers",
+        "Write and run a Python script that generates a random password",
+        "Create a fibonacci sequence up to 1000 and find which are also palindromes",
+        "Write a script to analyze the frequency of letters in 'Hello World'",
+        "Calculate pi using Monte Carlo simulation with 100000 points",
+      ],
+    },
+    {
+      label: "analysis",
+      prompts: [
+        "Write a sorting benchmark: compare bubble sort vs quicksort on 10000 elements",
+        "Generate and analyze a dataset of 100 random exam scores",
+        "Write a script that finds all Armstrong numbers under 10000",
+        "Create a simple neural network from scratch that learns XOR",
       ],
     },
   ],

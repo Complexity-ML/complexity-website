@@ -7,19 +7,15 @@ import { prisma } from "@/lib/prisma";
 const MAX_STEPS = 10;
 
 // ---------------------------------------------------------------------------
-// Provider configs (same as completions proxy, but we need tool support info)
+// Provider configs
 // ---------------------------------------------------------------------------
 const PROVIDER_CONFIG: Record<string, {
   baseUrl: string;
   endpoint: string;
   buildHeaders: (apiKey: string) => Record<string, string>;
-  // Convert our unified request → provider-native format
   transformRequest?: (body: Record<string, unknown>) => Record<string, unknown>;
-  // Extract assistant message + tool_calls from provider response
   parseResponse: (data: Record<string, unknown>) => ParsedResponse;
-  // Build the tool-result message in provider format
   buildToolResult: (toolCallId: string, content: string) => Record<string, unknown>;
-  // Format tools array for this provider
   formatTools?: (tools: ToolDef[]) => unknown[];
 }> = {
   openai: {
@@ -68,7 +64,7 @@ const PROVIDER_CONFIG: Record<string, {
 };
 
 // ---------------------------------------------------------------------------
-// Tool definitions — what we offer to the LLM
+// Tool definitions
 // ---------------------------------------------------------------------------
 interface ToolDef {
   name: string;
@@ -111,7 +107,7 @@ function toolsToOpenAI(tools: ToolDef[]) {
 }
 
 // ---------------------------------------------------------------------------
-// Tool execution — calls our own vllm-i64 engine via SDK
+// Tool execution
 // ---------------------------------------------------------------------------
 const engine = new I64Client(process.env.VLLM_I64_URL || "http://localhost:8000");
 
@@ -149,7 +145,7 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
 }
 
 // ---------------------------------------------------------------------------
-// Provider-specific response parsing
+// Response parsing
 // ---------------------------------------------------------------------------
 interface ToolCall {
   id: string;
@@ -160,7 +156,6 @@ interface ToolCall {
 interface ParsedResponse {
   text: string | null;
   toolCalls: ToolCall[];
-  // Raw assistant message to append to history (provider-native format)
   rawAssistantMessage: Record<string, unknown>;
   finishReason: string | null;
 }
@@ -190,7 +185,6 @@ function parseOpenAIResponse(data: Record<string, unknown>): ParsedResponse {
   };
 }
 
-// Anthropic format: content blocks can be text or tool_use
 function parseAnthropicResponse(data: Record<string, unknown>): ParsedResponse {
   const content = (data.content as Array<{ type: string; id?: string; name?: string; input?: Record<string, unknown>; text?: string }>) || [];
   const toolCalls: ToolCall[] = [];
@@ -213,7 +207,7 @@ function parseAnthropicResponse(data: Record<string, unknown>): ParsedResponse {
 }
 
 // ---------------------------------------------------------------------------
-// Provider-specific request/tool formatting
+// Provider-specific formatting
 // ---------------------------------------------------------------------------
 function transformAnthropicRequest(body: Record<string, unknown>): Record<string, unknown> {
   const messages = (body.messages as Array<{ role: string; content: string }>) || [];
@@ -246,9 +240,6 @@ function buildAnthropicToolResult(toolCallId: string, content: string): Record<s
   };
 }
 
-// ---------------------------------------------------------------------------
-// Provider detection
-// ---------------------------------------------------------------------------
 function detectProvider(model?: string): string | null {
   if (!model) return null;
   const m = model.toLowerCase();
@@ -260,7 +251,18 @@ function detectProvider(model?: string): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// POST /api/proxy/agent — orchestrated agent loop
+// SSE event types sent to client:
+//   { type: "thinking" }                    — LLM is processing
+//   { type: "tool_call", step, name, args } — tool invoked
+//   { type: "tool_result", step, name, result } — tool finished
+//   { type: "text", step, content }         — intermediate text from LLM
+//   { type: "answer", content }             — final answer
+//   { type: "error", message }              — error
+//   { type: "done", steps, finish_reason }  — stream complete
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// POST /api/proxy/agent — SSE-streamed agent loop
 // ---------------------------------------------------------------------------
 export async function POST(req: Request) {
   const userId = await validateApiKey(req);
@@ -304,93 +306,118 @@ export async function POST(req: Request) {
   const apiKey = decrypt(extKey.encryptedKey);
   const config = PROVIDER_CONFIG[provider];
 
-  // Build initial messages from user request
-  const messages: Record<string, unknown>[] = (body.messages as Record<string, unknown>[]) || [];
-
-  // Inject tools into the request
-  const tools = config.formatTools ? config.formatTools(AGENT_TOOLS) : toolsToOpenAI(AGENT_TOOLS);
-
-  // Collect steps for the client
-  const steps: Array<{ step: number; tool_calls: ToolCall[]; tool_results: Array<{ tool_call_id: string; name: string; result: string }> }> = [];
-
-  // Agent loop
-  for (let step = 0; step < MAX_STEPS; step++) {
-    // Build upstream request
-    let upstreamBody: Record<string, unknown> = {
-      ...body,
-      messages,
-      tools,
-      stream: false, // Never stream intermediate steps
-    };
-    delete upstreamBody.provider;
-
-    if (config.transformRequest) {
-      upstreamBody = config.transformRequest(upstreamBody);
-    }
-
-    const upstreamUrl = config.baseUrl + config.endpoint;
-    const headers = config.buildHeaders(apiKey);
-
-    let data: Record<string, unknown>;
-    try {
-      const upstream = await fetch(upstreamUrl, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(upstreamBody),
-      });
-      data = await upstream.json();
-
-      if (!upstream.ok) {
-        return NextResponse.json(
-          { error: { message: `Upstream ${provider} error`, details: data }, steps },
-          { status: upstream.status },
-        );
+  // SSE stream
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      function send(event: Record<string, unknown>) {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
       }
-    } catch (e) {
-      return NextResponse.json(
-        { error: { message: `Upstream error: ${e instanceof Error ? e.message : String(e)}`, type: "upstream_error" }, steps },
-        { status: 502 },
-      );
-    }
 
-    const parsed = config.parseResponse(data);
+      try {
+        const messages: Record<string, unknown>[] = (body.messages as Record<string, unknown>[]) || [];
+        const tools = config.formatTools ? config.formatTools(AGENT_TOOLS) : toolsToOpenAI(AGENT_TOOLS);
+        const steps: Array<Record<string, unknown>> = [];
 
-    // No tool calls → final answer
-    if (parsed.toolCalls.length === 0) {
-      return NextResponse.json({
-        response: parsed.text,
-        model: body.model,
-        provider,
-        steps,
-        finish_reason: parsed.finishReason,
-      });
-    }
+        for (let step = 0; step < MAX_STEPS; step++) {
+          send({ type: "thinking", step: step + 1 });
 
-    // Execute all tool calls in parallel
-    const toolResults = await Promise.all(
-      parsed.toolCalls.map(async (tc) => {
-        const result = await executeTool(tc.name, tc.arguments);
-        return { tool_call_id: tc.id, name: tc.name, result };
-      }),
-    );
+          let upstreamBody: Record<string, unknown> = {
+            ...body,
+            messages,
+            tools,
+            stream: false,
+          };
+          delete upstreamBody.provider;
 
-    steps.push({ step: step + 1, tool_calls: parsed.toolCalls, tool_results: toolResults });
+          if (config.transformRequest) {
+            upstreamBody = config.transformRequest(upstreamBody);
+          }
 
-    // Append assistant message + tool results to history
-    messages.push(parsed.rawAssistantMessage);
-    for (const tr of toolResults) {
-      messages.push(config.buildToolResult(tr.tool_call_id, tr.result));
-    }
-  }
+          const upstreamUrl = config.baseUrl + config.endpoint;
+          const headers = config.buildHeaders(apiKey);
 
-  // Max steps reached
-  return NextResponse.json({
-    response: null,
-    model: body.model,
-    provider,
-    steps,
-    finish_reason: "max_steps",
-    error: { message: `Agent reached max steps (${MAX_STEPS})`, type: "max_steps" },
+          let data: Record<string, unknown>;
+          try {
+            const upstream = await fetch(upstreamUrl, {
+              method: "POST",
+              headers,
+              body: JSON.stringify(upstreamBody),
+            });
+            data = await upstream.json();
+
+            if (!upstream.ok) {
+              send({ type: "error", message: `Upstream ${provider} error`, details: data });
+              break;
+            }
+          } catch (e) {
+            send({ type: "error", message: `Upstream error: ${e instanceof Error ? e.message : String(e)}` });
+            break;
+          }
+
+          const parsed = config.parseResponse(data);
+
+          // Intermediate text from LLM (thinking out loud)
+          if (parsed.text) {
+            send({ type: "text", step: step + 1, content: parsed.text });
+          }
+
+          // No tool calls → final answer
+          if (parsed.toolCalls.length === 0) {
+            send({ type: "answer", content: parsed.text || "" });
+            send({ type: "done", steps, finish_reason: parsed.finishReason });
+            controller.close();
+            return;
+          }
+
+          // Send tool calls to client
+          for (const tc of parsed.toolCalls) {
+            send({ type: "tool_call", step: step + 1, name: tc.name, args: tc.arguments });
+          }
+
+          // Execute all tool calls in parallel
+          const toolResults = await Promise.all(
+            parsed.toolCalls.map(async (tc) => {
+              const result = await executeTool(tc.name, tc.arguments);
+              return { tool_call_id: tc.id, name: tc.name, result };
+            }),
+          );
+
+          // Send results to client
+          for (const tr of toolResults) {
+            send({ type: "tool_result", step: step + 1, name: tr.name, result: tr.result });
+          }
+
+          steps.push({
+            step: step + 1,
+            tool_calls: parsed.toolCalls,
+            tool_results: toolResults,
+          });
+
+          // Append to history for next iteration
+          messages.push(parsed.rawAssistantMessage);
+          for (const tr of toolResults) {
+            messages.push(config.buildToolResult(tr.tool_call_id, tr.result));
+          }
+        }
+
+        // Max steps
+        send({ type: "error", message: `Agent reached max steps (${MAX_STEPS})` });
+        send({ type: "done", steps, finish_reason: "max_steps" });
+      } catch (e) {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", message: e instanceof Error ? e.message : String(e) })}\n\n`));
+      }
+      controller.close();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+      "Access-Control-Allow-Origin": "*",
+    },
   });
 }
 
