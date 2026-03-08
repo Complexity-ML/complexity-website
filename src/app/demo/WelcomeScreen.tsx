@@ -24,7 +24,7 @@ const MODE_DISCLAIMERS: Record<Mode, string> = {
   python: "1.58B parameter model \u2014 outputs may require review",
   chat: "1.58B parameter model \u2014 responses are creative and may be unpredictable",
   ros2: "1.58B parameter model \u2014 ROS2 specialist, outputs may require review",
-  agent: "Uses your API key (BYOK) \u2014 configure at /dashboard/keys",
+  agent: "Connects to vllm-i64 event stream \u2014 run agents from VSCode or CLI",
 };
 
 function SuggestionGroupBlock({
@@ -64,10 +64,10 @@ export function WelcomeScreen({
   onSelectPrompt: (prompt: string) => void;
 }) {
   const agentStats = [
-    { label: "tools", value: "sandbox + RAG" },
-    { label: "providers", value: "OpenAI, Anthropic, Google, Mistral" },
+    { label: "source", value: "vllm-i64 SSE" },
+    { label: "events", value: "sandbox, RAG, completions" },
     { label: "sandbox", value: "L2 isolated" },
-    { label: "auth", value: "BYOK" },
+    { label: "mode", value: "live viewer" },
   ];
 
   const allStats = mode === "agent" ? agentStats : [

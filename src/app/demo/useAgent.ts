@@ -1,95 +1,83 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { ENDPOINTS } from "./config";
 
 // ---------------------------------------------------------------------------
-// Types for SSE events from /api/proxy/agent
+// Types for SSE events from vllm-i64 /v1/agent/events
 // ---------------------------------------------------------------------------
 export interface AgentToolCall {
-  step: number;
   name: string;
   args: Record<string, unknown>;
 }
 
 export interface AgentToolResult {
-  step: number;
   name: string;
   result: string;
 }
 
-export interface AgentEvent {
-  type: "thinking" | "text" | "tool_call" | "tool_result" | "answer" | "error" | "done";
-  step?: number;
-  name?: string;
-  args?: Record<string, unknown>;
-  result?: string;
-  content?: string;
-  message?: string;
-}
-
 export interface AgentStep {
   step: number;
-  thinking: boolean;
-  text: string | null;
-  toolCalls: AgentToolCall[];
-  toolResults: AgentToolResult[];
+  type: "sandbox" | "rag_search" | "rag_index" | "completion";
+  status: "running" | "done";
+  toolCall: AgentToolCall | null;
+  toolResult: AgentToolResult | null;
+  data: Record<string, unknown>;
 }
 
 export interface AgentState {
   steps: AgentStep[];
-  answer: string | null;
+  connected: boolean;
   running: boolean;
   error: string | null;
 }
 
 const INITIAL_STATE: AgentState = {
   steps: [],
-  answer: null,
+  connected: false,
   running: false,
   error: null,
 };
 
 // ---------------------------------------------------------------------------
-// Hook
+// Hook — connects to vllm-i64 /v1/agent/events SSE
 // ---------------------------------------------------------------------------
 export function useAgent() {
   const [state, setState] = useState<AgentState>(INITIAL_STATE);
   const abortRef = useRef<AbortController | null>(null);
 
-  const run = useCallback(async (
-    messages: Array<{ role: string; content: string }>,
-    options: { model: string; apiKey: string },
-  ) => {
-    // Reset
-    setState({ steps: [], answer: null, running: true, error: null });
+  const connect = useCallback(async (sessionId?: string) => {
+    // Disconnect previous
+    abortRef.current?.abort();
+
+    setState({ steps: [], connected: false, running: true, error: null });
 
     const controller = new AbortController();
     abortRef.current = controller;
 
+    const baseUrl = ENDPOINTS.agent;
+    const params = new URLSearchParams();
+    if (sessionId) params.set("session_id", sessionId);
+    params.set("history", "50");
+    const url = `${baseUrl}/v1/agent/events?${params}`;
+
     try {
-      const res = await fetch("/api/proxy/agent", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${options.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: options.model,
-          messages,
-          max_tokens: 4096,
-        }),
-        signal: controller.signal,
-      });
+      const res = await fetch(url, { signal: controller.signal });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: { message: "Request failed" } }));
-        setState((s) => ({ ...s, running: false, error: err.error?.message || `HTTP ${res.status}` }));
+        setState((s) => ({
+          ...s,
+          running: false,
+          error: `Connection failed: HTTP ${res.status}`,
+        }));
         return;
       }
 
+      setState((s) => ({ ...s, connected: true }));
+
       const reader = res.body?.getReader();
       if (!reader) {
-        setState((s) => ({ ...s, running: false, error: "No response body" }));
+        setState((s) => ({ ...s, running: false, connected: false, error: "No response body" }));
         return;
       }
 
@@ -105,52 +93,52 @@ export function useAgent() {
         buffer = lines.pop() || "";
 
         for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          const json = line.slice(6).trim();
+          const trimmed = line.trim();
+          // Skip keepalives and empty lines
+          if (!trimmed.startsWith("data: ")) continue;
+          const json = trimmed.slice(6);
           if (!json) continue;
 
-          let event: AgentEvent;
           try {
-            event = JSON.parse(json);
-          } catch {
-            continue;
-          }
+            const event = JSON.parse(json) as {
+              type: string;
+              session_id: string;
+              timestamp: number;
+              event_id: string;
+              data: Record<string, unknown>;
+            };
 
-          setState((prev) => applyEvent(prev, event));
-        }
-      }
+            // Filter by session if needed
+            if (sessionId && event.session_id !== sessionId) continue;
 
-      // Process remaining buffer
-      if (buffer.startsWith("data: ")) {
-        const json = buffer.slice(6).trim();
-        if (json) {
-          try {
-            const event: AgentEvent = JSON.parse(json);
             setState((prev) => applyEvent(prev, event));
-          } catch { /* ignore */ }
+          } catch {
+            // skip malformed
+          }
         }
       }
 
-      setState((s) => ({ ...s, running: false }));
+      setState((s) => ({ ...s, connected: false, running: false }));
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") {
-        setState((s) => ({ ...s, running: false }));
+        setState((s) => ({ ...s, connected: false, running: false }));
         return;
       }
       setState((s) => ({
         ...s,
+        connected: false,
         running: false,
-        error: e instanceof Error ? e.message : "Agent request failed",
+        error: e instanceof Error ? e.message : "Connection failed",
       }));
     } finally {
       abortRef.current = null;
     }
   }, []);
 
-  const stop = useCallback(() => {
+  const disconnect = useCallback(() => {
     abortRef.current?.abort();
     abortRef.current = null;
-    setState((s) => ({ ...s, running: false }));
+    setState((s) => ({ ...s, connected: false, running: false }));
   }, []);
 
   const reset = useCallback(() => {
@@ -159,62 +147,92 @@ export function useAgent() {
     setState(INITIAL_STATE);
   }, []);
 
-  return { ...state, run, stop, reset };
+  return { ...state, connect, disconnect, reset };
 }
 
 // ---------------------------------------------------------------------------
-// State reducer for SSE events
+// State reducer for vllm-i64 agent events
 // ---------------------------------------------------------------------------
-function applyEvent(state: AgentState, event: AgentEvent): AgentState {
+function applyEvent(
+  state: AgentState,
+  event: { type: string; session_id: string; timestamp: number; event_id: string; data: Record<string, unknown> },
+): AgentState {
   const steps = [...state.steps];
+  const data = event.data;
+  const status = (data.status as string) || "done";
+  const eventType = event.type as AgentStep["type"];
 
-  function getOrCreateStep(stepNum: number): AgentStep {
-    let step = steps.find((s) => s.step === stepNum);
-    if (!step) {
-      step = { step: stepNum, thinking: false, text: null, toolCalls: [], toolResults: [] };
-      steps.push(step);
+  if (status === "running") {
+    // New step starting
+    const step: AgentStep = {
+      step: steps.length + 1,
+      type: eventType,
+      status: "running",
+      toolCall: null,
+      toolResult: null,
+      data,
+    };
+
+    // Build tool call info
+    if (eventType === "sandbox") {
+      step.toolCall = {
+        name: "execute_code",
+        args: { code: data.code, language: data.language },
+      };
+    } else if (eventType === "rag_search") {
+      step.toolCall = {
+        name: "rag_search",
+        args: { query: data.query, k: data.k },
+      };
     }
-    return step;
+
+    steps.push(step);
+    return { ...state, steps };
   }
 
-  switch (event.type) {
-    case "thinking": {
-      const step = getOrCreateStep(event.step || 1);
-      step.thinking = true;
-      return { ...state, steps };
-    }
-    case "text": {
-      const step = getOrCreateStep(event.step || 1);
-      step.thinking = false;
-      step.text = event.content || null;
-      return { ...state, steps };
-    }
-    case "tool_call": {
-      const step = getOrCreateStep(event.step || 1);
-      step.thinking = false;
-      step.toolCalls.push({
-        step: event.step || 1,
-        name: event.name || "unknown",
-        args: event.args || {},
+  if (status === "done") {
+    // Find matching running step to complete
+    const idx = steps.findLastIndex(
+      (s) => s.type === eventType && s.status === "running",
+    );
+
+    if (idx >= 0) {
+      const step = { ...steps[idx] };
+      step.status = "done";
+      step.data = data;
+
+      // Build tool result
+      if (eventType === "sandbox") {
+        step.toolResult = {
+          name: "execute_code",
+          result: [
+            data.stdout ? `stdout:\n${data.stdout}` : "",
+            data.stderr ? `stderr:\n${data.stderr}` : "",
+            `exit_code: ${data.exit_code ?? "?"}`,
+          ].filter(Boolean).join("\n"),
+        };
+      } else if (eventType === "rag_search") {
+        step.toolResult = {
+          name: "rag_search",
+          result: `${data.count ?? 0} results`,
+        };
+      }
+
+      steps[idx] = step;
+    } else {
+      // No matching running step — add as completed
+      steps.push({
+        step: steps.length + 1,
+        type: eventType,
+        status: "done",
+        toolCall: null,
+        toolResult: null,
+        data,
       });
-      return { ...state, steps };
     }
-    case "tool_result": {
-      const step = getOrCreateStep(event.step || 1);
-      step.toolResults.push({
-        step: event.step || 1,
-        name: event.name || "unknown",
-        result: event.result || "",
-      });
-      return { ...state, steps };
-    }
-    case "answer":
-      return { ...state, answer: event.content || "" };
-    case "error":
-      return { ...state, error: event.message || "Unknown error" };
-    case "done":
-      return { ...state, running: false };
-    default:
-      return state;
+
+    return { ...state, steps };
   }
+
+  return state;
 }

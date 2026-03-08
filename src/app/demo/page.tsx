@@ -43,14 +43,24 @@ function DemoContent() {
   const [showParams, setShowParams] = useState(false);
   const [showMonitor, setShowMonitor] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [agentInput, setAgentInput] = useState("");
-  const [agentUserMessage, setAgentUserMessage] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState("");
   const mainRef = useRef<HTMLElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const userScrolledUp = useRef(false);
 
   const isAgent = activeMode === "agent";
+
+  // Auto-connect to agent events when switching to agent mode
+  useEffect(() => {
+    if (isAgent && !agent.connected && !agent.running) {
+      agent.connect(sessionId || undefined);
+    }
+    if (!isAgent && agent.connected) {
+      agent.disconnect();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAgent]);
 
   // When active conversation changes, load its messages
   useEffect(() => {
@@ -94,7 +104,7 @@ function DemoContent() {
     if (!userScrolledUp.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [chat.messages, agent.steps, agent.answer]);
+  }, [chat.messages, agent.steps]);
 
   // Mode switching
   const handleSwitchMode = useCallback((m: Mode) => {
@@ -102,28 +112,17 @@ function DemoContent() {
     if (m !== "agent") {
       chat.switchMode(m);
     }
-    if (m === "agent") {
-      agent.reset();
-      setAgentUserMessage(null);
-      setAgentInput("");
-    }
     setActiveMode(m);
     inputRef.current?.focus();
-  }, [activeMode, chat, agent]);
+  }, [activeMode, chat]);
 
-  // Send message
+  // Send message (chat modes only)
   const handleSend = useCallback(() => {
     if (isAgent) {
-      const text = agentInput.trim();
-      if (!text || agent.running) return;
-      setAgentUserMessage(text);
-      setAgentInput("");
-      // Get API key from session or localStorage
-      const apiKey = localStorage.getItem("complexity_api_key") || "";
-      agent.run(
-        [{ role: "user", content: text }],
-        { model: "claude-sonnet-4-20250514", apiKey },
-      );
+      // In agent mode, input is used for session_id filter
+      const text = sessionId.trim();
+      agent.disconnect();
+      agent.connect(text || undefined);
       return;
     }
 
@@ -132,13 +131,13 @@ function DemoContent() {
       convos.createConversation(chat.mode);
     }
     chat.sendMessage();
-  }, [isAgent, agentInput, agent, convos, chat]);
+  }, [isAgent, sessionId, agent, convos, chat]);
 
   const handleNewChat = useCallback(() => {
     if (isAgent) {
       agent.reset();
-      setAgentUserMessage(null);
-      setAgentInput("");
+      setSessionId("");
+      agent.connect();
       return;
     }
     if (chat.streaming || chat.loading) chat.stopGeneration();
@@ -155,7 +154,7 @@ function DemoContent() {
   const handleClear = useCallback(() => {
     if (isAgent) {
       agent.reset();
-      setAgentUserMessage(null);
+      setSessionId("");
       return;
     }
     chat.clearChat();
@@ -167,24 +166,24 @@ function DemoContent() {
 
   const handleStop = useCallback(() => {
     if (isAgent) {
-      agent.stop();
+      agent.disconnect();
     } else {
       chat.stopGeneration();
     }
   }, [isAgent, agent, chat]);
 
-  // Determine if the agent welcome screen should show
-  const showAgentWelcome = isAgent && !agentUserMessage && !agent.running;
+  // Welcome screens
+  const showAgentWelcome = isAgent && !agent.connected && !agent.running && agent.steps.length === 0;
   const showChatWelcome = !isAgent && chat.messages.length === 0 && !chat.loading && !chat.streaming;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <ChatHeader
         mode={activeMode}
-        streaming={isAgent ? agent.running : chat.streaming}
+        streaming={isAgent ? agent.connected : chat.streaming}
         showParams={showParams}
         showMonitor={showMonitor}
-        health={isAgent ? "ok" : chat.healthStatus}
+        health={isAgent ? (agent.connected ? "ok" : "offline") : chat.healthStatus}
         onSwitchMode={handleSwitchMode}
         onToggleParams={() => setShowParams(!showParams)}
         onToggleMonitor={() => setShowMonitor(!showMonitor)}
@@ -225,13 +224,8 @@ function DemoContent() {
                 totalRequests={isAgent ? null : chat.totalRequests}
                 onSelectPrompt={(prompt) => {
                   if (isAgent) {
-                    setAgentUserMessage(prompt);
-                    setAgentInput("");
-                    const apiKey = localStorage.getItem("complexity_api_key") || "";
-                    agent.run(
-                      [{ role: "user", content: prompt }],
-                      { model: "claude-sonnet-4-20250514", apiKey },
-                    );
+                    // Suggestions in agent mode connect with session filter
+                    agent.connect(prompt);
                   } else {
                     if (!convos.activeId) {
                       if (convos.isFull) return;
@@ -244,17 +238,7 @@ function DemoContent() {
             ) : (
               <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 space-y-4">
                 {isAgent ? (
-                  <>
-                    {/* User message */}
-                    {agentUserMessage && (
-                      <ChatMessage
-                        message={{ role: "user", content: agentUserMessage }}
-                        mode="agent"
-                      />
-                    )}
-                    {/* Agent response with steps */}
-                    <AgentMessage agent={agent} />
-                  </>
+                  <AgentMessage agent={agent} />
                 ) : (
                   <>
                     {chat.messages.map((msg, i) => (
@@ -271,13 +255,13 @@ function DemoContent() {
 
           <ChatInput
             mode={activeMode}
-            input={isAgent ? agentInput : chat.input}
+            input={isAgent ? sessionId : chat.input}
             loading={isAgent ? false : chat.loading}
-            streaming={isAgent ? agent.running : chat.streaming}
+            streaming={isAgent ? agent.connected : chat.streaming}
             maxTokens={chat.params.maxTokens}
             tokenStats={isAgent ? null : chat.tokenStats}
             expertDist={isAgent ? null : chat.expertDist}
-            onInputChange={isAgent ? setAgentInput : chat.setInput}
+            onInputChange={isAgent ? setSessionId : chat.setInput}
             onSend={handleSend}
             onStop={handleStop}
             inputRef={inputRef}

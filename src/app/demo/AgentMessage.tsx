@@ -4,13 +4,14 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import CodeBlock from "@/components/CodeBlock";
-import { cn } from "@/lib/utils";
 import type { AgentStep, AgentState } from "./useAgent";
 
 // ---------------------------------------------------------------------------
-// Step renderer — shows thinking, tool calls, results
+// Step renderer — shows sandbox executions, RAG searches in real-time
 // ---------------------------------------------------------------------------
 function StepBlock({ step }: { step: AgentStep }) {
+  const isRunning = step.status === "running";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -23,32 +24,33 @@ function StepBlock({ step }: { step: AgentStep }) {
           <span className="text-muted-foreground/60">step</span>
           <span className="text-primary/80">{step.step}</span>
         </Badge>
-        {step.thinking && (
+        <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0">
+          {step.type}
+        </Badge>
+        {isRunning ? (
           <div className="flex items-center gap-1.5">
             <motion.span
               className="size-1.5 rounded-full bg-accent-purple"
               animate={{ opacity: [0.3, 1, 0.3] }}
               transition={{ duration: 1.2, repeat: Infinity }}
             />
-            <span className="text-[11px] font-mono text-accent-purple">thinking...</span>
+            <span className="text-[11px] font-mono text-accent-purple">running...</span>
           </div>
+        ) : (
+          <Badge className="text-[9px] font-mono px-1.5 py-0 bg-accent-green/15 text-accent-green border-accent-green/30">
+            done
+          </Badge>
         )}
       </div>
 
-      {/* Intermediate text (LLM reasoning) */}
-      {step.text && (
-        <div className="pl-3 border-l-2 border-border/30">
-          <p className="text-xs text-muted-foreground/70 whitespace-pre-wrap">{step.text}</p>
-        </div>
+      {/* Tool call details */}
+      {step.toolCall && (
+        <ToolCallBlock
+          toolCall={step.toolCall}
+          result={step.toolResult}
+          type={step.type}
+        />
       )}
-
-      {/* Tool calls + results */}
-      {step.toolCalls.map((tc, i) => {
-        const result = step.toolResults.find((r) => r.name === tc.name && step.toolResults.indexOf(r) === i);
-        return (
-          <ToolCallBlock key={`${tc.name}-${i}`} toolCall={tc} result={result} />
-        );
-      })}
     </motion.div>
   );
 }
@@ -59,19 +61,21 @@ function StepBlock({ step }: { step: AgentStep }) {
 function ToolCallBlock({
   toolCall,
   result,
+  type,
 }: {
   toolCall: { name: string; args: Record<string, unknown> };
-  result?: { result: string } | undefined;
+  result?: { name: string; result: string } | null;
+  type: string;
 }) {
-  const isCode = toolCall.name === "execute_code";
-  const isRag = toolCall.name === "rag_search";
+  const isCode = type === "sandbox";
+  const isRag = type === "rag_search";
 
   return (
     <div className="rounded-lg border border-border/40 bg-card/50 overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 border-b border-border/30">
         <span className="text-[11px] font-mono text-primary/70">
-          {isCode ? "execute_code" : isRag ? "rag_search" : toolCall.name}
+          {toolCall.name}
         </span>
         {isCode && !!toolCall.args.language && (
           <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0">
@@ -97,7 +101,7 @@ function ToolCallBlock({
       {/* Code / query */}
       {isCode && !!toolCall.args.code && (
         <div className="px-3 py-2 max-h-[200px] overflow-y-auto">
-          <CodeBlock content={"```" + (String(toolCall.args.language || "python")) + "\n" + String(toolCall.args.code) + "\n```"} />
+          <CodeBlock content={"```" + String(toolCall.args.language || "python") + "\n" + String(toolCall.args.code) + "\n```"} />
         </div>
       )}
       {isRag && !!toolCall.args.query && (
@@ -122,10 +126,10 @@ function ToolCallBlock({
 }
 
 // ---------------------------------------------------------------------------
-// Main agent message — renders all steps + final answer
+// Main agent viewer — renders live event stream from vllm-i64
 // ---------------------------------------------------------------------------
 export function AgentMessage({ agent }: { agent: AgentState }) {
-  if (agent.steps.length === 0 && !agent.answer && !agent.error && !agent.running) {
+  if (agent.steps.length === 0 && !agent.error && !agent.connected) {
     return null;
   }
 
@@ -137,17 +141,25 @@ export function AgentMessage({ agent }: { agent: AgentState }) {
     >
       <Card className="w-full rounded-xl py-3 gap-0 shadow-none bg-card border-border/50">
         <CardContent className="px-4 py-0 space-y-4">
-          <Badge variant="secondary" className="font-mono text-[10px] text-primary/60 bg-transparent border-none p-0">
-            agent
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="font-mono text-[10px] text-primary/60 bg-transparent border-none p-0">
+              agent events
+            </Badge>
+            {agent.connected && (
+              <div className="flex items-center gap-1">
+                <span className="size-1.5 rounded-full bg-accent-green animate-pulse" />
+                <span className="text-[9px] font-mono text-accent-green">live</span>
+              </div>
+            )}
+          </div>
 
           {/* Steps */}
-          {agent.steps.map((step) => (
-            <StepBlock key={step.step} step={step} />
+          {agent.steps.map((step, i) => (
+            <StepBlock key={`${step.type}-${i}`} step={step} />
           ))}
 
-          {/* Running indicator when no steps yet */}
-          {agent.running && agent.steps.length === 0 && (
+          {/* Connecting indicator */}
+          {agent.running && agent.steps.length === 0 && !agent.connected && (
             <div className="flex items-center gap-1 h-5">
               {[0, 1, 2].map((i) => (
                 <motion.span
@@ -165,18 +177,11 @@ export function AgentMessage({ agent }: { agent: AgentState }) {
             </div>
           )}
 
-          {/* Final answer */}
-          {agent.answer && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className={cn(
-                "pt-3",
-                agent.steps.length > 0 && "border-t border-border/30",
-              )}
-            >
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">{agent.answer}</p>
-            </motion.div>
+          {/* Waiting for events */}
+          {agent.connected && agent.steps.length === 0 && (
+            <p className="text-xs text-muted-foreground/50 font-mono">
+              Listening for agent activity...
+            </p>
           )}
 
           {/* Error */}
