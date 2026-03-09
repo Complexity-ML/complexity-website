@@ -42,7 +42,11 @@ export function useCompare() {
   const [denseTokens, setDenseTokens] = useState(0);
   const [chatTokens, setChatTokens] = useState(0);
 
+  // Expert distribution from i64 backend (4 experts)
+  const [expertDist, setExpertDist] = useState<number[] | null>(null);
+
   const abortRef = useRef<AbortController | null>(null);
+  const expertsAvailable = useRef(true);
 
   const denseClient = useMemo(
     () => new I64Client(COMPARE_ENDPOINTS.dense, { timeoutMs: 120_000 }),
@@ -57,28 +61,38 @@ export function useCompare() {
     [],
   );
 
-  // Health polling
+  // Health + expert distribution polling
   useEffect(() => {
     let cancelled = false;
     const poll = async () => {
       try {
-        // Check gateway health (dense endpoint as proxy)
-        const res = await fetch(`${COMPARE_ENDPOINTS.dense}/../health`);
+        const [healthRes, expertsRes] = await Promise.allSettled([
+          fetch(`${COMPARE_ENDPOINTS.dense}/../health`),
+          expertsAvailable.current ? chatClient.monitor.experts() : Promise.reject("skipped"),
+        ]);
         if (cancelled) return;
-        if (res.ok) {
-          const data = await res.json();
+
+        if (healthRes.status === "fulfilled" && healthRes.value.ok) {
+          const data = await healthRes.value.json();
           setHealthStatus(data.status === "ok" ? "ok" : "degraded");
         } else {
           setHealthStatus("offline");
+        }
+
+        if (expertsRes.status === "fulfilled") {
+          const dist = (expertsRes.value as { distribution: number[] }).distribution;
+          if (dist && dist.length > 0) setExpertDist(dist);
+        } else if (expertsAvailable.current) {
+          expertsAvailable.current = false;
         }
       } catch {
         if (!cancelled) setHealthStatus("offline");
       }
     };
     poll();
-    const interval = setInterval(poll, 30_000);
+    const interval = setInterval(poll, 2_000);
     return () => { cancelled = true; clearInterval(interval); };
-  }, []);
+  }, [chatClient]);
 
   const stopGeneration = useCallback(() => {
     abortRef.current?.abort();
@@ -207,6 +221,7 @@ export function useCompare() {
     chatContent,
     denseTokens,
     chatTokens,
+    expertDist,
     sendMessage,
     stopGeneration,
     clearResults,

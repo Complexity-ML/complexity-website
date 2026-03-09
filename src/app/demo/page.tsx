@@ -270,6 +270,7 @@ function DemoContent() {
                       denseTokens={compare.denseTokens}
                       chatTokens={compare.chatTokens}
                       streaming={compare.streaming}
+                      expertDist={compare.expertDist}
                     />
                     {compare.error && <ErrorBanner message={compare.error} />}
                   </>
@@ -294,7 +295,7 @@ function DemoContent() {
             streaming={isAgent ? agent.connected : isCompare ? compare.streaming : chat.streaming}
             maxTokens={isCompare ? compare.params.maxTokens : chat.params.maxTokens}
             tokenStats={isAgent || isCompare ? null : chat.tokenStats}
-            expertDist={isAgent || isCompare ? null : chat.expertDist}
+            expertDist={isAgent ? null : isCompare ? compare.expertDist : chat.expertDist}
             onInputChange={isAgent ? setSessionId : isCompare ? compare.setInput : chat.setInput}
             onSend={handleSend}
             onStop={handleStop}
