@@ -17,14 +17,14 @@ export interface CompareResult {
 }
 
 const DEFAULT_PARAMS: SamplingParams = {
-  temperature: 0.6,
-  topK: 40,
+  temperature: 0.7,
+  topK: 50,
   topP: 0.9,
   minP: 0.05,
   typicalP: 0.92,
-  repetitionPenalty: 1.15,
+  repetitionPenalty: 1.4,
   minTokens: 8,
-  maxTokens: 512,
+  maxTokens: 256,
 };
 
 export function useCompare() {
@@ -128,7 +128,7 @@ export function useCompare() {
       setLoading(false);
       setStreaming(true);
 
-      // Stream both models in parallel using chat API (applies User/Assistant template)
+      // Stream both models in parallel — raw completions (pre-train, no chat template)
       const denseStart = performance.now();
       const chatStart = performance.now();
       let denseResult = "";
@@ -136,14 +136,12 @@ export function useCompare() {
       let denseCount = 0;
       let chatCount = 0;
 
-      const chatMessages = [{ role: "user" as const, content: text }];
-
-      const denseStream = denseClient.chat.stream(chatMessages, {
+      const denseStream = denseClient.completions.stream(text, {
         model: "pacific-i64",
         ...streamOpts,
       });
 
-      const chatStream = chatClient.chat.stream(chatMessages, {
+      const chatStream = chatClient.completions.stream(text, {
         model: "pacific-chat",
         ...streamOpts,
       });
