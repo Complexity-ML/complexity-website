@@ -112,7 +112,6 @@ export function useCompare() {
     const controller = new AbortController();
     abortRef.current = controller;
 
-    const chatMessages = [{ role: "user" as const, content: text }];
     const streamOpts = {
       max_tokens: params.maxTokens,
       temperature: params.temperature,
@@ -129,7 +128,7 @@ export function useCompare() {
       setLoading(false);
       setStreaming(true);
 
-      // Stream both models in parallel
+      // Stream both models in parallel — raw completions (no chat template)
       const denseStart = performance.now();
       const chatStart = performance.now();
       let denseResult = "";
@@ -137,12 +136,12 @@ export function useCompare() {
       let denseCount = 0;
       let chatCount = 0;
 
-      const denseStream = denseClient.chat.stream(chatMessages, {
+      const denseStream = denseClient.completions.stream(text, {
         model: "pacific-i64",
         ...streamOpts,
       });
 
-      const chatStream = chatClient.chat.stream(chatMessages, {
+      const chatStream = chatClient.completions.stream(text, {
         model: "pacific-chat",
         ...streamOpts,
       });
