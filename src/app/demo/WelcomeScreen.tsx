@@ -15,14 +15,14 @@ const STATS = [
 
 const MODE_TITLES: Record<Mode, string> = {
   python: "Pacific-i64",
-  chat: "Chat-Node",
+  compare: "Dense vs i64",
   ros2: "ROS2-Node",
   agent: "Agent",
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
   python: "1.58B parameter model \u2014 outputs may require review",
-  chat: "1.58B parameter model \u2014 responses are creative and may be unpredictable",
+  compare: "Side-by-side comparison \u2014 same prompt, two architectures",
   ros2: "1.58B parameter model \u2014 ROS2 specialist, outputs may require review",
   agent: "Connects to vllm-i64 event stream \u2014 run agents from VSCode or CLI",
 };
