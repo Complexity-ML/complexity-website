@@ -128,7 +128,7 @@ export function useCompare() {
       setLoading(false);
       setStreaming(true);
 
-      // Stream both models in parallel — raw completions (no chat template)
+      // Stream both models in parallel using chat API (applies User/Assistant template)
       const denseStart = performance.now();
       const chatStart = performance.now();
       let denseResult = "";
@@ -136,12 +136,14 @@ export function useCompare() {
       let denseCount = 0;
       let chatCount = 0;
 
-      const denseStream = denseClient.completions.stream(text, {
+      const chatMessages = [{ role: "user" as const, content: text }];
+
+      const denseStream = denseClient.chat.stream(chatMessages, {
         model: "pacific-i64",
         ...streamOpts,
       });
 
-      const chatStream = chatClient.completions.stream(text, {
+      const chatStream = chatClient.chat.stream(chatMessages, {
         model: "pacific-chat",
         ...streamOpts,
       });
