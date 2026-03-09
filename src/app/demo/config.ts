@@ -1,4 +1,4 @@
-export type Mode = "python" | "chat" | "ros2" | "agent";
+export type Mode = "python" | "compare" | "ros2" | "agent";
 
 export interface Message {
   role: "user" | "assistant";
@@ -14,14 +14,19 @@ export const MAINTENANCE: Partial<Record<Mode, string>> = {};
 
 export const ENDPOINTS: Record<Mode, string> = {
   python: process.env.NEXT_PUBLIC_API_URL || "https://pacific-prime-pacific-i64-demo.hf.space",
-  chat: process.env.NEXT_PUBLIC_CHAT_API_URL || "https://pacific-prime-pacific-i64-chat.hf.space",
+  compare: process.env.NEXT_PUBLIC_COMPARE_API_URL || "https://pacific-prime-pacific-i64-compare.hf.space",
   ros2: process.env.NEXT_PUBLIC_ROS2_API_URL || "https://pacific-prime-pacific-ros2.hf.space",
   agent: process.env.NEXT_PUBLIC_VLLM_I64_URL || "http://localhost:8000",
 };
 
+export const COMPARE_ENDPOINTS = {
+  dense: `${ENDPOINTS.compare}/dense`,
+  chat: `${ENDPOINTS.compare}/chat`,
+};
+
 export const MODEL_NAMES: Record<Mode, string> = {
   python: "pacific-i64",
-  chat: "pacific-chat",
+  compare: "dense vs i64",
   ros2: "pacific-ros2",
   agent: "agent",
 };
@@ -29,8 +34,8 @@ export const MODEL_NAMES: Record<Mode, string> = {
 export const DESCRIPTIONS: Record<Mode, string> = {
   python:
     "Complexity Deep 1.58B — Python code helper powered by Token-Routed i64 deterministic routing.",
-  chat:
-    "Complexity Deep 1.58B — Conversational chat powered by Token-Routed i64 deterministic routing.",
+  compare:
+    "Side-by-side: Dense baseline vs Token-Routed i64 — same prompt, two models, real-time comparison.",
   ros2:
     "Complexity Deep 1.58B — ROS2 specialist powered by Token-Routed i64 deterministic routing.",
   agent:
@@ -39,7 +44,7 @@ export const DESCRIPTIONS: Record<Mode, string> = {
 
 export const FOOTERS: Record<Mode, string> = {
   python: "Complexity Deep 1.58B — Python Code Helper — Token-Routed i64",
-  chat: "Complexity Deep 1.58B — Chat Node — Token-Routed i64",
+  compare: "Dense vs Token-Routed i64 — Side-by-Side Comparison",
   ros2: "Complexity Deep 1.58B — ROS2 Specialist — Token-Routed i64",
   agent: "Agent Viewer — Live Events — vllm-i64",
 };
@@ -94,9 +99,9 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
       ],
     },
   ],
-  chat: [
+  compare: [
     {
-      label: "chat",
+      label: "compare",
       prompts: [
         "Hello, how are you?",
         "What is the capital of France?",
@@ -108,19 +113,8 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
         "Give me three tips for a healthy lifestyle",
         "What are the seasons of the year?",
         "Describe a beautiful sunset",
-      ],
-    },
-    {
-      label: "fun time",
-      prompts: [
         "Tell me a short story",
         "Write a poem about the ocean",
-        "Give me a recipe for chocolate cake",
-        "List 5 interesting facts about dogs",
-        "Give me a recipe for pancakes",
-        "What is the most beautiful place on Earth?",
-        "Tell me about the history of computers",
-        "Describe the solar system",
         "Explain how the internet works",
         "Why do we dream?",
       ],

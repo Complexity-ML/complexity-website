@@ -7,11 +7,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import type { Mode } from "./config";
 import { useChat } from "./useChat";
 import { useAgent } from "./useAgent";
+import { useCompare } from "./useCompare";
 import { useConversations } from "./useConversations";
 import { ChatHeader } from "./ChatHeader";
 import { ParamPanel } from "./ParamPanel";
 import { ChatMessage, LoadingBubble, ErrorBanner } from "./ChatMessage";
 import { AgentMessage } from "./AgentMessage";
+import { CompareView } from "./CompareView";
 import { ChatInput } from "./ChatInput";
 import { MonitorPanel } from "./MonitorPanel";
 import { WelcomeScreen } from "./WelcomeScreen";
@@ -33,8 +35,9 @@ function DemoContent() {
   const initialMode = (searchParams.get("mode") as Mode) || "python";
   const userId = (session?.user as Record<string, unknown> | undefined)?.id as string | undefined;
 
-  const chat = useChat(initialMode === "ros2" ? "ros2" : initialMode === "agent" ? "python" : initialMode);
+  const chat = useChat(initialMode === "ros2" ? "ros2" : initialMode === "compare" ? "python" : initialMode === "agent" ? "python" : initialMode);
   const agent = useAgent();
+  const compare = useCompare();
   const convos = useConversations(userId);
 
   // Track current mode separately since agent mode doesn't use useChat's mode
@@ -50,6 +53,7 @@ function DemoContent() {
   const userScrolledUp = useRef(false);
 
   const isAgent = activeMode === "agent";
+  const isCompare = activeMode === "compare";
 
   // Auto-connect to agent events when switching to agent mode
   useEffect(() => {
@@ -119,10 +123,14 @@ function DemoContent() {
   // Send message (chat modes only)
   const handleSend = useCallback(() => {
     if (isAgent) {
-      // In agent mode, input is used for session_id filter
       const text = sessionId.trim();
       agent.disconnect();
       agent.connect(text || undefined);
+      return;
+    }
+
+    if (isCompare) {
+      compare.sendMessage();
       return;
     }
 
@@ -131,7 +139,7 @@ function DemoContent() {
       convos.createConversation(chat.mode);
     }
     chat.sendMessage();
-  }, [isAgent, sessionId, agent, convos, chat]);
+  }, [isAgent, isCompare, sessionId, agent, compare, convos, chat]);
 
   const handleNewChat = useCallback(() => {
     if (isAgent) {
@@ -140,11 +148,16 @@ function DemoContent() {
       agent.connect();
       return;
     }
+    if (isCompare) {
+      compare.clearResults();
+      inputRef.current?.focus();
+      return;
+    }
     if (chat.streaming || chat.loading) chat.stopGeneration();
     chat.clearChat();
     convos.selectConversation(null);
     inputRef.current?.focus();
-  }, [isAgent, agent, chat, convos]);
+  }, [isAgent, isCompare, agent, compare, chat, convos]);
 
   const handleSelectConvo = useCallback((id: string | null) => {
     if (chat.streaming || chat.loading) chat.stopGeneration();
@@ -157,33 +170,41 @@ function DemoContent() {
       setSessionId("");
       return;
     }
+    if (isCompare) {
+      compare.clearResults();
+      inputRef.current?.focus();
+      return;
+    }
     chat.clearChat();
     if (convos.activeId) {
       convos.deleteConversation(convos.activeId);
     }
     inputRef.current?.focus();
-  }, [isAgent, agent, chat, convos]);
+  }, [isAgent, isCompare, agent, compare, chat, convos]);
 
   const handleStop = useCallback(() => {
     if (isAgent) {
       agent.disconnect();
+    } else if (isCompare) {
+      compare.stopGeneration();
     } else {
       chat.stopGeneration();
     }
-  }, [isAgent, agent, chat]);
+  }, [isAgent, isCompare, agent, compare, chat]);
 
   // Welcome screens
   const showAgentWelcome = isAgent && !agent.connected && !agent.running && agent.steps.length === 0;
-  const showChatWelcome = !isAgent && chat.messages.length === 0 && !chat.loading && !chat.streaming;
+  const showCompareWelcome = isCompare && compare.results.length === 0 && !compare.loading && !compare.streaming;
+  const showChatWelcome = !isAgent && !isCompare && chat.messages.length === 0 && !chat.loading && !chat.streaming;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <ChatHeader
         mode={activeMode}
-        streaming={isAgent ? agent.connected : chat.streaming}
+        streaming={isAgent ? agent.connected : isCompare ? compare.streaming : chat.streaming}
         showParams={showParams}
         showMonitor={showMonitor}
-        health={isAgent ? (agent.connected ? "ok" : "offline") : chat.healthStatus}
+        health={isAgent ? (agent.connected ? "ok" : "offline") : isCompare ? compare.healthStatus : chat.healthStatus}
         onSwitchMode={handleSwitchMode}
         onToggleParams={() => setShowParams(!showParams)}
         onToggleMonitor={() => setShowMonitor(!showMonitor)}
@@ -200,8 +221,8 @@ function DemoContent() {
       )}
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar — hidden on mobile, hidden in agent mode */}
-        {!isAgent && (
+        {/* Sidebar — hidden on mobile, hidden in agent/compare mode */}
+        {!isAgent && !isCompare && (
           <div className="hidden md:flex">
             <ChatSidebar
               conversations={convos.conversations}
@@ -218,14 +239,15 @@ function DemoContent() {
         {/* Main content area */}
         <div className="flex-1 flex flex-col min-w-0">
           <main ref={mainRef} className="flex-1 overflow-y-auto">
-            {(showAgentWelcome || showChatWelcome) ? (
+            {(showAgentWelcome || showCompareWelcome || showChatWelcome) ? (
               <WelcomeScreen
                 mode={activeMode}
-                totalRequests={isAgent ? null : chat.totalRequests}
+                totalRequests={isAgent || isCompare ? null : chat.totalRequests}
                 onSelectPrompt={(prompt) => {
                   if (isAgent) {
-                    // Suggestions in agent mode connect with session filter
                     agent.connect(prompt);
+                  } else if (isCompare) {
+                    compare.sendMessage(prompt);
                   } else {
                     if (!convos.activeId) {
                       if (convos.isFull) return;
@@ -236,9 +258,21 @@ function DemoContent() {
                 }}
               />
             ) : (
-              <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 space-y-4">
+              <div className={`mx-auto px-4 sm:px-6 py-4 space-y-4 ${isCompare ? "max-w-6xl" : "max-w-4xl"}`}>
                 {isAgent ? (
                   <AgentMessage agent={agent} />
+                ) : isCompare ? (
+                  <>
+                    <CompareView
+                      results={compare.results}
+                      denseContent={compare.denseContent}
+                      chatContent={compare.chatContent}
+                      denseTokens={compare.denseTokens}
+                      chatTokens={compare.chatTokens}
+                      streaming={compare.streaming}
+                    />
+                    {compare.error && <ErrorBanner message={compare.error} />}
+                  </>
                 ) : (
                   <>
                     {chat.messages.map((msg, i) => (
@@ -255,13 +289,13 @@ function DemoContent() {
 
           <ChatInput
             mode={activeMode}
-            input={isAgent ? sessionId : chat.input}
-            loading={isAgent ? false : chat.loading}
-            streaming={isAgent ? agent.connected : chat.streaming}
-            maxTokens={chat.params.maxTokens}
-            tokenStats={isAgent ? null : chat.tokenStats}
-            expertDist={isAgent ? null : chat.expertDist}
-            onInputChange={isAgent ? setSessionId : chat.setInput}
+            input={isAgent ? sessionId : isCompare ? compare.input : chat.input}
+            loading={isAgent ? false : isCompare ? compare.loading : chat.loading}
+            streaming={isAgent ? agent.connected : isCompare ? compare.streaming : chat.streaming}
+            maxTokens={isCompare ? compare.params.maxTokens : chat.params.maxTokens}
+            tokenStats={isAgent || isCompare ? null : chat.tokenStats}
+            expertDist={isAgent || isCompare ? null : chat.expertDist}
+            onInputChange={isAgent ? setSessionId : isCompare ? compare.setInput : chat.setInput}
             onSend={handleSend}
             onStop={handleStop}
             inputRef={inputRef}
