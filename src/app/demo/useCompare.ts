@@ -61,38 +61,46 @@ export function useCompare() {
     [],
   );
 
-  // Health + expert distribution polling
+  // Health polling (constant, every 30s)
   useEffect(() => {
     let cancelled = false;
     const poll = async () => {
       try {
-        const [healthRes, expertsRes] = await Promise.allSettled([
-          fetch(`${COMPARE_ENDPOINTS.dense}/../health`),
-          expertsAvailable.current ? chatClient.monitor.experts() : Promise.reject("skipped"),
-        ]);
+        const res = await fetch(`${COMPARE_ENDPOINTS.dense}/../health`);
         if (cancelled) return;
-
-        if (healthRes.status === "fulfilled" && healthRes.value.ok) {
-          const data = await healthRes.value.json();
+        if (res.ok) {
+          const data = await res.json();
           setHealthStatus(data.status === "ok" ? "ok" : "degraded");
         } else {
           setHealthStatus("offline");
-        }
-
-        if (expertsRes.status === "fulfilled") {
-          const dist = (expertsRes.value as { distribution: number[] }).distribution;
-          if (dist && dist.length > 0) setExpertDist(dist);
-        } else if (expertsAvailable.current) {
-          expertsAvailable.current = false;
         }
       } catch {
         if (!cancelled) setHealthStatus("offline");
       }
     };
     poll();
+    const interval = setInterval(poll, 30_000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, []);
+
+  // Expert distribution polling (only during streaming, every 2s)
+  useEffect(() => {
+    if (!streaming || !expertsAvailable.current) return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const res = await chatClient.monitor.experts();
+        if (cancelled) return;
+        const dist = (res as { distribution: number[] }).distribution;
+        if (dist && dist.length > 0) setExpertDist(dist);
+      } catch {
+        if (!cancelled) expertsAvailable.current = false;
+      }
+    };
+    poll();
     const interval = setInterval(poll, 2_000);
     return () => { cancelled = true; clearInterval(interval); };
-  }, [chatClient]);
+  }, [streaming, chatClient]);
 
   const stopGeneration = useCallback(() => {
     abortRef.current?.abort();
