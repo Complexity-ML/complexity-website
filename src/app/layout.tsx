@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Complexity-ML | Open-Source AI Lab",
     description: "Building efficient transformer architectures with Mu-Guided Dynamics and Token-Routed MLP.",
-    url: "https://complexity-ml.com",
+    url: "https://complexity-ai.fr",
     siteName: "Complexity-ML",
     type: "website",
   },
