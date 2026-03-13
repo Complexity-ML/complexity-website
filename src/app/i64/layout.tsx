@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     title: 'Dense vs i64 — Complexity ML',
     description:
       'Token-routed MLP, Mu-Guided Dynamics, and CGGR kernels. A new approach to efficient transformer architectures.',
-    url: 'https://complexity-ai.fr/i64',
+    url: 'https://www.complexity-ai.fr/i64',
     siteName: 'Complexity ML',
     type: 'website',
   },
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
       'Token-routed MLP, Mu-Guided Dynamics, and CGGR kernels. A new approach to efficient transformer architectures.',
   },
   alternates: {
-    canonical: 'https://complexity-ai.fr/i64',
+    canonical: 'https://www.complexity-ai.fr/i64',
   },
 }
 

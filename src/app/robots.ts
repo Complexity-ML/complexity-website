@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/dashboard/', '/auth/'],
       },
     ],
-    sitemap: 'https://complexity-ai.fr/sitemap.xml',
+    sitemap: 'https://www.complexity-ai.fr/sitemap.xml',
   }
 }
