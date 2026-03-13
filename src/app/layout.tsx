@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     description: "Building efficient transformer architectures with Mu-Guided Dynamics and Token-Routed MLP.",
   },
   verification: {
-    google: "WW7RDDq0N_n37pESeY0j0BJ1zt8L6ylZzXl-vkKbUoM",
+    google: "H4DZCSF0al4GA7R-OuD-qMs8Mu2FKzFTJ7G8tlnBx3w",
   },
 };
 
