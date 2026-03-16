@@ -14,6 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.complexity-ai.fr"),
+  alternates: { canonical: "./" },
   title: "Complexity-ML | Open-Source AI Lab",
   description: "Building efficient transformer architectures with Mu-Guided Dynamics and Token-Routed MLP. Open-source AI research from Paris.",
   keywords: ["AI", "Machine Learning", "Transformers", "LLM", "MoE", "PyTorch", "Open Source"],
