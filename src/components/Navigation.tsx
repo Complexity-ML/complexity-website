@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Menu, Github, LogIn } from "lucide-react";
 import { motion } from "framer-motion";
-import { useSession, signIn } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -18,15 +17,13 @@ import {
 } from "@/components/ui/sheet";
 
 const NAV_LINKS = [
-  { href: "/demo", label: "Demo", highlight: true },
-  { href: "/dashboard", label: "Dashboard", highlight: true },
   { href: "#projects", label: "Projects" },
+  { href: "#benchmark", label: "Benchmark" },
   { href: "#publications", label: "Publications" },
   { href: "#about", label: "About" },
 ];
 
 export default function Navigation() {
-  const { data: session } = useSession();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -59,11 +56,7 @@ export default function Navigation() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm transition-colors ${
-                  link.highlight
-                    ? "text-primary font-medium hover:text-primary/80"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 {link.label}
               </Link>
@@ -82,36 +75,15 @@ export default function Navigation() {
               </a>
             </Button>
 
-            {/* Auth */}
-            {session?.user ? (
-              <Link
-                href="/dashboard"
-                className="hidden sm:flex items-center gap-2 hover:opacity-80 transition-opacity"
-              >
-                {session.user.image && (
-                  <Image
-                    src={session.user.image}
-                    alt=""
-                    width={28}
-                    height={28}
-                    className="rounded-full"
-                  />
-                )}
-                <span className="text-sm text-muted-foreground max-w-[120px] truncate">
-                  {session.user.name}
-                </span>
-              </Link>
-            ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => signIn()}
-                className="hidden sm:flex gap-1.5"
-              >
-                <LogIn className="size-4" />
-                Sign in
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => signIn()}
+              className="hidden sm:flex gap-1.5"
+            >
+              <LogIn className="size-4" />
+              Sign in
+            </Button>
 
             {/* Mobile hamburger */}
             <Sheet>
@@ -131,49 +103,22 @@ export default function Navigation() {
                 <nav className="flex flex-col gap-1 px-4">
                   {NAV_LINKS.map((link) => (
                     <SheetClose key={link.href} asChild>
-                      <Button
-                        variant={link.highlight ? "default" : "ghost"}
-                        className="justify-start"
-                        asChild
-                      >
+                      <Button variant="ghost" className="justify-start" asChild>
                         <Link href={link.href}>{link.label}</Link>
                       </Button>
                     </SheetClose>
                   ))}
                   <Separator className="my-2" />
-                  {session?.user ? (
-                    <SheetClose asChild>
-                      <Button
-                        variant="ghost"
-                        className="justify-start gap-2"
-                        asChild
-                      >
-                        <Link href="/dashboard">
-                          {session.user.image && (
-                            <Image
-                              src={session.user.image}
-                              alt=""
-                              width={20}
-                              height={20}
-                              className="rounded-full"
-                            />
-                          )}
-                          Dashboard
-                        </Link>
-                      </Button>
-                    </SheetClose>
-                  ) : (
-                    <SheetClose asChild>
-                      <Button
-                        variant="ghost"
-                        className="justify-start gap-2"
-                        onClick={() => signIn()}
-                      >
-                        <LogIn className="size-4" />
-                        Sign in
-                      </Button>
-                    </SheetClose>
-                  )}
+                  <SheetClose asChild>
+                    <Button
+                      variant="ghost"
+                      className="justify-start gap-2"
+                      onClick={() => signIn()}
+                    >
+                      <LogIn className="size-4" />
+                      Sign in
+                    </Button>
+                  </SheetClose>
                 </nav>
               </SheetContent>
             </Sheet>

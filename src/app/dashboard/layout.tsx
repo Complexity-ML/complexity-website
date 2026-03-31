@@ -5,13 +5,11 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { LayoutDashboard, Key, Settings, MessageSquare, Users } from "lucide-react";
+import { LayoutDashboard, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/keys", label: "API Keys", icon: Key },
-  { href: "/dashboard/team", label: "Team", icon: Users },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
@@ -68,15 +66,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             );
           })}
 
-          <div className="pt-4">
-            <Link
-              href="/demo"
-              className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
-            >
-              <MessageSquare className="size-4" />
-              Chat
-            </Link>
-          </div>
         </nav>
 
         {/* User */}

@@ -2,8 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
-import Link from "next/link";
-import { LogOut, Shield, Key } from "lucide-react";
+import { LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -63,25 +62,8 @@ export default function SettingsPage() {
             </Badge>
           </div>
           <Separator />
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Partition</span>
-            <Badge variant="outline" className="font-mono text-xs">
-              sha256(api_key || user_id) mod 64
-            </Badge>
-          </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <span className="text-sm">API Key</span>
-            <Link href="/dashboard/keys">
-              <Button variant="outline" size="sm" className="gap-2">
-                <Key className="size-4" />
-                Manage keys
-              </Button>
-            </Link>
-          </div>
-          <Separator />
           <p className="text-xs text-muted-foreground">
-            Your data is isolated via token-routed partitions. No cross-user access path exists.
+            Your account is secured via GitHub OAuth.
           </p>
         </div>
       </div>
