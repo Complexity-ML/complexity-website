@@ -16,10 +16,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 const MODEL_SPECS = [
-  { icon: Cpu, label: "Parameters", value: "1.58B" },
-  { icon: Layers, label: "Experts", value: "4 (SwiGLU)" },
+  { icon: Cpu, label: "Parameters", value: "—" },
+  { icon: Layers, label: "Experts", value: "—" },
   { icon: Zap, label: "Routing", value: "Zipf bin-pack" },
-  { icon: Timer, label: "Context", value: "4096 tokens" },
+  { icon: Timer, label: "Training", value: "—" },
 ];
 
 const BENCHMARK_STATS = [
@@ -116,7 +116,7 @@ export default function DashboardPage() {
         <div className="px-5 py-4 bg-card/50 border-b border-border flex items-center justify-between">
           <p className="text-sm font-medium">Pacific-i64 — Model Card</p>
           <Badge variant="outline" className="font-mono text-[10px]">
-            v1.0
+            Coming soon
           </Badge>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-border">
@@ -133,7 +133,7 @@ export default function DashboardPage() {
         <div className="px-5 py-3 bg-muted/20 border-t border-border">
           <p className="text-xs text-muted-foreground">
             Decoder-only transformer with Mu-Guided Attention, Token-Routed MLP (Zipf bin-packing),
-            Shared Lexical Expert, GQA 4:1, RoPE, SwiGLU. Trained on FineWeb-Edu.
+            Shared Lexical Expert, GQA, RoPE, SwiGLU. Model specs will be updated after TMLR review.
           </p>
         </div>
       </div>
