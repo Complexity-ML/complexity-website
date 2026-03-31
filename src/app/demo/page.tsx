@@ -96,9 +96,7 @@ function DemoContent() {
   // Mode switching
   const handleSwitchMode = useCallback((m: Mode) => {
     if (m === activeMode) return;
-    if (m !== "agent") {
-      chat.switchMode(m);
-    }
+    chat.switchMode(m);
     setActiveMode(m);
     inputRef.current?.focus();
   }, [activeMode, chat]);

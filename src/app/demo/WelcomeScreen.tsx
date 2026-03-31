@@ -17,14 +17,12 @@ const MODE_TITLES: Record<Mode, string> = {
   python: "Pacific-i64",
   compare: "Dense vs i64",
   ros2: "ROS2-Node",
-  agent: "Agent",
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
   python: "1.58B parameter model \u2014 outputs may require review",
   compare: "Side-by-side comparison \u2014 same prompt, two architectures",
   ros2: "1.58B parameter model \u2014 ROS2 specialist, outputs may require review",
-  agent: "Connects to vllm-i64 event stream \u2014 run agents from VSCode or CLI",
 };
 
 function SuggestionGroupBlock({
@@ -63,14 +61,7 @@ export function WelcomeScreen({
   totalRequests: number | null;
   onSelectPrompt: (prompt: string) => void;
 }) {
-  const agentStats = [
-    { label: "source", value: "vllm-i64 SSE" },
-    { label: "events", value: "sandbox, RAG, completions" },
-    { label: "sandbox", value: "L2 isolated" },
-    { label: "mode", value: "live viewer" },
-  ];
-
-  const allStats = mode === "agent" ? agentStats : [
+  const allStats = [
     ...STATS,
     { label: "requests", value: totalRequests !== null ? totalRequests.toLocaleString() : "\u2014" },
   ];
