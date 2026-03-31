@@ -7,31 +7,13 @@ import { Button } from "@/components/ui/button";
 
 const publications = [
   {
-    title: "GPU-64: A 64-bit Inference GPU with Native O(1) KV-Cache for Edge LLM Deployment",
-    authors: "Boris Peyriguere",
-    venue: "Zenodo",
-    year: "2025",
-    doi: "10.5281/zenodo.18364282",
-    url: "https://zenodo.org/records/18364282",
-    abstract: "GPU-64 is a power-efficient 64-bit GPU architecture optimized for LLM inference. Using on-chip CAM (Content-Addressable Memory) for KV-Cache, it achieves O(1) lookup latency instead of O(N), resulting in 4\u00D7 faster inference at 75W TDP for edge deployment.",
-  },
-  {
-    title: "Layer-Native Safety Clamping: Representation Engineering for Jailbreak-Resistant LLMs",
-    authors: "Boris Peyriguere",
-    venue: "Zenodo",
-    year: "2025",
-    doi: "10.5281/zenodo.18359832",
-    url: "https://zenodo.org/records/18359832",
-    abstract: "We propose Layer-Native Safety Clamping, a representation engineering approach that operates directly within the model\u2019s activation space. By learning harm directions and clamping activations, our method provides safety guarantees that cannot be bypassed through prompt manipulation.",
-  },
-  {
-    title: "Complexity-Deep: Token-Routed MLP with Mu-Guided Dynamics for Efficient Transformer Architectures",
-    authors: "Boris Peyriguere",
-    venue: "Zenodo",
-    year: "2025",
-    doi: "10.5281/zenodo.18293026",
-    url: "https://doi.org/10.5281/zenodo.18293026",
-    abstract: "We present Complexity-Deep, a novel transformer architecture that combines deterministic token-routed MLP with mu-guided dynamics for efficient and stable training.",
+    title: "COMPLEXITY-DEEP: A Language Model Architecture with Mu-Guided Attention and Token-Routed MLP",
+    authors: "Anonymous",
+    venue: "Submitted to Transactions on Machine Learning Research",
+    year: "2026",
+    doi: null,
+    url: "https://openreview.net/forum?id=jZq6EVboC6",
+    abstract: "We present COMPLEXITY-DEEP, a language model architecture introducing Token-Routed MLP with Zipf-balanced bin-packing routing, Mu-Guided Attention for inter-layer communication, and a Shared Lexical Expert. Under review at TMLR.",
   },
 ];
 
@@ -53,7 +35,7 @@ export default function Publications() {
         <div className="space-y-4 sm:space-y-6">
           {publications.map((pub, index) => (
             <motion.div
-              key={pub.doi}
+              key={pub.url}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -83,9 +65,16 @@ export default function Publications() {
                           Read Paper
                         </a>
                       </Button>
-                      <span className="text-[10px] sm:text-xs text-muted-foreground font-mono">
-                        DOI: {pub.doi}
-                      </span>
+                      {pub.doi && (
+                        <span className="text-[10px] sm:text-xs text-muted-foreground font-mono">
+                          DOI: {pub.doi}
+                        </span>
+                      )}
+                      {!pub.doi && (
+                        <span className="text-[10px] sm:text-xs text-muted-foreground font-mono">
+                          Under review
+                        </span>
+                      )}
                     </div>
                   </div>
                 </CardContent>

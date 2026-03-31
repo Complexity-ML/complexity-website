@@ -88,9 +88,9 @@ export default function Hero() {
               </a>
             </Button>
             <Button variant="outline" size="lg" asChild>
-              <a href="https://doi.org/10.5281/zenodo.18293026" target="_blank" rel="noopener noreferrer">
+              <a href="https://openreview.net/forum?id=jZq6EVboC6" target="_blank" rel="noopener noreferrer">
                 <BookOpen className="size-5" />
-                Paper
+                Paper (TMLR)
               </a>
             </Button>
           </motion.div>
