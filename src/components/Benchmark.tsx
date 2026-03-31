@@ -48,6 +48,34 @@ export default function Benchmark() {
             </p>
           </div>
         </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mt-10 sm:mt-16"
+        >
+          <p className="text-primary font-mono text-sm mb-2">// EXPERT ANALYSIS</p>
+          <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6">
+            Expert t-SNE 3D
+          </h3>
+          <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur overflow-hidden">
+            <iframe
+              src="/expert_tsne_3d.html"
+              title="Interactive 3D t-SNE visualization of expert activations"
+              className="w-full border-0"
+              style={{ height: "700px" }}
+              loading="lazy"
+            />
+            <div className="p-4 sm:p-6 border-t border-border/50">
+              <p className="text-sm text-muted-foreground">
+                Interactive 3D t-SNE of mean expert activations per layer (MLP output).
+                Rotate, zoom and hover to explore expert specialization across layers.
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
