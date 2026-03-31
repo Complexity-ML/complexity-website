@@ -1,4 +1,4 @@
-export type Mode = "python" | "compare" | "ros2" | "agent";
+export type Mode = "python" | "compare" | "ros2";
 
 export interface Message {
   role: "user" | "assistant";
@@ -16,7 +16,6 @@ export const ENDPOINTS: Record<Mode, string> = {
   python: process.env.NEXT_PUBLIC_API_URL || "https://pacific-prime-pacific-i64-demo.hf.space",
   compare: process.env.NEXT_PUBLIC_COMPARE_API_URL || "https://pacific-prime-tekkeni64-vs-dense.hf.space",
   ros2: process.env.NEXT_PUBLIC_ROS2_API_URL || "https://pacific-prime-pacific-ros2.hf.space",
-  agent: process.env.NEXT_PUBLIC_VLLM_I64_URL || "http://localhost:8000",
 };
 
 export const COMPARE_ENDPOINTS = {
@@ -28,7 +27,6 @@ export const MODEL_NAMES: Record<Mode, string> = {
   python: "pacific-i64",
   compare: "dense vs i64",
   ros2: "pacific-ros2",
-  agent: "agent",
 };
 
 export const DESCRIPTIONS: Record<Mode, string> = {
@@ -38,15 +36,12 @@ export const DESCRIPTIONS: Record<Mode, string> = {
     "Side-by-side: Dense baseline vs Token-Routed i64 — same prompt, two models, real-time comparison.",
   ros2:
     "Complexity Deep 1.58B — ROS2 specialist powered by Token-Routed i64 deterministic routing.",
-  agent:
-    "Live viewer — watch agent activity (sandbox, RAG) from VSCode or CLI in real-time.",
 };
 
 export const FOOTERS: Record<Mode, string> = {
   python: "Complexity Deep 1.58B — Python Code Helper — Token-Routed i64",
   compare: "Dense vs Token-Routed i64 — Side-by-Side Comparison",
   ros2: "Complexity Deep 1.58B — ROS2 Specialist — Token-Routed i64",
-  agent: "Agent Viewer — Live Events — vllm-i64",
 };
 
 export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
@@ -131,16 +126,6 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
         "Artificial neural networks are inspired by",
         "An operating system is software that manages",
         "Encryption is the process of converting data into",
-      ],
-    },
-  ],
-  agent: [
-    {
-      label: "connect to session",
-      prompts: [
-        "default",
-        "vscode-main",
-        "debug-session",
       ],
     },
   ],

@@ -6,13 +6,11 @@ import { useSession } from "next-auth/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import type { Mode } from "./config";
 import { useChat } from "./useChat";
-import { useAgent } from "./useAgent";
 import { useCompare } from "./useCompare";
 import { useConversations } from "./useConversations";
 import { ChatHeader } from "./ChatHeader";
 import { ParamPanel } from "./ParamPanel";
 import { ChatMessage, LoadingBubble, ErrorBanner } from "./ChatMessage";
-import { AgentMessage } from "./AgentMessage";
 import { CompareView } from "./CompareView";
 import { ChatInput } from "./ChatInput";
 import { MonitorPanel } from "./MonitorPanel";
@@ -35,36 +33,21 @@ function DemoContent() {
   const initialMode = (searchParams.get("mode") as Mode) || "python";
   const userId = (session?.user as Record<string, unknown> | undefined)?.id as string | undefined;
 
-  const chat = useChat(initialMode === "ros2" ? "ros2" : initialMode === "compare" ? "python" : initialMode === "agent" ? "python" : initialMode);
-  const agent = useAgent();
+  const chat = useChat(initialMode === "ros2" ? "ros2" : initialMode === "compare" ? "python" : initialMode);
   const compare = useCompare();
   const convos = useConversations(userId);
 
-  // Track current mode separately since agent mode doesn't use useChat's mode
   const [activeMode, setActiveMode] = useState<Mode>(initialMode);
 
   const [showParams, setShowParams] = useState(false);
   const [showMonitor, setShowMonitor] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [sessionId, setSessionId] = useState("");
   const mainRef = useRef<HTMLElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const userScrolledUp = useRef(false);
 
-  const isAgent = activeMode === "agent";
   const isCompare = activeMode === "compare";
-
-  // Auto-connect to agent events when switching to agent mode
-  useEffect(() => {
-    if (isAgent && !agent.connected && !agent.running) {
-      agent.connect(sessionId || undefined);
-    }
-    if (!isAgent && agent.connected) {
-      agent.disconnect();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAgent]);
 
   // When active conversation changes, load its messages
   useEffect(() => {
@@ -108,7 +91,7 @@ function DemoContent() {
     if (!userScrolledUp.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [chat.messages, agent.steps]);
+  }, [chat.messages]);
 
   // Mode switching
   const handleSwitchMode = useCallback((m: Mode) => {
@@ -120,15 +103,7 @@ function DemoContent() {
     inputRef.current?.focus();
   }, [activeMode, chat]);
 
-  // Send message (chat modes only)
   const handleSend = useCallback(() => {
-    if (isAgent) {
-      const text = sessionId.trim();
-      agent.disconnect();
-      agent.connect(text || undefined);
-      return;
-    }
-
     if (isCompare) {
       compare.sendMessage();
       return;
@@ -139,15 +114,9 @@ function DemoContent() {
       convos.createConversation(chat.mode);
     }
     chat.sendMessage();
-  }, [isAgent, isCompare, sessionId, agent, compare, convos, chat]);
+  }, [isCompare, compare, convos, chat]);
 
   const handleNewChat = useCallback(() => {
-    if (isAgent) {
-      agent.reset();
-      setSessionId("");
-      agent.connect();
-      return;
-    }
     if (isCompare) {
       compare.clearResults();
       inputRef.current?.focus();
@@ -157,7 +126,7 @@ function DemoContent() {
     chat.clearChat();
     convos.selectConversation(null);
     inputRef.current?.focus();
-  }, [isAgent, isCompare, agent, compare, chat, convos]);
+  }, [isCompare, compare, chat, convos]);
 
   const handleSelectConvo = useCallback((id: string | null) => {
     if (chat.streaming || chat.loading) chat.stopGeneration();
@@ -165,11 +134,6 @@ function DemoContent() {
   }, [chat, convos]);
 
   const handleClear = useCallback(() => {
-    if (isAgent) {
-      agent.reset();
-      setSessionId("");
-      return;
-    }
     if (isCompare) {
       compare.clearResults();
       inputRef.current?.focus();
@@ -180,39 +144,35 @@ function DemoContent() {
       convos.deleteConversation(convos.activeId);
     }
     inputRef.current?.focus();
-  }, [isAgent, isCompare, agent, compare, chat, convos]);
+  }, [isCompare, compare, chat, convos]);
 
   const handleStop = useCallback(() => {
-    if (isAgent) {
-      agent.disconnect();
-    } else if (isCompare) {
+    if (isCompare) {
       compare.stopGeneration();
     } else {
       chat.stopGeneration();
     }
-  }, [isAgent, isCompare, agent, compare, chat]);
+  }, [isCompare, compare, chat]);
 
-  // Welcome screens
-  const showAgentWelcome = isAgent && !agent.connected && !agent.running && agent.steps.length === 0;
   const showCompareWelcome = isCompare && compare.results.length === 0 && !compare.loading && !compare.streaming;
-  const showChatWelcome = !isAgent && !isCompare && chat.messages.length === 0 && !chat.loading && !chat.streaming;
+  const showChatWelcome = !isCompare && chat.messages.length === 0 && !chat.loading && !chat.streaming;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <ChatHeader
         mode={activeMode}
-        streaming={isAgent ? agent.connected : isCompare ? compare.streaming : chat.streaming}
+        streaming={isCompare ? compare.streaming : chat.streaming}
         showParams={showParams}
         showMonitor={showMonitor}
-        health={isAgent ? (agent.connected ? "ok" : "offline") : isCompare ? compare.healthStatus : chat.healthStatus}
+        health={isCompare ? compare.healthStatus : chat.healthStatus}
         onSwitchMode={handleSwitchMode}
         onToggleParams={() => setShowParams(!showParams)}
         onToggleMonitor={() => setShowMonitor(!showMonitor)}
         onClear={handleClear}
       />
 
-      {showParams && !isAgent && <ParamPanel params={chat.params} onUpdate={chat.updateParam} />}
-      {showMonitor && !isAgent && (
+      {showParams && <ParamPanel params={chat.params} onUpdate={chat.updateParam} />}
+      {showMonitor && (
         <MonitorPanel
           health={chat.healthStatus}
           snapshot={chat.snapshot}
@@ -221,8 +181,8 @@ function DemoContent() {
       )}
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar — hidden on mobile, hidden in agent/compare mode */}
-        {!isAgent && !isCompare && (
+        {/* Sidebar — hidden on mobile, hidden in compare mode */}
+        {!isCompare && (
           <div className="hidden md:flex">
             <ChatSidebar
               conversations={convos.conversations}
@@ -239,14 +199,12 @@ function DemoContent() {
         {/* Main content area */}
         <div className="flex-1 flex flex-col min-w-0">
           <main ref={mainRef} className="flex-1 overflow-y-auto">
-            {(showAgentWelcome || showCompareWelcome || showChatWelcome) ? (
+            {(showCompareWelcome || showChatWelcome) ? (
               <WelcomeScreen
                 mode={activeMode}
-                totalRequests={isAgent || isCompare ? null : chat.totalRequests}
+                totalRequests={isCompare ? null : chat.totalRequests}
                 onSelectPrompt={(prompt) => {
-                  if (isAgent) {
-                    agent.connect(prompt);
-                  } else if (isCompare) {
+                  if (isCompare) {
                     compare.sendMessage(prompt);
                   } else {
                     if (!convos.activeId) {
@@ -259,9 +217,7 @@ function DemoContent() {
               />
             ) : (
               <div className={`mx-auto px-4 sm:px-6 py-4 space-y-4 ${isCompare ? "max-w-6xl" : "max-w-4xl"}`}>
-                {isAgent ? (
-                  <AgentMessage agent={agent} />
-                ) : isCompare ? (
+                {isCompare ? (
                   <>
                     <CompareView
                       results={compare.results}
@@ -290,13 +246,13 @@ function DemoContent() {
 
           <ChatInput
             mode={activeMode}
-            input={isAgent ? sessionId : isCompare ? compare.input : chat.input}
-            loading={isAgent ? false : isCompare ? compare.loading : chat.loading}
-            streaming={isAgent ? agent.connected : isCompare ? compare.streaming : chat.streaming}
+            input={isCompare ? compare.input : chat.input}
+            loading={isCompare ? compare.loading : chat.loading}
+            streaming={isCompare ? compare.streaming : chat.streaming}
             maxTokens={isCompare ? compare.params.maxTokens : chat.params.maxTokens}
-            tokenStats={isAgent || isCompare ? null : chat.tokenStats}
-            expertDist={isAgent ? null : isCompare ? compare.expertDist : chat.expertDist}
-            onInputChange={isAgent ? setSessionId : isCompare ? compare.setInput : chat.setInput}
+            tokenStats={isCompare ? null : chat.tokenStats}
+            expertDist={isCompare ? compare.expertDist : chat.expertDist}
+            onInputChange={isCompare ? compare.setInput : chat.setInput}
             onSend={handleSend}
             onStop={handleStop}
             inputRef={inputRef}

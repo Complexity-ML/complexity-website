@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/sheet";
 
 const NAV_LINKS = [
+  { href: "/demo", label: "Chat", highlight: true },
   { href: "#projects", label: "Projects" },
   { href: "#benchmark", label: "Benchmark" },
   { href: "#publications", label: "Publications" },
@@ -56,7 +57,11 @@ export default function Navigation() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className={`text-sm transition-colors ${
+                  link.highlight
+                    ? "text-primary font-medium hover:text-primary/80"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
                 {link.label}
               </Link>
