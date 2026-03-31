@@ -4,10 +4,12 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 const equations = [
-  "error = h − μ(h)",
-  "v′ = α·v − β·error",
-  "h′ = h + Δt·gate·v′",
-  "μ(h) = μ_base + W_μ·h",
+  "K = xW_K + μ·W_μK",
+  "Q = xW_Q + μ·W_μQ",
+  "V = xW_V + μ·W_μV",
+  "μ⁽ˡ⁾ = clamp(μ_param) + W_μ·h_post-MLP",
+  "MLP(x) = Shared(x) + Expert_e(x)",
+  "e = BinPack(token_id, freq)",
 ];
 
 function EquationStrip() {

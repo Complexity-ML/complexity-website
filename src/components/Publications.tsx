@@ -105,15 +105,14 @@ export default function Publications() {
           <Card className="overflow-hidden">
             <CardContent className="p-3 sm:p-4">
               <pre className="text-xs sm:text-sm font-mono text-muted-foreground overflow-x-auto">
-{`@software{peyriguere2026complexity,
-  author       = {Peyriguere, Boris},
-  title        = {Complexity-Deep: Token-Routed MLP with
-                  Mu-Guided Dynamics for Efficient
-                  Transformer Architectures},
-  year         = 2026,
-  publisher    = {Zenodo},
-  doi          = {10.5281/zenodo.18293026},
-  url          = {https://doi.org/10.5281/zenodo.18293026}
+{`@article{
+anonymous2026complexitydeep,
+title={'{COMPLEXITY}-{DEEP}: A Language Model Architecture with Mu-Guided Attention and Token-Routed {MLP}'},
+author={Anonymous},
+journal={Submitted to Transactions on Machine Learning Research},
+year={2026},
+url={https://openreview.net/forum?id=jZq6EVboC6},
+note={Under review}
 }`}
               </pre>
             </CardContent>

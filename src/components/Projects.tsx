@@ -52,23 +52,13 @@ const projects = [
     },
   },
   {
-    title: "gpu-i64",
+    title: "OpenReview — Submission",
     description:
-      "64-bit GPU architecture with native O(1) KV-Cache using CAM. 4\u00D7 faster LLM inference at 75W for edge deployment.",
-    tags: ["RTL", "SystemVerilog", "KV-Cache", "O(1)", "Edge AI"],
-    status: "Hardware",
+      "Our latest submission on OpenReview. Token-Routed MLP with Mu-Guided Dynamics for efficient transformer architectures.",
+    tags: ["Paper", "OpenReview", "Peer Review"],
+    status: "Active",
     links: {
-      github: "https://github.com/Complexity-ML/gpu-i64",
-    },
-  },
-  {
-    title: "Safety Dataset",
-    description:
-      "10K contrastive pairs for learning harm directions. Enables Representation Engineering for jailbreak-resistant LLMs.",
-    tags: ["Dataset", "Safety", "Contrastive", "10K"],
-    status: "Available",
-    links: {
-      huggingface: "https://huggingface.co/datasets/Pacific-Prime/safety_dataset",
+      paper: "https://openreview.net/forum?id=jZq6EVboC6",
     },
   },
 ];
@@ -163,6 +153,14 @@ export default function Projects() {
                         <a href={project.links.huggingface} target="_blank" rel="noopener noreferrer">
                           <span className="text-base">🤗</span>
                           HuggingFace
+                        </a>
+                      </Button>
+                    )}
+                    {project.links.paper && (
+                      <Button variant="ghost" size="sm" asChild>
+                        <a href={project.links.paper} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="size-4" />
+                          OpenReview
                         </a>
                       </Button>
                     )}
