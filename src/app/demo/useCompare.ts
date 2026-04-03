@@ -105,6 +105,14 @@ export function useCompare() {
       let denseElapsed = 0;
       let moeElapsed = 0;
 
+      // Poll expert distribution live during streaming
+      const expertPollInterval = setInterval(async () => {
+        try {
+          const stats = await moeClient.monitor.experts();
+          if (stats.distribution) setExpertDist(stats.distribution);
+        } catch { /* ignore */ }
+      }, 500);
+
       // Stream both models in parallel — each measures its own elapsed time
       await Promise.all([
         (async () => {
@@ -128,13 +136,16 @@ export function useCompare() {
             setChatTokens(finalMoeTokens);
           }
           moeElapsed = (performance.now() - t0) / 1000;
-          // Fetch expert distribution as soon as MoE finishes
-          try {
-            const stats = await moeClient.monitor.experts();
-            if (stats.distribution) setExpertDist(stats.distribution);
-          } catch { /* ignore */ }
         })(),
       ]);
+
+      clearInterval(expertPollInterval);
+
+      // Final expert distribution
+      try {
+        const stats = await moeClient.monitor.experts();
+        if (stats.distribution) setExpertDist(stats.distribution);
+      } catch { /* ignore */ }
 
       setResults((prev) => [
         ...prev,
