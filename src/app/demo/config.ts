@@ -1,4 +1,4 @@
-export type Mode = "python" | "compare" | "dense";
+export type Mode = "TR-MoE" | "compare" | "dense";
 
 export interface Message {
   role: "user" | "assistant";
@@ -13,7 +13,7 @@ export interface SuggestionGroup {
 export const MAINTENANCE: Partial<Record<Mode, string>> = {};
 
 export const ENDPOINTS: Record<Mode, string> = {
-  python: process.env.NEXT_PUBLIC_API_URL || "https://Pacific-i64-TR-MOE-400M.hf.space",
+  "TR-MoE": process.env.NEXT_PUBLIC_API_URL || "https://Pacific-i64-TR-MOE-400M.hf.space",
   compare: process.env.NEXT_PUBLIC_COMPARE_API_URL || "https://Pacific-i64-Compare.hf.space",
   dense: process.env.NEXT_PUBLIC_DENSE_API_URL || "https://Pacific-i64-Dense-400M.hf.space",
 };
@@ -25,13 +25,13 @@ export const COMPARE_ENDPOINTS = {
 };
 
 export const MODEL_NAMES: Record<Mode, string> = {
-  python: "TR-MoE-400M",
+  "TR-MoE": "TR-MoE-400M",
   compare: "TR-MoE vs Dense",
   dense: "Dense-400M",
 };
 
 export const DESCRIPTIONS: Record<Mode, string> = {
-  python:
+  "TR-MoE":
     "Token-Routed MoE 384M — 4 experts, Zipf routing, ~105M active params per token, 4,900 tok/s.",
   compare:
     "Side-by-side: Token-Routed MoE vs Dense baseline — same prompt, 384M iso-params, real-time comparison.",
@@ -40,13 +40,13 @@ export const DESCRIPTIONS: Record<Mode, string> = {
 };
 
 export const FOOTERS: Record<Mode, string> = {
-  python: "Token-Routed MoE 384M — 4 experts — 4,900 tok/s",
+  "TR-MoE": "Token-Routed MoE 384M — 4 experts — 4,900 tok/s",
   compare: "TR-MoE vs Dense — 384M iso-params comparison",
   dense: "Dense SwiGLU 384M — Baseline",
 };
 
 export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
-  python: [
+  "TR-MoE": [
     {
       label: "functions",
       prompts: [

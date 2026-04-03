@@ -66,7 +66,7 @@ export function useChat(initialMode: Mode) {
   // SDK clients — one per non-agent/non-compare mode
   const clients: Record<string, I64Client> = useMemo(() => ({
     python: new I64Client(ENDPOINTS.python, { timeoutMs: 5000 }),
-    ros2: new I64Client(ENDPOINTS.ros2, { timeoutMs: 5000 }),
+    dense: new I64Client(ENDPOINTS.dense, { timeoutMs: 5000 }),
   }), []);
 
   // Streaming client (longer timeout)
@@ -87,7 +87,7 @@ export function useChat(initialMode: Mode) {
         const [healthRes, metricsResults, snapRes, expertsRes] = await Promise.allSettled([
           client.monitor.health(),
           Promise.allSettled(
-            (["python", "ros2"] as Mode[]).map((m) => clients[m].monitor.metrics())
+            (["TR-MoE", "dense"] as Mode[]).map((m) => clients[m].monitor.metrics())
           ),
           snapshotAvailable.current ? client.monitor.snapshot() : Promise.reject("skipped"),
           expertsAvailable.current ? client.monitor.experts() : Promise.reject("skipped"),

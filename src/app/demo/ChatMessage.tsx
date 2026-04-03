@@ -39,7 +39,7 @@ export function ChatMessage({ message, mode }: ChatMessageProps) {
               <Badge variant="secondary" className="mb-2 font-mono text-[10px] text-primary/60 bg-transparent border-none p-0">
                 {MODEL_NAMES[mode]}
               </Badge>
-              {mode === "python" ? (
+              {mode === "TR-MoE" ? (
                 <CodeBlock content={message.content} />
               ) : (
                 <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>

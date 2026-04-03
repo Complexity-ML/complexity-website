@@ -66,7 +66,7 @@ export function ChatHeader({
             variant="outline"
             size="sm"
           >
-            {(["python", "compare", "ros2"] as Mode[]).map((m) => (
+            {(["TR-MoE", "compare", "dense"] as Mode[]).map((m) => (
               <ToggleGroupItem
                 key={m}
                 value={m}

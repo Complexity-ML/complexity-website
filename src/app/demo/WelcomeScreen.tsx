@@ -14,15 +14,15 @@ const STATS = [
 ];
 
 const MODE_TITLES: Record<Mode, string> = {
-  python: "TR-MoE-400M",
+  "TR-MoE": "TR-MoE-400M",
   compare: "TR-MoE vs Dense",
   dense: "Dense-400M",
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
-  python: "1.58B parameter model \u2014 outputs may require review",
+  "TR-MoE": "384M Token-Routed MoE \u2014 outputs may require review",
   compare: "Side-by-side comparison \u2014 same prompt, two architectures",
-  ros2: "1.58B parameter model \u2014 ROS2 specialist, outputs may require review",
+  dense: "384M Dense baseline \u2014 outputs may require review",
 };
 
 function SuggestionGroupBlock({

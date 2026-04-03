@@ -30,10 +30,10 @@ export default function DemoPage() {
 function DemoContent() {
   const searchParams = useSearchParams();
   const { data: session } = useSession();
-  const initialMode = (searchParams.get("mode") as Mode) || "python";
+  const initialMode = (searchParams.get("mode") as Mode) || "TR-MoE";
   const userId = (session?.user as Record<string, unknown> | undefined)?.id as string | undefined;
 
-  const chat = useChat(initialMode === "ros2" ? "ros2" : initialMode === "compare" ? "python" : initialMode);
+  const chat = useChat(initialMode === "dense" ? "dense" : initialMode === "compare" ? "TR-MoE" : initialMode);
   const compare = useCompare();
   const convos = useConversations(userId);
 
