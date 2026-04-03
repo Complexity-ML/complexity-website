@@ -80,7 +80,7 @@ function DemoContent() {
     const el = mainRef.current;
     if (!el) return;
     const onScroll = () => {
-      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
       userScrolledUp.current = !atBottom;
     };
     el.addEventListener("scroll", onScroll);
@@ -89,9 +89,9 @@ function DemoContent() {
 
   useEffect(() => {
     if (!userScrolledUp.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current?.scrollIntoView({ behavior: chat.streaming ? "instant" : "smooth" });
     }
-  }, [chat.messages]);
+  }, [chat.messages, chat.streaming]);
 
   // Mode switching
   const handleSwitchMode = useCallback((m: Mode) => {
