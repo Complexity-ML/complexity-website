@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import axios from "axios";
 import type { SamplingParams } from "./useChat";
 import { ENDPOINTS } from "./config";
 
@@ -42,9 +43,9 @@ export function useCompare() {
     let cancelled = false;
     const poll = async () => {
       try {
-        const res = await fetch(`${ENDPOINTS.dense}/health`);
+        await axios.get(`${ENDPOINTS.dense}/health`);
         if (cancelled) return;
-        setHealthStatus(res.ok ? "ok" : "offline");
+        setHealthStatus("ok");
       } catch {
         if (!cancelled) setHealthStatus("offline");
       }
@@ -94,31 +95,19 @@ export function useCompare() {
       const chatStart = performance.now();
 
       // Call both models in parallel via fetch
+      const body = {
+        prompt: text,
+        max_tokens: params.maxTokens,
+        temperature: params.temperature,
+      };
+
       const [denseRes, moeRes] = await Promise.all([
-        fetch(`${ENDPOINTS.dense}/v1/completions`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prompt: text,
-            max_tokens: params.maxTokens,
-            temperature: params.temperature,
-          }),
-          signal: controller.signal,
-        }),
-        fetch(`${ENDPOINTS["TR-MoE"]}/v1/completions`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prompt: text,
-            max_tokens: params.maxTokens,
-            temperature: params.temperature,
-          }),
-          signal: controller.signal,
-        }),
+        axios.post(`${ENDPOINTS.dense}/v1/completions`, body, { signal: controller.signal }),
+        axios.post(`${ENDPOINTS["TR-MoE"]}/v1/completions`, body, { signal: controller.signal }),
       ]);
 
-      const denseData = await denseRes.json();
-      const moeData = await moeRes.json();
+      const denseData = denseRes.data;
+      const moeData = moeRes.data;
 
       const denseText = denseData.choices?.[0]?.text ?? "No response.";
       const moeText = moeData.choices?.[0]?.text ?? "No response.";

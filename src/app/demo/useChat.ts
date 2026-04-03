@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import axios from "axios";
 import type { Mode, Message } from "./config";
 import { ENDPOINTS, MAINTENANCE } from "./config";
 
@@ -53,13 +54,9 @@ export function useChat(initialMode: Mode) {
     let cancelled = false;
     const poll = async () => {
       try {
-        const res = await fetch(`${ENDPOINTS[mode]}/health`);
+        await axios.get(`${ENDPOINTS[mode]}/health`);
         if (cancelled) return;
-        if (res.ok) {
-          setHealthStatus("ok");
-        } else {
-          setHealthStatus("offline");
-        }
+        setHealthStatus("ok");
       } catch {
         if (!cancelled) setHealthStatus("offline");
       }
@@ -138,22 +135,11 @@ export function useChat(initialMode: Mode) {
       tokenCountRef.current = 0;
       setTokenStats({ tokens: 0, elapsed: 0, streaming: true });
 
-      const res = await fetch(`${ENDPOINTS[mode]}/v1/completions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: text,
-          max_tokens: params.maxTokens,
-          temperature: params.temperature,
-        }),
-        signal: controller.signal,
-      });
-
-      if (!res.ok) {
-        throw new Error(`Server error: ${res.status}`);
-      }
-
-      const data = await res.json();
+      const { data } = await axios.post(`${ENDPOINTS[mode]}/v1/completions`, {
+        prompt: text,
+        max_tokens: params.maxTokens,
+        temperature: params.temperature,
+      }, { signal: controller.signal });
       const assistantContent = data.choices?.[0]?.text ?? "No response.";
       const completionTokens = data.usage?.completion_tokens ?? assistantContent.split(" ").length;
 
