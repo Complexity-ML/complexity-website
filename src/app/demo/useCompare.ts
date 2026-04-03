@@ -18,7 +18,7 @@ export interface CompareResult {
 
 const DEFAULT_PARAMS: SamplingParams = {
   temperature: 0.7,
-  maxTokens: 4096,
+  maxTokens: 2048,
 };
 
 const denseClient = new I64Client(ENDPOINTS.dense);
