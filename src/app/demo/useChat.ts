@@ -75,54 +75,21 @@ export function useChat(initialMode: Mode) {
     [mode],
   );
 
-  // Health + metrics + snapshot + experts polling via SDK
+  // Health polling only (metrics/snapshot/experts not available on HF Spaces)
   useEffect(() => {
     let cancelled = false;
-    snapshotAvailable.current = true;
-    expertsAvailable.current = true;
 
     const poll = async () => {
       try {
         const client = clients[mode];
-        const [healthRes, metricsResults, snapRes, expertsRes] = await Promise.allSettled([
-          client.monitor.health(),
-          Promise.allSettled(
-            (["TR-MoE", "dense"] as Mode[]).map((m) => clients[m].monitor.metrics())
-          ),
-          snapshotAvailable.current ? client.monitor.snapshot() : Promise.reject("skipped"),
-          expertsAvailable.current ? client.monitor.experts() : Promise.reject("skipped"),
-        ]);
+        const healthRes = await client.monitor.health().catch(() => null);
 
         if (cancelled) return;
 
-        if (healthRes.status === "fulfilled") {
-          const h = healthRes.value;
-          setHealthStatus(h.status === "ok" ? "ok" : "degraded");
+        if (healthRes && healthRes.status === "ok") {
+          setHealthStatus("ok");
         } else {
           setHealthStatus("offline");
-        }
-
-        if (metricsResults.status === "fulfilled") {
-          let total = 0;
-          for (const r of metricsResults.value) {
-            if (r.status === "fulfilled") total += (r.value as Record<string, number>)?.requests_served ?? 0;
-          }
-          setTotalRequests(total);
-        }
-
-        if (snapRes.status === "fulfilled") {
-          const s = snapRes.value;
-          setSnapshot({
-            tokPerS: s.perf?.tok_per_s ?? 0,
-            gpuUtil: s.gpu?.utilization_pct ?? 0,
-            gpuFreeMb: s.gpu?.free_mb ?? 0,
-            gpuTotalMb: s.gpu?.total_mb ?? 0,
-            kvUsagePct: s.kv_cache?.usage_pct ?? 0,
-            activeRequests: s.active_requests ?? 0,
-            totalTokens: s.engine?.total_tokens_generated ?? 0,
-          });
-        } else if (snapshotAvailable.current) {
-          snapshotAvailable.current = false;
         }
 
         if (expertsRes.status === "fulfilled") {
