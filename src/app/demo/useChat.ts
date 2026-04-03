@@ -166,14 +166,17 @@ export function useChat(initialMode: Mode) {
         } catch { /* ignore */ }
       }, 500);
 
-      // Stream via SDK
-      for await (const chunk of client.completions.stream(text, {
+      // Stream via SDK (pass signal to abort server-side on cancel)
+      const streamGen = client.completions.stream(text, {
         max_tokens: params.maxTokens,
         temperature: params.temperature,
         top_k: params.topK,
         top_p: params.topP,
         ...({ repetition_penalty: params.repetitionPenalty, frequency_penalty: params.frequencyPenalty } as Record<string, unknown>),
-      })) {
+      });
+      // Abort the generator when the user cancels
+      controller.signal.addEventListener("abort", () => { streamGen.return(undefined); }, { once: true });
+      for await (const chunk of streamGen) {
         if (controller.signal.aborted) break;
         assistantContent += chunk;
         tokenCountRef.current++;
