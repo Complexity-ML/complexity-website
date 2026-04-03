@@ -1,18 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { I64Client } from "vllm-i64";
+import { useState, useRef, useEffect, useCallback } from "react";
 import type { Mode, Message } from "./config";
-import { ENDPOINTS, MODEL_NAMES, MAINTENANCE } from "./config";
+import { ENDPOINTS, MAINTENANCE } from "./config";
 
 export interface SamplingParams {
   temperature: number;
-  topK: number;
-  topP: number;
-  minP: number;
-  typicalP: number;
-  repetitionPenalty: number;
-  minTokens: number;
   maxTokens: number;
 }
 
@@ -33,14 +26,8 @@ export interface MonitorData {
 }
 
 const DEFAULT_PARAMS: SamplingParams = {
-  temperature: 0.6,
-  topK: 40,
-  topP: 0.9,
-  minP: 0.05,
-  typicalP: 0.92,
-  repetitionPenalty: 1.15,
-  minTokens: 8,
-  maxTokens: 512,
+  temperature: 0.7,
+  maxTokens: 200,
 };
 
 export function useChat(initialMode: Mode) {
@@ -60,46 +47,27 @@ export function useChat(initialMode: Mode) {
   const streamStartRef = useRef(0);
   const tokenCountRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const snapshotAvailable = useRef(true);
-  const expertsAvailable = useRef(true);
 
-  // SDK clients — one per non-agent/non-compare mode
-  const clients: Record<string, I64Client> = useMemo(() => ({
-    "TR-MoE": new I64Client(ENDPOINTS["TR-MoE"], { timeoutMs: 5000 }),
-    dense: new I64Client(ENDPOINTS.dense, { timeoutMs: 5000 }),
-  }), []);
-
-  // Streaming client (longer timeout)
-  const streamClient = useMemo(
-    () => new I64Client(ENDPOINTS[mode], { timeoutMs: 120_000 }),
-    [mode],
-  );
-
-  // Health polling only (metrics/snapshot/experts not available on HF Spaces)
+  // Health polling
   useEffect(() => {
     let cancelled = false;
-
     const poll = async () => {
       try {
-        const client = clients[mode];
-        const healthRes = await client.monitor.health().catch(() => null);
-
+        const res = await fetch(`${ENDPOINTS[mode]}/health`);
         if (cancelled) return;
-
-        if (healthRes && healthRes.status === "ok") {
+        if (res.ok) {
           setHealthStatus("ok");
         } else {
           setHealthStatus("offline");
         }
-
       } catch {
         if (!cancelled) setHealthStatus("offline");
       }
     };
     poll();
-    const interval = setInterval(poll, 2_000);
+    const interval = setInterval(poll, 5_000);
     return () => { cancelled = true; clearInterval(interval); };
-  }, [mode, clients]);
+  }, [mode]);
 
   useEffect(() => {
     const onUnload = () => {
@@ -166,48 +134,37 @@ export function useChat(initialMode: Mode) {
     abortControllerRef.current = controller;
 
     try {
-      let assistantContent = "";
-
       streamStartRef.current = performance.now();
       tokenCountRef.current = 0;
       setTokenStats({ tokens: 0, elapsed: 0, streaming: true });
 
-      setMessages([...newMessages, { role: "assistant", content: "" }]);
-      setLoading(false);
-      setStreaming(true);
-
-      const stream = streamClient.chat.stream(
-        [{ role: "user", content: text }],
-        {
-          model: MODEL_NAMES[mode],
+      const res = await fetch(`${ENDPOINTS[mode]}/v1/completions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: text,
           max_tokens: params.maxTokens,
           temperature: params.temperature,
-          top_k: params.topK,
-          top_p: params.topP,
-          min_p: params.minP,
-          typical_p: params.typicalP,
-          repetition_penalty: params.repetitionPenalty,
-          min_tokens: params.minTokens,
-          signal: controller.signal,
-        },
-      );
+        }),
+        signal: controller.signal,
+      });
 
-      for await (const token of stream) {
-        assistantContent += token;
-        tokenCountRef.current++;
-        const elapsed = (performance.now() - streamStartRef.current) / 1000;
-        setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
-        setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
       }
 
+      const data = await res.json();
+      const assistantContent = data.choices?.[0]?.text ?? "No response.";
+      const completionTokens = data.usage?.completion_tokens ?? assistantContent.split(" ").length;
+
+      const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
+      tokenCountRef.current = completionTokens;
+      setTokenStats({ tokens: completionTokens, elapsed: finalElapsed, streaming: false });
+
+      setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
+      setLoading(false);
       setStreaming(false);
       abortControllerRef.current = null;
-      const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
-      setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
-
-      if (!assistantContent.trim()) {
-        setMessages([...newMessages, { role: "assistant", content: "No response." }]);
-      }
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
         setStreaming(false);
@@ -219,7 +176,7 @@ export function useChat(initialMode: Mode) {
       setStreaming(false);
       abortControllerRef.current = null;
     }
-  }, [input, loading, streaming, mode, messages, params, streamClient]);
+  }, [input, loading, streaming, mode, messages, params]);
 
   const updateParam = useCallback(<K extends keyof SamplingParams>(key: K, value: SamplingParams[K]) => {
     setParams((p) => ({ ...p, [key]: value }));

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useRef, useCallback, useMemo, useEffect } from "react";
-import { I64Client } from "vllm-i64";
+import { useState, useRef, useCallback, useEffect } from "react";
 import type { SamplingParams } from "./useChat";
-import { COMPARE_ENDPOINTS } from "./config";
+import { ENDPOINTS } from "./config";
 
 export interface CompareMessage {
   role: "user" | "assistant";
@@ -18,13 +17,7 @@ export interface CompareResult {
 
 const DEFAULT_PARAMS: SamplingParams = {
   temperature: 0.7,
-  topK: 50,
-  topP: 0.9,
-  minP: 0.05,
-  typicalP: 0.92,
-  repetitionPenalty: 1.4,
-  minTokens: 8,
-  maxTokens: 256,
+  maxTokens: 200,
 };
 
 export function useCompare() {
@@ -36,71 +29,30 @@ export function useCompare() {
   const [params, setParams] = useState<SamplingParams>(DEFAULT_PARAMS);
   const [healthStatus, setHealthStatus] = useState<"ok" | "degraded" | "offline">("offline");
 
-  // Live streaming content for current generation
   const [denseContent, setDenseContent] = useState("");
   const [chatContent, setChatContent] = useState("");
   const [denseTokens, setDenseTokens] = useState(0);
   const [chatTokens, setChatTokens] = useState(0);
-
-  // Expert distribution from i64 backend (4 experts)
   const [expertDist, setExpertDist] = useState<number[] | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
-  const expertsAvailable = useRef(true);
 
-  const denseClient = useMemo(
-    () => new I64Client(COMPARE_ENDPOINTS.dense, { timeoutMs: 120_000 }),
-    [],
-  );
-  const chatClient = useMemo(
-    () => new I64Client(COMPARE_ENDPOINTS.chat, { timeoutMs: 120_000 }),
-    [],
-  );
-  const healthClient = useMemo(
-    () => new I64Client(COMPARE_ENDPOINTS.dense, { timeoutMs: 5_000 }),
-    [],
-  );
-
-  // Health polling (constant, every 30s)
+  // Health polling
   useEffect(() => {
     let cancelled = false;
     const poll = async () => {
       try {
-        const res = await fetch(`${COMPARE_ENDPOINTS.dense}/../health`);
+        const res = await fetch(`${ENDPOINTS.dense}/health`);
         if (cancelled) return;
-        if (res.ok) {
-          const data = await res.json();
-          setHealthStatus(data.status === "ok" ? "ok" : "degraded");
-        } else {
-          setHealthStatus("offline");
-        }
+        setHealthStatus(res.ok ? "ok" : "offline");
       } catch {
         if (!cancelled) setHealthStatus("offline");
       }
     };
     poll();
-    const interval = setInterval(poll, 30_000);
+    const interval = setInterval(poll, 10_000);
     return () => { cancelled = true; clearInterval(interval); };
   }, []);
-
-  // Expert distribution polling (only during streaming, every 2s)
-  useEffect(() => {
-    if (!streaming || !expertsAvailable.current) return;
-    let cancelled = false;
-    const poll = async () => {
-      try {
-        const res = await chatClient.monitor.experts();
-        if (cancelled) return;
-        const dist = (res as { distribution: number[] }).distribution;
-        if (dist && dist.length > 0) setExpertDist(dist);
-      } catch {
-        if (!cancelled) expertsAvailable.current = false;
-      }
-    };
-    poll();
-    const interval = setInterval(poll, 2_000);
-    return () => { cancelled = true; clearInterval(interval); };
-  }, [streaming, chatClient]);
 
   const stopGeneration = useCallback(() => {
     abortRef.current?.abort();
@@ -134,66 +86,60 @@ export function useCompare() {
     const controller = new AbortController();
     abortRef.current = controller;
 
-    const streamOpts = {
-      max_tokens: params.maxTokens,
-      temperature: params.temperature,
-      top_k: params.topK,
-      top_p: params.topP,
-      min_p: params.minP,
-      typical_p: params.typicalP,
-      repetition_penalty: params.repetitionPenalty,
-      min_tokens: params.minTokens,
-      signal: controller.signal,
-    };
-
     try {
       setLoading(false);
       setStreaming(true);
 
-      // Stream both models in parallel — raw completions (pre-train, no chat template)
       const denseStart = performance.now();
       const chatStart = performance.now();
-      let denseResult = "";
-      let chatResult = "";
-      let denseCount = 0;
-      let chatCount = 0;
 
-      const denseStream = denseClient.completions.stream(text, {
-        model: "pacific-i64",
-        ...streamOpts,
-      });
+      // Call both models in parallel via fetch
+      const [denseRes, moeRes] = await Promise.all([
+        fetch(`${ENDPOINTS.dense}/v1/completions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: text,
+            max_tokens: params.maxTokens,
+            temperature: params.temperature,
+          }),
+          signal: controller.signal,
+        }),
+        fetch(`${ENDPOINTS["TR-MoE"]}/v1/completions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: text,
+            max_tokens: params.maxTokens,
+            temperature: params.temperature,
+          }),
+          signal: controller.signal,
+        }),
+      ]);
 
-      const chatStream = chatClient.completions.stream(text, {
-        model: "pacific-chat",
-        ...streamOpts,
-      });
+      const denseData = await denseRes.json();
+      const moeData = await moeRes.json();
 
-      // Run both streams concurrently
-      const densePromise = (async () => {
-        for await (const token of denseStream) {
-          denseResult += token;
-          denseCount++;
-          setDenseContent(denseResult);
-          setDenseTokens(denseCount);
-        }
-        return { content: denseResult, tokens: denseCount, elapsed: (performance.now() - denseStart) / 1000 };
-      })();
+      const denseText = denseData.choices?.[0]?.text ?? "No response.";
+      const moeText = moeData.choices?.[0]?.text ?? "No response.";
+      const denseCount = denseData.usage?.completion_tokens ?? 0;
+      const moeCount = moeData.usage?.completion_tokens ?? 0;
 
-      const chatPromise = (async () => {
-        for await (const token of chatStream) {
-          chatResult += token;
-          chatCount++;
-          setChatContent(chatResult);
-          setChatTokens(chatCount);
-        }
-        return { content: chatResult, tokens: chatCount, elapsed: (performance.now() - chatStart) / 1000 };
-      })();
+      setDenseContent(denseText);
+      setChatContent(moeText);
+      setDenseTokens(denseCount);
+      setChatTokens(moeCount);
 
-      const [denseRes, chatRes] = await Promise.all([densePromise, chatPromise]);
+      const denseElapsed = (performance.now() - denseStart) / 1000;
+      const chatElapsed = (performance.now() - chatStart) / 1000;
 
       setResults((prev) => [
         ...prev,
-        { prompt: text, dense: denseRes, chat: chatRes },
+        {
+          prompt: text,
+          dense: { content: denseText, tokens: denseCount, elapsed: denseElapsed },
+          chat: { content: moeText, tokens: moeCount, elapsed: chatElapsed },
+        },
       ]);
 
       setStreaming(false);
@@ -209,7 +155,7 @@ export function useCompare() {
       setStreaming(false);
       abortRef.current = null;
     }
-  }, [input, loading, streaming, params, denseClient, chatClient]);
+  }, [input, loading, streaming, params]);
 
   const updateParam = useCallback(<K extends keyof SamplingParams>(key: K, value: SamplingParams[K]) => {
     setParams((p) => ({ ...p, [key]: value }));
