@@ -94,30 +94,78 @@ export function useCompare() {
       const denseStart = performance.now();
       const chatStart = performance.now();
 
-      // Call both models in parallel via fetch
       const body = {
         prompt: text,
         max_tokens: params.maxTokens,
         temperature: params.temperature,
+        stream: true,
       };
 
-      const [denseRes, moeRes] = await Promise.all([
-        axios.post(`${ENDPOINTS.dense}/v1/completions`, body, { signal: controller.signal }),
-        axios.post(`${ENDPOINTS["TR-MoE"]}/v1/completions`, body, { signal: controller.signal }),
+      // Helper to consume an SSE stream from a vllm-i64 Space
+      async function consumeStream(
+        url: string,
+        onChunk: (text: string) => void,
+      ) {
+        const res = await fetch(`${url}/v1/completions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`${url}: status ${res.status}`);
+
+        const reader = res.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let tokenCount = 0;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith("data: ")) continue;
+            const payload = trimmed.slice(6);
+            if (payload === "[DONE]") return tokenCount;
+            try {
+              const data = JSON.parse(payload);
+              const chunk = data.choices?.[0]?.text ?? "";
+              if (chunk) {
+                tokenCount++;
+                onChunk(chunk);
+              }
+            } catch {
+              // skip malformed chunks
+            }
+          }
+        }
+        return tokenCount;
+      }
+
+      let finalDenseTokens = 0;
+      let finalMoeTokens = 0;
+      let denseAccum = "";
+      let moeAccum = "";
+
+      const [denseCount, moeCount] = await Promise.all([
+        consumeStream(ENDPOINTS.dense, (chunk) => {
+          denseAccum += chunk;
+          finalDenseTokens++;
+          setDenseContent(denseAccum);
+          setDenseTokens(finalDenseTokens);
+        }),
+        consumeStream(ENDPOINTS["TR-MoE"], (chunk) => {
+          moeAccum += chunk;
+          finalMoeTokens++;
+          setChatContent(moeAccum);
+          setChatTokens(finalMoeTokens);
+        }),
       ]);
-
-      const denseData = denseRes.data;
-      const moeData = moeRes.data;
-
-      const denseText = denseData.choices?.[0]?.text ?? "No response.";
-      const moeText = moeData.choices?.[0]?.text ?? "No response.";
-      const denseCount = denseData.usage?.completion_tokens ?? 0;
-      const moeCount = moeData.usage?.completion_tokens ?? 0;
-
-      setDenseContent(denseText);
-      setChatContent(moeText);
-      setDenseTokens(denseCount);
-      setChatTokens(moeCount);
 
       const denseElapsed = (performance.now() - denseStart) / 1000;
       const chatElapsed = (performance.now() - chatStart) / 1000;
@@ -126,8 +174,8 @@ export function useCompare() {
         ...prev,
         {
           prompt: text,
-          dense: { content: denseText, tokens: denseCount, elapsed: denseElapsed },
-          chat: { content: moeText, tokens: moeCount, elapsed: chatElapsed },
+          dense: { content: denseAccum, tokens: denseCount ?? finalDenseTokens, elapsed: denseElapsed },
+          chat: { content: moeAccum, tokens: moeCount ?? finalMoeTokens, elapsed: chatElapsed },
         },
       ]);
 

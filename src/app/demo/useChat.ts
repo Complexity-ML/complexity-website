@@ -135,20 +135,64 @@ export function useChat(initialMode: Mode) {
       tokenCountRef.current = 0;
       setTokenStats({ tokens: 0, elapsed: 0, streaming: true });
 
-      const { data } = await axios.post(`${ENDPOINTS[mode]}/v1/completions`, {
-        prompt: text,
-        max_tokens: params.maxTokens,
-        temperature: params.temperature,
-      }, { signal: controller.signal });
-      const assistantContent = data.choices?.[0]?.text ?? "No response.";
-      const completionTokens = data.usage?.completion_tokens ?? assistantContent.split(" ").length;
+      const res = await fetch(`${ENDPOINTS[mode]}/v1/completions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: text,
+          max_tokens: params.maxTokens,
+          temperature: params.temperature,
+          stream: true,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
+
+      setLoading(false);
+      setStreaming(true);
+
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let assistantContent = "";
+
+      // Add empty assistant message to fill progressively
+      setMessages([...newMessages, { role: "assistant", content: "" }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith("data: ")) continue;
+          const payload = trimmed.slice(6);
+          if (payload === "[DONE]") break;
+          try {
+            const data = JSON.parse(payload);
+            const chunk = data.choices?.[0]?.text ?? "";
+            if (chunk) {
+              assistantContent += chunk;
+              tokenCountRef.current++;
+              const elapsed = (performance.now() - streamStartRef.current) / 1000;
+              setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
+              setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
+            }
+          } catch {
+            // skip malformed chunks
+          }
+        }
+      }
 
       const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
-      tokenCountRef.current = completionTokens;
-      setTokenStats({ tokens: completionTokens, elapsed: finalElapsed, streaming: false });
-
-      setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
-      setLoading(false);
+      setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
       setStreaming(false);
       abortControllerRef.current = null;
     } catch (err) {
