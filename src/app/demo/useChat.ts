@@ -8,6 +8,9 @@ import { ENDPOINTS, MAINTENANCE } from "./config";
 export interface SamplingParams {
   temperature: number;
   maxTokens: number;
+  topK: number;
+  topP: number;
+  repetitionPenalty: number;
 }
 
 export interface TokenStats {
@@ -29,6 +32,9 @@ export interface MonitorData {
 const DEFAULT_PARAMS: SamplingParams = {
   temperature: 0.7,
   maxTokens: 2048,
+  topK: 50,
+  topP: 0.9,
+  repetitionPenalty: 1.1,
 };
 
 // Lazily-created clients per mode
@@ -162,6 +168,9 @@ export function useChat(initialMode: Mode) {
       for await (const chunk of client.completions.stream(text, {
         max_tokens: params.maxTokens,
         temperature: params.temperature,
+        top_k: params.topK,
+        top_p: params.topP,
+        repetition_penalty: params.repetitionPenalty,
       })) {
         if (controller.signal.aborted) break;
         assistantContent += chunk;

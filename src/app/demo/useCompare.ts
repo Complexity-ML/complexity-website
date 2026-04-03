@@ -19,6 +19,9 @@ export interface CompareResult {
 const DEFAULT_PARAMS: SamplingParams = {
   temperature: 0.7,
   maxTokens: 2048,
+  topK: 50,
+  topP: 0.9,
+  repetitionPenalty: 1.1,
 };
 
 const denseClient = new I64Client(ENDPOINTS.dense);
@@ -96,6 +99,9 @@ export function useCompare() {
       const streamOpts = {
         max_tokens: params.maxTokens,
         temperature: params.temperature,
+        top_k: params.topK,
+        top_p: params.topP,
+        repetition_penalty: params.repetitionPenalty,
       };
 
       let denseAccum = "";
