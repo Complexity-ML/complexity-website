@@ -92,12 +92,6 @@ export function useChat(initialMode: Mode) {
           setHealthStatus("offline");
         }
 
-        if (expertsRes.status === "fulfilled") {
-          const dist = expertsRes.value.distribution;
-          if (dist && dist.length > 0) setExpertDist(dist);
-        } else if (expertsAvailable.current) {
-          expertsAvailable.current = false;
-        }
       } catch {
         if (!cancelled) setHealthStatus("offline");
       }
