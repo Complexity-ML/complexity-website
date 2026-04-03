@@ -11,6 +11,7 @@ export interface SamplingParams {
   topK: number;
   topP: number;
   repetitionPenalty: number;
+  frequencyPenalty: number;
 }
 
 export interface TokenStats {
@@ -35,6 +36,7 @@ const DEFAULT_PARAMS: SamplingParams = {
   topK: 50,
   topP: 0.9,
   repetitionPenalty: 1.3,
+  frequencyPenalty: 0.3,
 };
 
 // Lazily-created clients per mode
@@ -170,7 +172,7 @@ export function useChat(initialMode: Mode) {
         temperature: params.temperature,
         top_k: params.topK,
         top_p: params.topP,
-        ...({ repetition_penalty: params.repetitionPenalty } as Record<string, unknown>),
+        ...({ repetition_penalty: params.repetitionPenalty, frequency_penalty: params.frequencyPenalty } as Record<string, unknown>),
       })) {
         if (controller.signal.aborted) break;
         assistantContent += chunk;

@@ -22,6 +22,7 @@ const DEFAULT_PARAMS: SamplingParams = {
   topK: 50,
   topP: 0.9,
   repetitionPenalty: 1.3,
+  frequencyPenalty: 0.3,
 };
 
 const denseClient = new I64Client(ENDPOINTS.dense);
@@ -102,7 +103,7 @@ export function useCompare() {
         temperature: params.temperature,
         top_k: params.topK,
         top_p: params.topP,
-        ...({ repetition_penalty: params.repetitionPenalty } as Record<string, unknown>),
+        ...({ repetition_penalty: params.repetitionPenalty, frequency_penalty: params.frequencyPenalty } as Record<string, unknown>),
       };
 
       let denseAccum = "";
