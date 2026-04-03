@@ -32,7 +32,7 @@ export const MODEL_NAMES: Record<Mode, string> = {
 
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE":
-    "Token-Routed MoE 384M — 4 experts, Zipf routing, ~105M active params per token, 4,900 tok/s.",
+    "Token-Routed MoE 384M — 4 experts, Zipf routing, ~105M active params per token. CPU inference.",
   compare:
     "Side-by-side: Token-Routed MoE vs Dense baseline — same prompt, 384M iso-params, real-time comparison.",
   dense:
@@ -40,7 +40,7 @@ export const DESCRIPTIONS: Record<Mode, string> = {
 };
 
 export const FOOTERS: Record<Mode, string> = {
-  "TR-MoE": "Token-Routed MoE 384M — 4 experts — 4,900 tok/s",
+  "TR-MoE": "Token-Routed MoE 384M — 4 experts — CPU inference",
   compare: "TR-MoE vs Dense — 384M iso-params comparison",
   dense: "Dense SwiGLU 384M — Baseline",
 };

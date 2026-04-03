@@ -6,11 +6,11 @@ import type { Mode, SuggestionGroup } from "./config";
 import { DESCRIPTIONS, SUGGESTIONS } from "./config";
 
 const STATS = [
-  { label: "params", value: "1.58B" },
-  { label: "routing", value: "i64 bit-mask" },
+  { label: "params", value: "384M" },
+  { label: "routing", value: "Zipf bin-packing" },
   { label: "experts", value: "4" },
-  { label: "kv-cache", value: "paged + LRU" },
-  { label: "engine", value: "vllm-i64" },
+  { label: "active", value: "~105M/token" },
+  { label: "engine", value: "vllm-i64 (CPU)" },
 ];
 
 const MODE_TITLES: Record<Mode, string> = {
