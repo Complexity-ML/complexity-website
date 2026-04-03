@@ -93,9 +93,6 @@ export function useCompare() {
       setLoading(false);
       setStreaming(true);
 
-      const denseStart = performance.now();
-      const chatStart = performance.now();
-
       const streamOpts = {
         max_tokens: params.maxTokens,
         temperature: params.temperature,
@@ -105,10 +102,13 @@ export function useCompare() {
       let moeAccum = "";
       let finalDenseTokens = 0;
       let finalMoeTokens = 0;
+      let denseElapsed = 0;
+      let moeElapsed = 0;
 
-      // Stream both models in parallel via SDK
+      // Stream both models in parallel — each measures its own elapsed time
       await Promise.all([
         (async () => {
+          const t0 = performance.now();
           for await (const chunk of denseClient.completions.stream(text, streamOpts)) {
             if (controller.signal.aborted) break;
             denseAccum += chunk;
@@ -116,8 +116,10 @@ export function useCompare() {
             setDenseContent(denseAccum);
             setDenseTokens(finalDenseTokens);
           }
+          denseElapsed = (performance.now() - t0) / 1000;
         })(),
         (async () => {
+          const t0 = performance.now();
           for await (const chunk of moeClient.completions.stream(text, streamOpts)) {
             if (controller.signal.aborted) break;
             moeAccum += chunk;
@@ -125,24 +127,21 @@ export function useCompare() {
             setChatContent(moeAccum);
             setChatTokens(finalMoeTokens);
           }
+          moeElapsed = (performance.now() - t0) / 1000;
+          // Fetch expert distribution as soon as MoE finishes
+          try {
+            const stats = await moeClient.monitor.experts();
+            if (stats.distribution) setExpertDist(stats.distribution);
+          } catch { /* ignore */ }
         })(),
       ]);
-
-      // Fetch expert distribution from MoE model
-      try {
-        const stats = await moeClient.monitor.experts();
-        if (stats.distribution) setExpertDist(stats.distribution);
-      } catch { /* ignore */ }
-
-      const denseElapsed = (performance.now() - denseStart) / 1000;
-      const chatElapsed = (performance.now() - chatStart) / 1000;
 
       setResults((prev) => [
         ...prev,
         {
           prompt: text,
           dense: { content: denseAccum, tokens: finalDenseTokens, elapsed: denseElapsed },
-          chat: { content: moeAccum, tokens: finalMoeTokens, elapsed: chatElapsed },
+          chat: { content: moeAccum, tokens: finalMoeTokens, elapsed: moeElapsed },
         },
       ]);
 
