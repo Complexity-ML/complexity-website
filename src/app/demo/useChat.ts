@@ -28,7 +28,7 @@ export interface MonitorData {
 
 const DEFAULT_PARAMS: SamplingParams = {
   temperature: 0.7,
-  maxTokens: 200,
+  maxTokens: 1024,
 };
 
 export function useChat(initialMode: Mode) {
@@ -193,6 +193,16 @@ export function useChat(initialMode: Mode) {
 
       const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
       setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
+
+      // Fetch expert distribution after generation
+      try {
+        const expertRes = await fetch(`${ENDPOINTS[mode]}/v1/experts`);
+        if (expertRes.ok) {
+          const expertData = await expertRes.json();
+          if (expertData.distribution) setExpertDist(expertData.distribution);
+        }
+      } catch { /* ignore */ }
+
       setStreaming(false);
       abortControllerRef.current = null;
     } catch (err) {

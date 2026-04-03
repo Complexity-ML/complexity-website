@@ -18,7 +18,7 @@ export interface CompareResult {
 
 const DEFAULT_PARAMS: SamplingParams = {
   temperature: 0.7,
-  maxTokens: 200,
+  maxTokens: 1024,
 };
 
 export function useCompare() {
