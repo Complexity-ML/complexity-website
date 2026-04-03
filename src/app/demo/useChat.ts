@@ -159,6 +159,17 @@ export function useChat(initialMode: Mode) {
       let buffer = "";
       let assistantContent = "";
 
+      // Poll expert distribution live during streaming
+      const expertPollInterval = setInterval(async () => {
+        try {
+          const r = await fetch(`${ENDPOINTS[mode]}/v1/experts`);
+          if (r.ok) {
+            const d = await r.json();
+            if (d.distribution) setExpertDist(d.distribution);
+          }
+        } catch { /* ignore */ }
+      }, 500);
+
       // Add empty assistant message to fill progressively
       setMessages([...newMessages, { role: "assistant", content: "" }]);
 
@@ -191,10 +202,12 @@ export function useChat(initialMode: Mode) {
         }
       }
 
+      clearInterval(expertPollInterval);
+
       const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
       setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
 
-      // Fetch expert distribution after generation
+      // Final expert distribution fetch
       try {
         const expertRes = await fetch(`${ENDPOINTS[mode]}/v1/experts`);
         if (expertRes.ok) {
