@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import axios from "axios";
+import { I64Client } from "vllm-i64";
 import type { Mode, Message } from "./config";
 import { ENDPOINTS, MAINTENANCE } from "./config";
 
@@ -31,6 +31,15 @@ const DEFAULT_PARAMS: SamplingParams = {
   maxTokens: 1024,
 };
 
+// Lazily-created clients per mode
+const clients: Partial<Record<Mode, I64Client>> = {};
+function getClient(mode: Mode): I64Client {
+  if (!clients[mode]) {
+    clients[mode] = new I64Client(ENDPOINTS[mode]);
+  }
+  return clients[mode]!;
+}
+
 export function useChat(initialMode: Mode) {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -49,14 +58,14 @@ export function useChat(initialMode: Mode) {
   const tokenCountRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Health polling
+  // Health polling via SDK
   useEffect(() => {
     let cancelled = false;
+    const client = getClient(mode);
     const poll = async () => {
       try {
-        await axios.get(`${ENDPOINTS[mode]}/health`);
-        if (cancelled) return;
-        setHealthStatus("ok");
+        const ok = await client.monitor.isReady();
+        if (!cancelled) setHealthStatus(ok ? "ok" : "offline");
       } catch {
         if (!cancelled) setHealthStatus("offline");
       }
@@ -129,77 +138,37 @@ export function useChat(initialMode: Mode) {
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
+    const client = getClient(mode);
 
     try {
       streamStartRef.current = performance.now();
       tokenCountRef.current = 0;
       setTokenStats({ tokens: 0, elapsed: 0, streaming: true });
-
-      const res = await fetch(`${ENDPOINTS[mode]}/v1/completions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: text,
-          max_tokens: params.maxTokens,
-          temperature: params.temperature,
-          stream: true,
-        }),
-        signal: controller.signal,
-      });
-
-      if (!res.ok) {
-        throw new Error(`Server error: ${res.status}`);
-      }
-
       setLoading(false);
       setStreaming(true);
 
-      const reader = res.body!.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
       let assistantContent = "";
+      setMessages([...newMessages, { role: "assistant", content: "" }]);
 
       // Poll expert distribution live during streaming
       const expertPollInterval = setInterval(async () => {
         try {
-          const r = await fetch(`${ENDPOINTS[mode]}/v1/experts`);
-          if (r.ok) {
-            const d = await r.json();
-            if (d.distribution) setExpertDist(d.distribution);
-          }
+          const stats = await client.monitor.experts();
+          if (stats.distribution) setExpertDist(stats.distribution);
         } catch { /* ignore */ }
       }, 500);
 
-      // Add empty assistant message to fill progressively
-      setMessages([...newMessages, { role: "assistant", content: "" }]);
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed.startsWith("data: ")) continue;
-          const payload = trimmed.slice(6);
-          if (payload === "[DONE]") break;
-          try {
-            const data = JSON.parse(payload);
-            const chunk = data.choices?.[0]?.text ?? "";
-            if (chunk) {
-              assistantContent += chunk;
-              tokenCountRef.current++;
-              const elapsed = (performance.now() - streamStartRef.current) / 1000;
-              setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
-              setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
-            }
-          } catch {
-            // skip malformed chunks
-          }
-        }
+      // Stream via SDK
+      for await (const chunk of client.completions.stream(text, {
+        max_tokens: params.maxTokens,
+        temperature: params.temperature,
+      })) {
+        if (controller.signal.aborted) break;
+        assistantContent += chunk;
+        tokenCountRef.current++;
+        const elapsed = (performance.now() - streamStartRef.current) / 1000;
+        setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
+        setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
       }
 
       clearInterval(expertPollInterval);
@@ -207,13 +176,10 @@ export function useChat(initialMode: Mode) {
       const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
       setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
 
-      // Final expert distribution fetch
+      // Final expert distribution
       try {
-        const expertRes = await fetch(`${ENDPOINTS[mode]}/v1/experts`);
-        if (expertRes.ok) {
-          const expertData = await expertRes.json();
-          if (expertData.distribution) setExpertDist(expertData.distribution);
-        }
+        const stats = await client.monitor.experts();
+        if (stats.distribution) setExpertDist(stats.distribution);
       } catch { /* ignore */ }
 
       setStreaming(false);
