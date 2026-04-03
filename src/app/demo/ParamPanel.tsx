@@ -13,7 +13,7 @@ export function ParamPanel({ params, onUpdate }: ParamPanelProps) {
     <div className="border-b border-border/50 bg-card/50 backdrop-blur-lg px-6 py-4">
       <div className="grid grid-cols-2 gap-4 max-w-md">
         <ParamControl label="temperature" value={params.temperature} min={0} max={1.5} step={0.1} onChange={(v) => onUpdate("temperature", v)} />
-        <ParamControl label="max_tokens" value={params.maxTokens} min={16} max={2048} step={16} onChange={(v) => onUpdate("maxTokens", v)} />
+        <ParamControl label="max_tokens" value={params.maxTokens} min={16} max={4096} step={16} onChange={(v) => onUpdate("maxTokens", v)} />
       </div>
     </div>
   );

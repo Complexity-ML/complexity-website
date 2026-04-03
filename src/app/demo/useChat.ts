@@ -28,7 +28,7 @@ export interface MonitorData {
 
 const DEFAULT_PARAMS: SamplingParams = {
   temperature: 0.7,
-  maxTokens: 1024,
+  maxTokens: 4096,
 };
 
 // Lazily-created clients per mode
