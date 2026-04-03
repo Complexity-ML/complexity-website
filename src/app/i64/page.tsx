@@ -25,7 +25,7 @@ const INNOVATIONS = [
     icon: Cpu,
     title: "Mu-Guided Dynamics",
     dense: "Standard optimizers with fixed learning rates — unstable training at scale.",
-    i64: "PID-inspired control mechanism adapts dynamics during training. Stable convergence by design.",
+    i64: "Learned mu projection adapts dynamics during training. Stable convergence by design.",
   },
   {
     icon: Zap,

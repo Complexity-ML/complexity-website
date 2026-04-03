@@ -10,7 +10,7 @@ const projects = [
   {
     title: "Complexity-Deep",
     description:
-      "Token-Routed MLP with Mu-Guided Dynamics. Deterministic expert routing + PID-inspired control for efficient transformers.",
+      "Token-Routed MLP with Mu-Guided Dynamics. Deterministic expert routing + learned mu projection for efficient transformers.",
     tags: ["PyTorch", "Triton", "MoE", "LLM"],
     status: "Active",
     links: {

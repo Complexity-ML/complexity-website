@@ -9,7 +9,7 @@ const innovations = [
     icon: <span className="text-2xl">μ</span>,
     title: "Mu-Guided Dynamics",
     description:
-      "PID-inspired control mechanism that maintains context across layers through velocity and mu accumulation.",
+      "Learned mu projection that maintains context across layers through clamped scaling and linear adaptation.",
   },
   {
     icon: <Zap className="size-6" />,
