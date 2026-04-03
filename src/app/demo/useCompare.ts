@@ -21,7 +21,7 @@ const DEFAULT_PARAMS: SamplingParams = {
   maxTokens: 2048,
   topK: 50,
   topP: 0.9,
-  repetitionPenalty: 1.1,
+  repetitionPenalty: 1.3,
 };
 
 const denseClient = new I64Client(ENDPOINTS.dense);
