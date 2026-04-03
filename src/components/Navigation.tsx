@@ -75,7 +75,7 @@ export default function Navigation() {
               </a>
             </Button>
             <Button variant="ghost" size="icon" asChild>
-              <a href="https://huggingface.co/Pacific-Prime" target="_blank" rel="noopener noreferrer">
+              <a href="https://huggingface.co/Pacific-i64" target="_blank" rel="noopener noreferrer">
                 <span className="text-lg">🤗</span>
               </a>
             </Button>

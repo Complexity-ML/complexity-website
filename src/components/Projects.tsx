@@ -36,7 +36,7 @@ const projects = [
     tags: ["LLM", "1.5B", "F32", "HuggingFace"],
     status: "Available",
     links: {
-      huggingface: "https://huggingface.co/Pacific-Prime",
+      huggingface: "https://huggingface.co/Pacific-i64",
       demo: "/demo?mode=chat",
     },
   },

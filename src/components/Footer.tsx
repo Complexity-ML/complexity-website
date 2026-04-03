@@ -26,7 +26,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               {[
                 { label: "GitHub", href: "https://github.com/Complexity-ML" },
-                { label: "HuggingFace", href: "https://huggingface.co/Pacific-Prime" },
+                { label: "HuggingFace", href: "https://huggingface.co/Pacific-i64" },
                 { label: "PyPI", href: "https://pypi.org/project/complexity-deep/" },
                 { label: "Paper (Zenodo)", href: "https://doi.org/10.5281/zenodo.18293026" },
               ].map((link) => (

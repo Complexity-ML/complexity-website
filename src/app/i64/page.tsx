@@ -36,7 +36,7 @@ const INNOVATIONS = [
 ];
 
 const STATS = [
-  { value: "1.5B", label: "Parameters (Pacific-i64)" },
+  { value: "384M", label: "Parameters (Pacific-i64)" },
   { value: "10K", label: "Safety contrastive pairs" },
   { value: "3", label: "Peer-reviewed papers" },
   { value: "CC BY-NC", label: "Open-source license" },
@@ -236,7 +236,7 @@ export default function I64Page() {
                 </Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <a href="https://huggingface.co/Pacific-Prime" target="_blank" rel="noopener noreferrer">
+                <a href="https://huggingface.co/Pacific-i64" target="_blank" rel="noopener noreferrer">
                   <span className="text-base">🤗</span>
                   HuggingFace
                 </a>

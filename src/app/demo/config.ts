@@ -1,4 +1,4 @@
-export type Mode = "python" | "compare" | "ros2";
+export type Mode = "python" | "compare" | "dense";
 
 export interface Message {
   role: "user" | "assistant";
@@ -13,35 +13,36 @@ export interface SuggestionGroup {
 export const MAINTENANCE: Partial<Record<Mode, string>> = {};
 
 export const ENDPOINTS: Record<Mode, string> = {
-  python: process.env.NEXT_PUBLIC_API_URL || "https://pacific-prime-pacific-i64-demo.hf.space",
-  compare: process.env.NEXT_PUBLIC_COMPARE_API_URL || "https://pacific-prime-tekkeni64-vs-dense.hf.space",
-  ros2: process.env.NEXT_PUBLIC_ROS2_API_URL || "https://pacific-prime-pacific-ros2.hf.space",
+  python: process.env.NEXT_PUBLIC_API_URL || "https://Pacific-i64-TR-MOE-400M.hf.space",
+  compare: process.env.NEXT_PUBLIC_COMPARE_API_URL || "https://Pacific-i64-Compare.hf.space",
+  dense: process.env.NEXT_PUBLIC_DENSE_API_URL || "https://Pacific-i64-Dense-400M.hf.space",
 };
 
 export const COMPARE_ENDPOINTS = {
   dense: `${ENDPOINTS.compare}/dense`,
   chat: `${ENDPOINTS.compare}/chat`,
+  compare: `${ENDPOINTS.compare}/v1/compare`,
 };
 
 export const MODEL_NAMES: Record<Mode, string> = {
-  python: "pacific-i64",
-  compare: "dense vs i64",
-  ros2: "pacific-ros2",
+  python: "TR-MoE-400M",
+  compare: "TR-MoE vs Dense",
+  dense: "Dense-400M",
 };
 
 export const DESCRIPTIONS: Record<Mode, string> = {
   python:
-    "Complexity Deep 1.58B — Python code helper powered by Token-Routed i64 deterministic routing.",
+    "Token-Routed MoE 384M — 4 experts, Zipf routing, ~105M active params per token, 4,900 tok/s.",
   compare:
-    "Side-by-side: Dense baseline vs Token-Routed i64 — same prompt, two models, real-time comparison.",
-  ros2:
-    "Complexity Deep 1.58B — ROS2 specialist powered by Token-Routed i64 deterministic routing.",
+    "Side-by-side: Token-Routed MoE vs Dense baseline — same prompt, 384M iso-params, real-time comparison.",
+  dense:
+    "Dense SwiGLU 384M — Standard dense transformer baseline for comparison.",
 };
 
 export const FOOTERS: Record<Mode, string> = {
-  python: "Complexity Deep 1.58B — Python Code Helper — Token-Routed i64",
-  compare: "Dense vs Token-Routed i64 — Side-by-Side Comparison",
-  ros2: "Complexity Deep 1.58B — ROS2 Specialist — Token-Routed i64",
+  python: "Token-Routed MoE 384M — 4 experts — 4,900 tok/s",
+  compare: "TR-MoE vs Dense — 384M iso-params comparison",
+  dense: "Dense SwiGLU 384M — Baseline",
 };
 
 export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
@@ -129,35 +130,27 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
       ],
     },
   ],
-  ros2: [
+  dense: [
     {
-      label: "nodes & topics",
+      label: "science",
       prompts: [
-        "Write a ROS2 publisher node in Python",
-        "Write a ROS2 subscriber node in Python",
-        "Create a ROS2 service server and client",
-        "Write a ROS2 action server",
-        "Create a ROS2 launch file in Python",
-        "Write a ROS2 node that publishes Twist messages",
-        "Create a ROS2 timer callback node",
-        "Write a ROS2 node with parameter declarations",
-        "Create a custom ROS2 message definition",
-        "Write a ROS2 lifecycle node",
+        "Machine learning is a branch of artificial intelligence that",
+        "The human brain contains approximately",
+        "Photosynthesis is the process by which plants",
+        "In physics, Newton's second law states that",
+        "The water cycle begins when the sun heats",
+        "DNA stands for deoxyribonucleic acid and is responsible for",
       ],
     },
     {
-      label: "robotics",
+      label: "general",
       prompts: [
-        "Write a ROS2 node for obstacle avoidance",
-        "Create a ROS2 TF2 broadcaster",
-        "Write a ROS2 node that reads LaserScan data",
-        "Create a ROS2 node for sensor fusion",
-        "Write a ROS2 node to control a robotic arm",
-        "Create a ROS2 node for path planning",
-        "Write a ROS2 node that processes PointCloud2",
-        "Create a ROS2 node for odometry estimation",
-        "Write a ROS2 node for IMU data processing",
-        "Create a ROS2 node for camera image processing",
+        "The meaning of life is",
+        "France is a country located in",
+        "In a world where artificial intelligence",
+        "The most important invention in human history is",
+        "Climate change affects the planet by",
+        "The internet was originally developed in the",
       ],
     },
   ],

@@ -14,9 +14,9 @@ const STATS = [
 ];
 
 const MODE_TITLES: Record<Mode, string> = {
-  python: "Pacific-i64",
-  compare: "Dense vs i64",
-  ros2: "ROS2-Node",
+  python: "TR-MoE-400M",
+  compare: "TR-MoE vs Dense",
+  dense: "Dense-400M",
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
