@@ -82,6 +82,7 @@ export function useCompare() {
     if (!text || loading || streaming) return;
 
     setError(null);
+    setExpertDist(null);
     setInput("");
     setLoading(true);
     setDenseContent("");
@@ -101,7 +102,7 @@ export function useCompare() {
         temperature: params.temperature,
         top_k: params.topK,
         top_p: params.topP,
-        repetition_penalty: params.repetitionPenalty,
+        ...({ repetition_penalty: params.repetitionPenalty } as Record<string, unknown>),
       };
 
       let denseAccum = "";
