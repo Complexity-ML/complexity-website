@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { I64Client } from "vllm-i64";
+import axios from "axios";
 import type { SamplingParams } from "./useChat";
 import { ENDPOINTS } from "./config";
 
@@ -25,8 +25,38 @@ const DEFAULT_PARAMS: SamplingParams = {
   frequencyPenalty: 0.3,
 };
 
-const denseClient = new I64Client(ENDPOINTS.dense);
-const moeClient = new I64Client(ENDPOINTS["TR-MoE"]);
+const DENSE_BASE = ENDPOINTS.dense.replace(/\/+$/, "");
+const MOE_BASE = ENDPOINTS["TR-MoE"].replace(/\/+$/, "");
+
+/** Parse an SSE stream and yield text chunks */
+async function* readSSE(response: Response): AsyncGenerator<string> {
+  if (!response.body) return;
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith("data: ")) continue;
+        const payload = trimmed.slice(6);
+        if (payload === "[DONE]") return;
+        try {
+          const data = JSON.parse(payload);
+          const content = data.choices?.[0]?.delta?.content ?? data.choices?.[0]?.text ?? "";
+          if (content) yield content;
+        } catch { /* skip malformed */ }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
 
 export function useCompare() {
   const [results, setResults] = useState<CompareResult[]>([]);
@@ -45,12 +75,13 @@ export function useCompare() {
 
   const abortRef = useRef<AbortController | null>(null);
 
-  // Health polling via SDK
+  // Health polling
   useEffect(() => {
     let cancelled = false;
     const poll = async () => {
       try {
-        const ok = await denseClient.monitor.isReady();
+        const res = await axios.get(`${DENSE_BASE}/health`, { timeout: 5000 });
+        const ok = res.data?.status === "ok" || res.data?.status === "degraded";
         if (!cancelled) setHealthStatus(ok ? "ok" : "offline");
       } catch {
         if (!cancelled) setHealthStatus("offline");
@@ -98,12 +129,15 @@ export function useCompare() {
       setLoading(false);
       setStreaming(true);
 
-      const streamOpts = {
+      const body = {
+        prompt: text,
         max_tokens: params.maxTokens,
         temperature: params.temperature,
         top_k: params.topK,
         top_p: params.topP,
-        ...({ repetition_penalty: params.repetitionPenalty, frequency_penalty: params.frequencyPenalty } as Record<string, unknown>),
+        repetition_penalty: params.repetitionPenalty,
+        frequency_penalty: params.frequencyPenalty,
+        stream: true,
       };
 
       let denseAccum = "";
@@ -116,16 +150,22 @@ export function useCompare() {
       // Poll expert distribution live during streaming
       const expertPollInterval = setInterval(async () => {
         try {
-          const stats = await moeClient.monitor.experts();
-          if (stats.distribution) setExpertDist(stats.distribution);
+          const res = await axios.get(`${MOE_BASE}/v1/experts`, { timeout: 3000 });
+          if (res.data?.distribution) setExpertDist(res.data.distribution);
         } catch { /* ignore */ }
       }, 500);
 
-      // Stream both models in parallel — each measures its own elapsed time
+      // Stream both models in parallel
       await Promise.all([
         (async () => {
           const t0 = performance.now();
-          for await (const chunk of denseClient.completions.stream(text, streamOpts)) {
+          const response = await fetch(`${DENSE_BASE}/v1/completions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+            signal: controller.signal,
+          });
+          for await (const chunk of readSSE(response)) {
             if (controller.signal.aborted) break;
             denseAccum += chunk;
             finalDenseTokens++;
@@ -136,7 +176,13 @@ export function useCompare() {
         })(),
         (async () => {
           const t0 = performance.now();
-          for await (const chunk of moeClient.completions.stream(text, streamOpts)) {
+          const response = await fetch(`${MOE_BASE}/v1/completions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+            signal: controller.signal,
+          });
+          for await (const chunk of readSSE(response)) {
             if (controller.signal.aborted) break;
             moeAccum += chunk;
             finalMoeTokens++;
@@ -151,8 +197,8 @@ export function useCompare() {
 
       // Final expert distribution
       try {
-        const stats = await moeClient.monitor.experts();
-        if (stats.distribution) setExpertDist(stats.distribution);
+        const res = await axios.get(`${MOE_BASE}/v1/experts`, { timeout: 3000 });
+        if (res.data?.distribution) setExpertDist(res.data.distribution);
       } catch { /* ignore */ }
 
       setResults((prev) => [

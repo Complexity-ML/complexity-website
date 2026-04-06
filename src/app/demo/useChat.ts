@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { I64Client } from "vllm-i64";
+import axios from "axios";
 import type { Mode, Message } from "./config";
 import { ENDPOINTS, MAINTENANCE } from "./config";
 
@@ -39,13 +39,38 @@ const DEFAULT_PARAMS: SamplingParams = {
   frequencyPenalty: 0.3,
 };
 
-// Lazily-created clients per mode
-const clients: Partial<Record<Mode, I64Client>> = {};
-function getClient(mode: Mode): I64Client {
-  if (!clients[mode]) {
-    clients[mode] = new I64Client(ENDPOINTS[mode]);
+function getBaseUrl(mode: Mode): string {
+  return ENDPOINTS[mode].replace(/\/+$/, "");
+}
+
+/** Parse an SSE stream and yield text chunks */
+async function* readSSE(response: Response): AsyncGenerator<string> {
+  if (!response.body) return;
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith("data: ")) continue;
+        const payload = trimmed.slice(6);
+        if (payload === "[DONE]") return;
+        try {
+          const data = JSON.parse(payload);
+          const content = data.choices?.[0]?.delta?.content ?? data.choices?.[0]?.text ?? "";
+          if (content) yield content;
+        } catch { /* skip malformed */ }
+      }
+    }
+  } finally {
+    reader.releaseLock();
   }
-  return clients[mode]!;
 }
 
 export function useChat(initialMode: Mode) {
@@ -66,13 +91,14 @@ export function useChat(initialMode: Mode) {
   const tokenCountRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Health polling via SDK
+  // Health polling
   useEffect(() => {
     let cancelled = false;
-    const client = getClient(mode);
+    const base = getBaseUrl(mode);
     const poll = async () => {
       try {
-        const ok = await client.monitor.isReady();
+        const res = await axios.get(`${base}/health`, { timeout: 5000 });
+        const ok = res.data?.status === "ok" || res.data?.status === "degraded";
         if (!cancelled) setHealthStatus(ok ? "ok" : "offline");
       } catch {
         if (!cancelled) setHealthStatus("offline");
@@ -146,7 +172,7 @@ export function useChat(initialMode: Mode) {
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
-    const client = getClient(mode);
+    const base = getBaseUrl(mode);
 
     try {
       streamStartRef.current = performance.now();
@@ -161,22 +187,29 @@ export function useChat(initialMode: Mode) {
       // Poll expert distribution live during streaming
       const expertPollInterval = setInterval(async () => {
         try {
-          const stats = await client.monitor.experts();
-          if (stats.distribution) setExpertDist(stats.distribution);
+          const res = await axios.get(`${base}/v1/experts`, { timeout: 3000 });
+          if (res.data?.distribution) setExpertDist(res.data.distribution);
         } catch { /* ignore */ }
       }, 500);
 
-      // Stream via SDK (pass signal to abort server-side on cancel)
-      const streamGen = client.completions.stream(text, {
-        max_tokens: params.maxTokens,
-        temperature: params.temperature,
-        top_k: params.topK,
-        top_p: params.topP,
-        ...({ repetition_penalty: params.repetitionPenalty, frequency_penalty: params.frequencyPenalty } as Record<string, unknown>),
+      // Stream via fetch (axios doesn't support ReadableStream)
+      const response = await fetch(`${base}/v1/completions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: text,
+          max_tokens: params.maxTokens,
+          temperature: params.temperature,
+          top_k: params.topK,
+          top_p: params.topP,
+          repetition_penalty: params.repetitionPenalty,
+          frequency_penalty: params.frequencyPenalty,
+          stream: true,
+        }),
+        signal: controller.signal,
       });
-      // Abort the generator when the user cancels
-      controller.signal.addEventListener("abort", () => { streamGen.return(undefined); }, { once: true });
-      for await (const chunk of streamGen) {
+
+      for await (const chunk of readSSE(response)) {
         if (controller.signal.aborted) break;
         assistantContent += chunk;
         tokenCountRef.current++;
@@ -192,8 +225,8 @@ export function useChat(initialMode: Mode) {
 
       // Final expert distribution
       try {
-        const stats = await client.monitor.experts();
-        if (stats.distribution) setExpertDist(stats.distribution);
+        const res = await axios.get(`${base}/v1/experts`, { timeout: 3000 });
+        if (res.data?.distribution) setExpertDist(res.data.distribution);
       } catch { /* ignore */ }
 
       setStreaming(false);
