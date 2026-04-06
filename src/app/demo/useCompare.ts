@@ -86,7 +86,7 @@ export function useCompare() {
       }
     };
     poll();
-    const interval = setInterval(poll, 10_000);
+    const interval = setInterval(poll, 300_000);
     return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
