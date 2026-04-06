@@ -64,7 +64,7 @@ export function useCompare() {
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [params, setParams] = useState<SamplingParams>(DEFAULT_PARAMS);
-  const [healthStatus] = useState<"ok" | "degraded" | "offline">("offline");
+  const [healthStatus] = useState<"ok" | "degraded" | "offline">("ok");
 
   const [denseContent, setDenseContent] = useState("");
   const [chatContent, setChatContent] = useState("");

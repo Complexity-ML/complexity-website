@@ -82,7 +82,7 @@ export function useChat(initialMode: Mode) {
   const [params, setParams] = useState<SamplingParams>(DEFAULT_PARAMS);
   const [tokenStats, setTokenStats] = useState<TokenStats | null>(null);
   const [totalRequests] = useState<number | null>(null);
-  const [healthStatus] = useState<"ok" | "degraded" | "offline">("offline");
+  const [healthStatus] = useState<"ok" | "degraded" | "offline">("ok");
   const [snapshot] = useState<MonitorData | null>(null);
 
   const streamStartRef = useRef(0);
