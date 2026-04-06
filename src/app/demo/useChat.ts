@@ -82,10 +82,9 @@ export function useChat(initialMode: Mode) {
   const [error, setError] = useState<string | null>(null);
   const [params, setParams] = useState<SamplingParams>(DEFAULT_PARAMS);
   const [tokenStats, setTokenStats] = useState<TokenStats | null>(null);
-  const [totalRequests, setTotalRequests] = useState<number | null>(null);
+  const [totalRequests] = useState<number | null>(null);
   const [healthStatus, setHealthStatus] = useState<"ok" | "degraded" | "offline">("offline");
-  const [snapshot, setSnapshot] = useState<MonitorData | null>(null);
-  const [expertDist, setExpertDist] = useState<number[] | null>(null);
+  const [snapshot] = useState<MonitorData | null>(null);
 
   const streamStartRef = useRef(0);
   const tokenCountRef = useRef(0);
@@ -148,7 +147,6 @@ export function useChat(initialMode: Mode) {
     setMessages([]);
     setError(null);
     setTokenStats(null);
-    setExpertDist(null);
   }, [streaming, loading, stopGeneration]);
 
   const loadMessages = useCallback((msgs: Message[]) => {
@@ -162,7 +160,6 @@ export function useChat(initialMode: Mode) {
     if (!text || loading || streaming || MAINTENANCE[mode]) return;
 
     setError(null);
-    setExpertDist(null);
     const userMessage: Message = { role: "user", content: text };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
@@ -245,7 +242,6 @@ export function useChat(initialMode: Mode) {
     totalRequests,
     healthStatus,
     snapshot,
-    expertDist,
     switchMode,
     clearChat,
     loadMessages,

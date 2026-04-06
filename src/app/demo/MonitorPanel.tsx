@@ -2,17 +2,15 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { MonitorData } from "./useChat";
 
 interface MonitorPanelProps {
   health: "ok" | "degraded" | "offline";
   snapshot: MonitorData | null;
-  expertDist: number[] | null;
 }
 
-export function MonitorPanel({ health, snapshot, expertDist }: MonitorPanelProps) {
+export function MonitorPanel({ health, snapshot }: MonitorPanelProps) {
   return (
     <div className="border-b border-border/50 bg-card/30 backdrop-blur-lg px-6 py-3">
       <div className="flex flex-wrap items-center gap-6">
@@ -54,30 +52,6 @@ export function MonitorPanel({ health, snapshot, expertDist }: MonitorPanelProps
           </>
         )}
 
-        {expertDist && expertDist.length > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-muted-foreground/60">experts</span>
-            <div className="flex items-end gap-0.5 h-4">
-              {expertDist.map((pct, i) => (
-                <Tooltip key={i}>
-                  <TooltipTrigger asChild>
-                    <div
-                      className={cn("w-2 rounded-sm transition-all duration-500")}
-                      style={{
-                        height: `${Math.max(pct * 100, 8)}%`,
-                        background: `var(--expert-${i % 4})`,
-                        opacity: 0.7 + pct * 0.3,
-                      }}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Expert {i}: {(pct * 100).toFixed(1)}%
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

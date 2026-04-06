@@ -6,13 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { CompareResult } from "./useCompare";
 
-const EXPERT_COLORS = [
-  { bar: "var(--expert-0-deep)", tip: "var(--expert-0-light)", glow: "var(--expert-0)" },
-  { bar: "var(--expert-1-deep)", tip: "var(--expert-1-light)", glow: "var(--expert-1)" },
-  { bar: "var(--expert-2-deep)", tip: "var(--expert-2-light)", glow: "var(--expert-2)" },
-  { bar: "var(--expert-3-deep)", tip: "var(--expert-3-light)", glow: "var(--expert-3)" },
-];
-
 interface CompareViewProps {
   results: CompareResult[];
   denseContent: string;
@@ -20,7 +13,6 @@ interface CompareViewProps {
   denseTokens: number;
   chatTokens: number;
   streaming: boolean;
-  expertDist: number[] | null;
 }
 
 function StatBadge({ tokens, elapsed }: { tokens: number; elapsed: number }) {
@@ -85,35 +77,6 @@ function ModelColumn({
   );
 }
 
-function ExpertDistBar({ distribution }: { distribution: number[] }) {
-  return (
-    <div className="flex items-center justify-center gap-3 py-2">
-      <span className="text-[9px] font-mono text-muted-foreground/40">experts</span>
-      <div className="flex items-end gap-2">
-        {distribution.map((pct, i) => {
-          const colors = EXPERT_COLORS[i % EXPERT_COLORS.length];
-          return (
-            <div key={i} className="flex flex-col items-center gap-1">
-              <span className="text-[10px] font-mono text-muted-foreground/50">
-                {(pct * 100).toFixed(0)}%
-              </span>
-              <div
-                className="w-5 rounded-sm transition-all duration-700"
-                style={{
-                  height: `${Math.max(pct * 100 * 0.5, 4)}px`,
-                  background: `linear-gradient(to top, ${colors.bar}, ${colors.tip})`,
-                  boxShadow: `0 0 6px color-mix(in oklch, ${colors.glow}, transparent 60%)`,
-                }}
-              />
-              <span className="text-[9px] font-mono text-muted-foreground/30">E{i}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 export function CompareView({
   results,
   denseContent,
@@ -121,15 +84,9 @@ export function CompareView({
   denseTokens,
   chatTokens,
   streaming,
-  expertDist,
 }: CompareViewProps) {
-  const hasExperts = expertDist && expertDist.length > 0;
-
   return (
     <div className="space-y-6">
-      {/* Expert distribution bar — i64 model (4 experts) */}
-      {hasExperts && <ExpertDistBar distribution={expertDist} />}
-
       {/* Past results */}
       {results.map((r, i) => (
         <motion.div

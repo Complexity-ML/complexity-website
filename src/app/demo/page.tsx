@@ -174,7 +174,6 @@ function DemoContent() {
         <MonitorPanel
           health={chat.healthStatus}
           snapshot={chat.snapshot}
-          expertDist={chat.expertDist}
         />
       )}
 
@@ -224,7 +223,6 @@ function DemoContent() {
                       denseTokens={compare.denseTokens}
                       chatTokens={compare.chatTokens}
                       streaming={compare.streaming}
-                      expertDist={compare.expertDist}
                     />
                     {compare.error && <ErrorBanner message={compare.error} />}
                   </>
@@ -249,7 +247,6 @@ function DemoContent() {
             streaming={isCompare ? compare.streaming : chat.streaming}
             maxTokens={isCompare ? compare.params.maxTokens : chat.params.maxTokens}
             tokenStats={isCompare ? null : chat.tokenStats}
-            expertDist={isCompare ? compare.expertDist : chat.expertDist}
             onInputChange={isCompare ? compare.setInput : chat.setInput}
             onSend={handleSend}
             onStop={handleStop}

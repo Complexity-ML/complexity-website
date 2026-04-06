@@ -71,7 +71,6 @@ export function useCompare() {
   const [chatContent, setChatContent] = useState("");
   const [denseTokens, setDenseTokens] = useState(0);
   const [chatTokens, setChatTokens] = useState(0);
-  const [expertDist, setExpertDist] = useState<number[] | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -113,7 +112,6 @@ export function useCompare() {
     if (!text || loading || streaming) return;
 
     setError(null);
-    setExpertDist(null);
     setInput("");
     setLoading(true);
     setDenseContent("");
@@ -226,7 +224,6 @@ export function useCompare() {
     chatContent,
     denseTokens,
     chatTokens,
-    expertDist,
     sendMessage,
     stopGeneration,
     clearResults,
