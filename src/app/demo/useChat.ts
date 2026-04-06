@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import axios from "axios";
 import type { Mode, Message } from "./config";
 import { ENDPOINTS, MAINTENANCE } from "./config";
 
@@ -83,29 +82,13 @@ export function useChat(initialMode: Mode) {
   const [params, setParams] = useState<SamplingParams>(DEFAULT_PARAMS);
   const [tokenStats, setTokenStats] = useState<TokenStats | null>(null);
   const [totalRequests] = useState<number | null>(null);
-  const [healthStatus, setHealthStatus] = useState<"ok" | "degraded" | "offline">("offline");
+  const [healthStatus] = useState<"ok" | "degraded" | "offline">("offline");
   const [snapshot] = useState<MonitorData | null>(null);
 
   const streamStartRef = useRef(0);
   const tokenCountRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Health polling via /v1/models (standard vllm endpoint)
-  useEffect(() => {
-    let cancelled = false;
-    const base = getBaseUrl(mode);
-    const poll = async () => {
-      try {
-        await axios.get(`${base}/v1/models`, { timeout: 5000 });
-        if (!cancelled) setHealthStatus("ok");
-      } catch {
-        if (!cancelled) setHealthStatus("offline");
-      }
-    };
-    poll();
-    const interval = setInterval(poll, 300_000);
-    return () => { cancelled = true; clearInterval(interval); };
-  }, [mode]);
 
   useEffect(() => {
     const onUnload = () => {

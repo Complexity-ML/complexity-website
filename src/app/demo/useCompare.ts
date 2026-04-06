@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
-import axios from "axios";
+import { useState, useRef, useCallback } from "react";
 import type { SamplingParams } from "./useChat";
 import { ENDPOINTS } from "./config";
 
@@ -65,7 +64,7 @@ export function useCompare() {
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [params, setParams] = useState<SamplingParams>(DEFAULT_PARAMS);
-  const [healthStatus, setHealthStatus] = useState<"ok" | "degraded" | "offline">("offline");
+  const [healthStatus] = useState<"ok" | "degraded" | "offline">("offline");
 
   const [denseContent, setDenseContent] = useState("");
   const [chatContent, setChatContent] = useState("");
@@ -74,21 +73,6 @@ export function useCompare() {
 
   const abortRef = useRef<AbortController | null>(null);
 
-  // Health polling via /v1/models (standard vllm endpoint)
-  useEffect(() => {
-    let cancelled = false;
-    const poll = async () => {
-      try {
-        await axios.get(`${MOE_BASE}/v1/models`, { timeout: 5000 });
-        if (!cancelled) setHealthStatus("ok");
-      } catch {
-        if (!cancelled) setHealthStatus("offline");
-      }
-    };
-    poll();
-    const interval = setInterval(poll, 300_000);
-    return () => { cancelled = true; clearInterval(interval); };
-  }, []);
 
   const stopGeneration = useCallback(() => {
     abortRef.current?.abort();
