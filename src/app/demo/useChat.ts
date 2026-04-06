@@ -91,21 +91,20 @@ export function useChat(initialMode: Mode) {
   const tokenCountRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Health polling
+  // Health polling via /v1/models (standard vllm endpoint)
   useEffect(() => {
     let cancelled = false;
     const base = getBaseUrl(mode);
     const poll = async () => {
       try {
-        const res = await axios.get(`${base}/health`, { timeout: 5000 });
-        const ok = res.data?.status === "ok" || res.data?.status === "degraded";
-        if (!cancelled) setHealthStatus(ok ? "ok" : "offline");
+        await axios.get(`${base}/v1/models`, { timeout: 5000 });
+        if (!cancelled) setHealthStatus("ok");
       } catch {
         if (!cancelled) setHealthStatus("offline");
       }
     };
     poll();
-    const interval = setInterval(poll, 5_000);
+    const interval = setInterval(poll, 10_000);
     return () => { cancelled = true; clearInterval(interval); };
   }, [mode]);
 
@@ -184,14 +183,6 @@ export function useChat(initialMode: Mode) {
       let assistantContent = "";
       setMessages([...newMessages, { role: "assistant", content: "" }]);
 
-      // Poll expert distribution live during streaming
-      const expertPollInterval = setInterval(async () => {
-        try {
-          const res = await axios.get(`${base}/v1/experts`, { timeout: 3000 });
-          if (res.data?.distribution) setExpertDist(res.data.distribution);
-        } catch { /* ignore */ }
-      }, 500);
-
       // Stream via fetch (axios doesn't support ReadableStream)
       const response = await fetch(`${base}/v1/completions`, {
         method: "POST",
@@ -218,16 +209,8 @@ export function useChat(initialMode: Mode) {
         setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
       }
 
-      clearInterval(expertPollInterval);
-
       const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
       setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
-
-      // Final expert distribution
-      try {
-        const res = await axios.get(`${base}/v1/experts`, { timeout: 3000 });
-        if (res.data?.distribution) setExpertDist(res.data.distribution);
-      } catch { /* ignore */ }
 
       setStreaming(false);
       abortControllerRef.current = null;

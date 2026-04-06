@@ -75,14 +75,13 @@ export function useCompare() {
 
   const abortRef = useRef<AbortController | null>(null);
 
-  // Health polling
+  // Health polling via /v1/models (standard vllm endpoint)
   useEffect(() => {
     let cancelled = false;
     const poll = async () => {
       try {
-        const res = await axios.get(`${DENSE_BASE}/health`, { timeout: 5000 });
-        const ok = res.data?.status === "ok" || res.data?.status === "degraded";
-        if (!cancelled) setHealthStatus(ok ? "ok" : "offline");
+        await axios.get(`${MOE_BASE}/v1/models`, { timeout: 5000 });
+        if (!cancelled) setHealthStatus("ok");
       } catch {
         if (!cancelled) setHealthStatus("offline");
       }
@@ -147,14 +146,6 @@ export function useCompare() {
       let denseElapsed = 0;
       let moeElapsed = 0;
 
-      // Poll expert distribution live during streaming
-      const expertPollInterval = setInterval(async () => {
-        try {
-          const res = await axios.get(`${MOE_BASE}/v1/experts`, { timeout: 3000 });
-          if (res.data?.distribution) setExpertDist(res.data.distribution);
-        } catch { /* ignore */ }
-      }, 500);
-
       // Stream both models in parallel
       await Promise.all([
         (async () => {
@@ -192,14 +183,6 @@ export function useCompare() {
           moeElapsed = (performance.now() - t0) / 1000;
         })(),
       ]);
-
-      clearInterval(expertPollInterval);
-
-      // Final expert distribution
-      try {
-        const res = await axios.get(`${MOE_BASE}/v1/experts`, { timeout: 3000 });
-        if (res.data?.distribution) setExpertDist(res.data.distribution);
-      } catch { /* ignore */ }
 
       setResults((prev) => [
         ...prev,
