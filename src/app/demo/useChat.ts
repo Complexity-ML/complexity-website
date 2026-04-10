@@ -31,7 +31,7 @@ export interface MonitorData {
 
 const DEFAULT_PARAMS: SamplingParams = {
   temperature: 0.7,
-  maxTokens: 2048,
+  maxTokens: 512,
   topK: 50,
   topP: 0.9,
   repetitionPenalty: 1.3,
