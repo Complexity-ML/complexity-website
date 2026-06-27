@@ -38,11 +38,11 @@ function SuggestionGroupBlock({
         {group.label}
       </p>
       <div className="grid gap-2 sm:grid-cols-2">
-        {group.prompts.slice(0, 4).map((prompt) => (
+        {group.prompts.map((prompt) => (
           <button
             key={prompt}
             onClick={() => onSelect(prompt)}
-            className="group rounded-2xl border border-border/50 bg-card/45 px-4 py-3 text-left text-xs text-muted-foreground transition-all hover:border-primary/35 hover:bg-card/70 hover:text-foreground"
+            className="group min-h-16 rounded-2xl border border-border/50 bg-card/45 px-4 py-3 text-left text-xs leading-relaxed text-muted-foreground transition-all hover:border-primary/35 hover:bg-card/70 hover:text-foreground"
           >
             <span>{prompt}</span>
             <ArrowRight className="mt-2 size-3 text-primary/50 opacity-0 transition-opacity group-hover:opacity-100" />
@@ -107,8 +107,8 @@ export function WelcomeScreen({
                 Start with a short continuation prompt, then inspect latency, tokens, and output shape.
               </p>
             </div>
-            <div className="space-y-5">
-              {SUGGESTIONS[mode].slice(0, 2).map((group) => (
+            <div className="max-h-[36vh] space-y-6 overflow-y-auto pr-1 scrollbar-none">
+              {SUGGESTIONS[mode].map((group) => (
                 <SuggestionGroupBlock key={group.label} group={group} onSelect={onSelectPrompt} />
               ))}
             </div>

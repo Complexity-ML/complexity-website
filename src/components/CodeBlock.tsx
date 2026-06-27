@@ -11,7 +11,13 @@ type Segment =
   | { type: "text"; content: string }
   | { type: "code"; content: string; language: string };
 
+type TextBlock =
+  | { type: "paragraph"; content: string }
+  | { type: "list"; ordered: boolean; items: string[] };
+
 const FENCED_CODE_RE = /```([\w-]*)?\n([\s\S]*?)```/g;
+const BULLET_RE = /^\s*[-*•]\s+(.+)$/;
+const ORDERED_RE = /^\s*\d+[.)]\s+(.+)$/;
 
 function parseFencedCode(content: string): Segment[] {
   const segments: Segment[] = [];
@@ -36,6 +42,101 @@ function parseFencedCode(content: string): Segment[] {
   }
 
   return segments.length > 0 ? segments : [{ type: "text", content }];
+}
+
+function flushParagraph(lines: string[], blocks: TextBlock[]) {
+  if (lines.length === 0) return;
+  const content = lines.join(" ").replace(/\s+/g, " ").trim();
+  if (!content) return;
+
+  if (content.length > 520) {
+    const sentences = content.match(/[^.!?]+[.!?]+(?:\s|$)|[^.!?]+$/g)?.map((s) => s.trim()).filter(Boolean) ?? [content];
+    const chunk: string[] = [];
+    for (const sentence of sentences) {
+      chunk.push(sentence);
+      const joined = chunk.join(" ");
+      if (chunk.length >= 3 || joined.length > 360) {
+        blocks.push({ type: "paragraph", content: joined });
+        chunk.length = 0;
+      }
+    }
+    if (chunk.length > 0) blocks.push({ type: "paragraph", content: chunk.join(" ") });
+  } else {
+    blocks.push({ type: "paragraph", content });
+  }
+  lines.length = 0;
+}
+
+function parseTextBlocks(content: string): TextBlock[] {
+  const blocks: TextBlock[] = [];
+  const paragraph: string[] = [];
+  const lines = content.replace(/\r\n/g, "\n").split("\n");
+
+  let listItems: string[] = [];
+  let orderedList = false;
+
+  const flushList = () => {
+    if (listItems.length === 0) return;
+    blocks.push({ type: "list", ordered: orderedList, items: listItems });
+    listItems = [];
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const bullet = trimmed.match(BULLET_RE);
+    const ordered = trimmed.match(ORDERED_RE);
+
+    if (!trimmed) {
+      flushParagraph(paragraph, blocks);
+      flushList();
+      continue;
+    }
+
+    if (bullet || ordered) {
+      flushParagraph(paragraph, blocks);
+      const nextOrdered = Boolean(ordered);
+      if (listItems.length > 0 && orderedList !== nextOrdered) flushList();
+      orderedList = nextOrdered;
+      listItems.push((bullet?.[1] ?? ordered?.[1] ?? trimmed).trim());
+      continue;
+    }
+
+    flushList();
+    paragraph.push(trimmed);
+  }
+
+  flushParagraph(paragraph, blocks);
+  flushList();
+
+  return blocks;
+}
+
+function TextContent({ content }: { content: string }) {
+  const blocks = parseTextBlocks(content);
+
+  return (
+    <div className="space-y-3 text-[15px] leading-7 text-foreground/90">
+      {blocks.map((block, index) => {
+        if (block.type === "paragraph") {
+          return <p key={index}>{block.content}</p>;
+        }
+
+        const ListTag = block.ordered ? "ol" : "ul";
+        return (
+          <ListTag
+            key={index}
+            className={block.ordered ? "ml-5 list-decimal space-y-1" : "ml-5 list-disc space-y-1"}
+          >
+            {block.items.map((item, itemIndex) => (
+              <li key={`${index}-${itemIndex}`} className="pl-1 marker:text-primary/70">
+                {item}
+              </li>
+            ))}
+          </ListTag>
+        );
+      })}
+    </div>
+  );
 }
 
 function FencedCode({ content, language }: { content: string; language: string }) {
@@ -100,18 +201,14 @@ export default function CodeBlock({ content }: { content: string }) {
   const segments = parseFencedCode(content);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {segments.map((segment, index) => {
         if (segment.type === "code") {
           return <FencedCode key={index} content={segment.content} language={segment.language} />;
         }
 
         if (!segment.content.trim()) return null;
-        return (
-          <p key={index} className="whitespace-pre-wrap text-sm leading-relaxed">
-            {segment.content.trim()}
-          </p>
-        );
+        return <TextContent key={index} content={segment.content.trim()} />;
       })}
     </div>
   );
