@@ -1,49 +1,62 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Check, Copy } from "lucide-react";
 import hljs from "highlight.js/lib/core";
 import python from "highlight.js/lib/languages/python";
 
 hljs.registerLanguage("python", python);
 
-const CODE_KEYWORDS = [
-  "def ", "class ", "import ", "from ", "for ", "while ",
-  "if ", "return ", "print(", "elif ", "else:", "try:", "except",
-  "with ", "async ", "await ", "yield ", "lambda ",
-];
+type Segment =
+  | { type: "text"; content: string }
+  | { type: "code"; content: string; language: string };
 
-function looksLikeCode(text: string): boolean {
-  const trimmed = text.trim();
-  return CODE_KEYWORDS.some((kw) => trimmed.includes(kw));
+const FENCED_CODE_RE = /```([\w-]*)?\n([\s\S]*?)```/g;
+
+function parseFencedCode(content: string): Segment[] {
+  const segments: Segment[] = [];
+  let lastIndex = 0;
+
+  for (const match of content.matchAll(FENCED_CODE_RE)) {
+    const index = match.index ?? 0;
+    if (index > lastIndex) {
+      segments.push({ type: "text", content: content.slice(lastIndex, index) });
+    }
+
+    segments.push({
+      type: "code",
+      language: (match[1] || "text").toLowerCase(),
+      content: match[2].trimEnd(),
+    });
+    lastIndex = index + match[0].length;
+  }
+
+  if (lastIndex < content.length) {
+    segments.push({ type: "text", content: content.slice(lastIndex) });
+  }
+
+  return segments.length > 0 ? segments : [{ type: "text", content }];
 }
 
-export default function CodeBlock({ content }: { content: string }) {
+function FencedCode({ content, language }: { content: string; language: string }) {
   const [copied, setCopied] = useState(false);
-  const trimmed = content.trim();
-  const isCode = looksLikeCode(trimmed);
+  const isPython = language === "python" || language === "py";
 
   const highlighted = useMemo(() => {
-    if (!isCode) return null;
+    if (!isPython) return null;
     try {
-      return hljs.highlight(trimmed, { language: "python" }).value;
+      return hljs.highlight(content, { language: "python" }).value;
     } catch {
       return null;
     }
-  }, [trimmed, isCode]);
-
-  if (!isCode || !highlighted) {
-    return (
-      <p className="text-sm leading-relaxed whitespace-pre-wrap">{content}</p>
-    );
-  }
+  }, [content, isPython]);
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(trimmed);
+      await navigator.clipboard.writeText(content);
     } catch {
-      // Fallback for non-HTTPS contexts (e.g. HF Spaces)
       const ta = document.createElement("textarea");
-      ta.value = trimmed;
+      ta.value = content;
       ta.style.position = "fixed";
       ta.style.opacity = "0";
       document.body.appendChild(ta);
@@ -52,42 +65,54 @@ export default function CodeBlock({ content }: { content: string }) {
       document.body.removeChild(ta);
     }
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 1600);
   };
 
   return (
-    <div dir="ltr" className="rounded-lg overflow-hidden border border-border/30">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-white/[0.03] border-b border-border/20">
-        <span className="text-[10px] font-mono text-muted-foreground/60">
-          python
+    <div dir="ltr" className="my-3 overflow-hidden rounded-xl border border-border/40 bg-background/60">
+      <div className="flex items-center justify-between border-b border-border/30 bg-white/[0.03] px-3 py-1.5">
+        <span className="font-mono text-[10px] text-muted-foreground/70">
+          {language || "text"}
         </span>
         <button
           onClick={copyToClipboard}
-          className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground/60 hover:text-foreground transition-colors"
+          className="flex items-center gap-1 font-mono text-[10px] text-muted-foreground/70 transition-colors hover:text-foreground"
         >
-          {copied ? (
-            <>
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              copied
-            </>
-          ) : (
-            <>
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              copy
-            </>
-          )}
+          {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
+          {copied ? "copied" : "copy"}
         </button>
       </div>
-      <pre className="p-3 overflow-x-auto text-[13px] leading-relaxed">
-        <code
-          className="hljs language-python"
-          dangerouslySetInnerHTML={{ __html: highlighted }}
-        />
+      <pre className="overflow-x-auto p-3 text-[13px] leading-relaxed">
+        {highlighted ? (
+          <code
+            className="hljs language-python"
+            dangerouslySetInnerHTML={{ __html: highlighted }}
+          />
+        ) : (
+          <code>{content}</code>
+        )}
       </pre>
+    </div>
+  );
+}
+
+export default function CodeBlock({ content }: { content: string }) {
+  const segments = parseFencedCode(content);
+
+  return (
+    <div className="space-y-2">
+      {segments.map((segment, index) => {
+        if (segment.type === "code") {
+          return <FencedCode key={index} content={segment.content} language={segment.language} />;
+        }
+
+        if (!segment.content.trim()) return null;
+        return (
+          <p key={index} className="whitespace-pre-wrap text-sm leading-relaxed">
+            {segment.content.trim()}
+          </p>
+        );
+      })}
     </div>
   );
 }
