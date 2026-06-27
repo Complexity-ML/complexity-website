@@ -16,10 +16,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 const MODEL_SPECS = [
-  { icon: Cpu, label: "Parameters", value: "—" },
-  { icon: Layers, label: "Experts", value: "—" },
+  { icon: Cpu, label: "Scaling run", value: "306.5M" },
+  { icon: Layers, label: "Experts", value: "4, top-k=2" },
   { icon: Zap, label: "Routing", value: "Zipf bin-pack" },
-  { icon: Timer, label: "Training", value: "—" },
+  { icon: Timer, label: "Training", value: "8B tokens" },
 ];
 
 const BENCHMARK_STATS = [
@@ -69,13 +69,13 @@ export default function DashboardPage() {
           <div>
             <p className="font-medium">Chat with Pacific-i64</p>
             <p className="text-xs text-muted-foreground">
-              Python, ROS2, or side-by-side comparison
+              TR-MoE, dense, or side-by-side comparison
             </p>
           </div>
         </Link>
 
         <a
-          href="https://openreview.net/forum?id=jZq6EVboC6"
+          href="https://openreview.net/forum?id=Jd9jhTnkUy"
           target="_blank"
           rel="noopener noreferrer"
           className="group p-5 rounded-lg border border-border hover:border-primary/50 transition-colors space-y-3"
@@ -85,7 +85,7 @@ export default function DashboardPage() {
             <ArrowRight className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
           <div>
-            <p className="font-medium">Paper (TMLR)</p>
+            <p className="font-medium">Paper</p>
             <p className="text-xs text-muted-foreground">
               Under review at Transactions on ML Research
             </p>
@@ -132,8 +132,7 @@ export default function DashboardPage() {
         </div>
         <div className="px-5 py-3 bg-muted/20 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            Decoder-only transformer with Mu-Guided Attention, Token-Routed MLP (Zipf bin-packing),
-            Shared Lexical Expert, GQA, RoPE, SwiGLU. Model specs will be updated after TMLR review.
+            Decoder-only transformer family with Token-Routed MLP, Zipf bin-packing, Shared Lexical Expert, GQA, RoPE, and SwiGLU. Updated from the current OpenReview submission.
           </p>
         </div>
       </div>
@@ -200,24 +199,6 @@ export default function DashboardPage() {
             className="w-full h-auto"
           />
         </div>
-      </div>
-
-      {/* Mu Contribution */}
-      <div className="rounded-lg border border-border overflow-hidden">
-        <div className="px-5 py-3 bg-card/50 border-b border-border">
-          <p className="text-sm font-medium">Mu-Guidance Contribution</p>
-          <p className="text-xs text-muted-foreground">
-            Ratio of Mu contribution to K, Q, V projections per layer (~50%)
-          </p>
-        </div>
-        <Image
-          src="/mu_contribution.png"
-          alt="Mu contribution per layer"
-          width={1975}
-          height={976}
-          sizes="(min-width: 1024px) 896px, 100vw"
-          className="w-full h-auto"
-        />
       </div>
 
       {/* Architecture */}

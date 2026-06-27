@@ -11,7 +11,7 @@ const GridBackground = dynamic(() => import("./GridBackground"), {
   loading: () => <div className="absolute inset-0 -z-10 bg-background" />,
 });
 
-const MuAnimation = dynamic(() => import("./MuAnimation"), {
+const RoutingAnimation = dynamic(() => import("./RoutingAnimation"), {
   ssr: false,
   loading: () => null,
 });
@@ -28,7 +28,7 @@ export default function Hero() {
       <GridBackground />
 
       <div className="absolute inset-0 z-0 opacity-70" aria-hidden="true">
-        <MuAnimation />
+        <RoutingAnimation />
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
@@ -77,8 +77,8 @@ export default function Hero() {
             className="text-base sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8 sm:mb-10 px-2 leading-relaxed"
           >
             Building efficient transformer architectures with{" "}
-            <span className="text-primary">Mu-Guided Dynamics</span> and{" "}
-            <span className="text-primary">Token-Routed MLP</span>
+            <span className="text-primary">deterministic lexical routing</span> and a{" "}
+            <span className="text-primary">shared-expert Token-Routed MLP</span>
           </motion.p>
 
           <motion.div
@@ -100,7 +100,7 @@ export default function Hero() {
               </a>
             </Button>
             <Button variant="ghost" size="lg" className="text-muted-foreground hover:text-foreground" asChild>
-              <a href="https://openreview.net/forum?id=jZq6EVboC6" target="_blank" rel="noopener noreferrer">
+              <a href="https://openreview.net/forum?id=Jd9jhTnkUy" target="_blank" rel="noopener noreferrer">
                 <BookOpen className="size-5" />
                 Paper
               </a>

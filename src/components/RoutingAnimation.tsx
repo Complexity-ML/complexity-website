@@ -4,19 +4,19 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 const equations = [
-  "K = xW_K + μ·W_μK",
-  "Q = xW_Q + μ·W_μQ",
-  "V = xW_V + μ·W_μV",
-  "μ⁽ˡ⁾ = clamp(μ_param) + W_μ·h_post-MLP",
+  "expert_idx(t) = BinPack(t, freq)",
   "MLP(x) = Shared(x) + Expert_e(x)",
-  "e = BinPack(token_id, freq)",
+  "load(e) = Σ freq(t), t → e",
+  "P_active = P_shared + k·P_expert",
+  "routing_table[token_id] → expert",
+  "TR − Dense = −0.0163",
 ];
 
 function EquationStrip() {
   return (
     <>
-      {equations.map((eq, i) => (
-        <span key={i} className="flex items-center">
+      {equations.map((eq) => (
+        <span key={eq} className="flex items-center">
           <span className="mx-6">{eq}</span>
           <span className="text-primary/40">•</span>
         </span>
@@ -25,7 +25,7 @@ function EquationStrip() {
   );
 }
 
-export default function MuAnimation() {
+export default function RoutingAnimation() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,15 +40,12 @@ export default function MuAnimation() {
 
     let animationId: number;
     let position = 0;
-    const speed = 0.32; // pixels per frame
+    const speed = 0.28;
 
     const animate = () => {
       position += speed;
-      // Reset when we've scrolled half (since we have 4 copies, 50% = 2 copies)
       const halfWidth = el.scrollWidth / 2;
-      if (position >= halfWidth) {
-        position = 0;
-      }
+      if (position >= halfWidth) position = 0;
       el.style.transform = `translateX(-${position}px)`;
       animationId = requestAnimationFrame(animate);
     };
@@ -58,15 +55,14 @@ export default function MuAnimation() {
   }, []);
 
   return (
-    <div className="relative w-full h-full">
-      {/* Scrolling equation ticker */}
-      <div className="pointer-events-none absolute bottom-8 left-0 right-0 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_16%,black_84%,transparent)] sm:bottom-12">
+    <div className="relative h-full w-full">
+      <div className="pointer-events-none absolute left-0 right-0 top-[31%] -translate-y-1/2 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_18%,black_82%,transparent)] sm:top-[34%]">
         <motion.div
           ref={scrollRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="flex whitespace-nowrap font-mono text-sm font-medium tracking-wide text-primary/70 sm:text-lg md:text-xl"
+          className="flex whitespace-nowrap font-mono text-sm font-medium tracking-wide text-primary/20 sm:text-lg md:text-xl"
         >
           <EquationStrip />
           <EquationStrip />

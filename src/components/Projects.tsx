@@ -10,7 +10,7 @@ const projects = [
   {
     title: "Complexity-Deep",
     description:
-      "Token-Routed MLP with Mu-Guided Dynamics. Deterministic expert routing + learned mu projection for efficient transformers.",
+      "Token-Routed MLP with deterministic lexical routing, Zipf-balanced bin-packing, and a shared lexical expert.",
     tags: ["PyTorch", "Triton", "MoE", "LLM"],
     status: "Active",
     links: {
@@ -32,7 +32,7 @@ const projects = [
   {
     title: "Pacific-i64",
     description:
-      "1.5B parameter language model trained with Complexity-Deep architecture. Mu-guided attention and token-routed experts.",
+      "1.5B parameter language model trained with Complexity-Deep routing experiments and token-routed experts.",
     tags: ["LLM", "1.5B", "F32", "HuggingFace"],
     status: "Available",
     links: {
@@ -54,11 +54,11 @@ const projects = [
   {
     title: "OpenReview — Submission",
     description:
-      "Our latest submission on OpenReview. Token-Routed MLP with Mu-Guided Dynamics for efficient transformer architectures.",
+      "Our latest OpenReview submission on deterministic lexical routing, shared experts, and corrected Token-Routed scaling.",
     tags: ["Paper", "OpenReview", "Peer Review"],
     status: "Active",
     links: {
-      paper: "https://openreview.net/forum?id=jZq6EVboC6",
+      paper: "https://openreview.net/forum?id=Jd9jhTnkUy",
     },
   },
 ];

@@ -23,23 +23,23 @@ const INNOVATIONS = [
   },
   {
     icon: Cpu,
-    title: "Mu-Guided Dynamics",
-    dense: "Standard optimizers with fixed learning rates — unstable training at scale.",
-    i64: "Learned mu projection adapts dynamics during training. Stable convergence by design.",
+    title: "Zipf-Balanced Routing",
+    dense: "Modulo or learned routing can create imbalance, collapse, or extra auxiliary-loss tuning.",
+    i64: "Greedy bin-packing over token frequencies gives deterministic, near-balanced expert utilization.",
   },
   {
     icon: Zap,
-    title: "CGGR Kernels",
-    dense: "Generic CUDA kernels not optimized for transformer workloads.",
-    i64: "Custom kernels fused for i64 operations. Lower memory bandwidth, higher throughput.",
+    title: "Shared Lexical Expert",
+    dense: "Dense MLPs spend the same function on universal syntax and token-specific lexical patterns.",
+    i64: "A shared dense path carries common language structure while routed experts specialize on lexical partitions.",
   },
 ];
 
 const STATS = [
-  { value: "384M", label: "Parameters (Pacific-i64)" },
-  { value: "10K", label: "Safety contrastive pairs" },
-  { value: "3", label: "Peer-reviewed papers" },
-  { value: "CC BY-NC", label: "Open-source license" },
+  { value: "306.5M", label: "Corrected scaling run" },
+  { value: "8B", label: "FineWeb-Edu tokens" },
+  { value: "−0.0163", label: "Final smoothed loss gap" },
+  { value: "0.248–0.264", label: "Final expert utilization" },
 ];
 
 export default function I64Page() {
@@ -97,7 +97,7 @@ export default function I64Page() {
               className="text-base sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-10"
             >
               Why brute-forcing compute is no longer the answer — and how{" "}
-              <span className="text-primary">integer-first, token-routed</span> architectures
+              <span className="text-primary">deterministic lexical, token-routed</span> architectures
               change the equation.
             </motion.p>
 
@@ -114,7 +114,7 @@ export default function I64Page() {
                 </a>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <a href="https://doi.org/10.5281/zenodo.18293026" target="_blank" rel="noopener noreferrer">
+                <a href="https://openreview.net/forum?id=Jd9jhTnkUy" target="_blank" rel="noopener noreferrer">
                   <BookOpen className="size-5" />
                   Read the Paper
                 </a>
@@ -172,7 +172,7 @@ export default function I64Page() {
         >
           <p className="font-mono text-xs text-muted-foreground mb-4">{"// THE CASE FOR i64"}</p>
           <h2 className="text-2xl sm:text-4xl font-bold tracking-tight">
-            Three problems. Three solutions.
+            Updated architecture. Corrected evidence.
           </h2>
         </motion.div>
 
@@ -225,8 +225,7 @@ export default function I64Page() {
               Try it on the <span className="text-primary">demo</span>
             </h2>
             <p className="text-muted-foreground mb-10 max-w-xl mx-auto">
-              Run i64 models directly in your browser. Compare outputs, latency, and token routing
-              against dense baselines in real time.
+              Explore the current Complexity demo and compare token-routed outputs against dense baselines.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-3">
               <Button size="lg" asChild>

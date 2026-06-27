@@ -16,7 +16,7 @@ export default function Footer() {
             </div>
             <p className="text-muted-foreground text-sm max-w-md">
               Open-source AI lab building efficient transformer architectures
-              with Mu-Guided Dynamics and Token-Routed MLP.
+              with deterministic lexical routing and shared-expert Token-Routed MLP.
             </p>
           </div>
 
@@ -28,7 +28,7 @@ export default function Footer() {
                 { label: "GitHub", href: "https://github.com/Complexity-ML" },
                 { label: "HuggingFace", href: "https://huggingface.co/Pacific-i64" },
                 { label: "PyPI", href: "https://pypi.org/project/complexity-deep/" },
-                { label: "Paper (Zenodo)", href: "https://doi.org/10.5281/zenodo.18293026" },
+                { label: "Paper (OpenReview)", href: "https://openreview.net/forum?id=Jd9jhTnkUy" },
               ].map((link) => (
                 <li key={link.label}>
                   <Button variant="link" className="h-auto p-0 text-muted-foreground hover:text-primary text-sm" asChild>

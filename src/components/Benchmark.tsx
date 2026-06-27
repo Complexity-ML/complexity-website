@@ -17,7 +17,7 @@ export default function Benchmark() {
         >
           <p className="text-primary font-mono text-sm mb-2">{"// INFERENCE"}</p>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">
-            vLLM Benchmark
+            Inference + corrected scaling
           </h2>
         </motion.div>
 
@@ -46,9 +46,7 @@ export default function Benchmark() {
           />
           <div className="p-4 sm:p-6">
             <p className="text-sm text-muted-foreground">
-              187M Token-Routed model served via vLLM 0.18 with PagedAttention and CUDA graphs.
-              Deterministic token routing is natively compatible with CUDA graph capture,
-              eliminating CPU-GPU synchronizations required by learned-router MoE architectures.
+              187M Token-Routed model served via vLLM 0.18 with PagedAttention and CUDA graphs. The updated paper also reports a corrected 300M iso-parameter comparison over 8B FineWeb-Edu tokens: Token-Routed first wins at step 740 on train loss, step 750 on validation loss, and ends with a −0.0163 smoothed train-loss gap.
             </p>
           </div>
         </motion.div>
@@ -62,7 +60,7 @@ export default function Benchmark() {
         >
           <p className="text-primary font-mono text-sm mb-2">{"// EXPERT ANALYSIS"}</p>
           <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6">
-            Expert t-SNE 3D
+            Expert analysis
           </h3>
           <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur overflow-hidden">
             <iframe
@@ -74,8 +72,7 @@ export default function Benchmark() {
             />
             <div className="p-4 sm:p-6 border-t border-border/50">
               <p className="text-sm text-muted-foreground">
-                Interactive 3D t-SNE of mean expert activations per layer (MLP output).
-                Rotate, zoom and hover to explore expert specialization across layers.
+                The updated paper emphasizes functional specialization measured by per-expert perplexity on assigned token subsets; geometric separation alone is not treated as proof of specialization.
               </p>
             </div>
           </div>

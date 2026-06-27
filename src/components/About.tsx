@@ -1,27 +1,27 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Zap, BarChart3 } from "lucide-react";
+import { GitBranch, Zap, BarChart3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const innovations = [
   {
-    icon: <span className="text-2xl">μ</span>,
-    title: "Mu-Guided Dynamics",
+    icon: <GitBranch className="size-6" />,
+    title: "Zipf-Balanced Routing",
     description:
-      "Learned mu projection that maintains context across layers through clamped scaling and linear adaptation.",
+      "A deterministic frequency table assigns tokens to experts with no learned router and no auxiliary load-balancing loss.",
   },
   {
     icon: <Zap className="size-6" />,
     title: "Token-Routed MLP",
     description:
-      "Deterministic expert routing based on token identity. Perfect load balance without routing collapse.",
+      "Deterministic lexical routing via Zipf-balanced greedy bin-packing, avoiding learned router collapse and auxiliary balancing losses.",
   },
   {
     icon: <BarChart3 className="size-6" />,
-    title: "CGGR Kernels",
+    title: "Shared Lexical Expert",
     description:
-      "Custom Triton kernels for contiguous group GEMM routing. 5-6x speedup over naive implementations.",
+      "A dense shared MLP path preserves common syntax and language patterns while routed experts specialize on lexical partitions.",
   },
 ];
 
@@ -42,7 +42,7 @@ export default function About() {
           <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">
             Complexity-ML is dedicated to developing efficient and innovative transformer
             architectures. Our research focuses on making large language models more
-            accessible through novel routing mechanisms and dynamics-inspired control systems.
+            accessible through deterministic lexical routing, shared expert capacity, and corrected matched-budget scaling.
           </p>
         </motion.div>
 

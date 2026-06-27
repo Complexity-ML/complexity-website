@@ -1,6 +1,7 @@
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import TrustBar from "@/components/TrustBar";
+import PaperUpdate from "@/components/PaperUpdate";
 import WhyComplexity from "@/components/WhyComplexity";
 import Projects from "@/components/Projects";
 import Benchmark from "@/components/Benchmark";
@@ -14,6 +15,7 @@ export default function Home() {
       <Navigation />
       <Hero />
       <TrustBar />
+      <PaperUpdate />
       <WhyComplexity />
       <Projects />
       <Benchmark />

@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 
 const publications = [
   {
-    title: "COMPLEXITY-DEEP: A Language Model Architecture with Mu-Guided Attention and Token-Routed MLP",
+    title: "COMPLEXITY-DEEP: Deterministic Lexical Routing with Token-Routed MLP",
     authors: "Anonymous",
     venue: "Submitted to Transactions on Machine Learning Research",
     year: "2026",
     doi: null,
-    url: "https://openreview.net/forum?id=jZq6EVboC6",
-    abstract: "We present COMPLEXITY-DEEP, a language model architecture introducing Token-Routed MLP with Zipf-balanced bin-packing routing, Mu-Guided Attention for inter-layer communication, and a Shared Lexical Expert. Under review at TMLR.",
+    url: "https://openreview.net/forum?id=Jd9jhTnkUy",
+    abstract: "We present COMPLEXITY-DEEP: Token-Routed MLP with deterministic lexical routing, Zipf-balanced greedy bin-packing, and a Shared Lexical Expert. The updated paper reports 187M ablations and a corrected 300M iso-parameter 8B-token scaling comparison.",
   },
 ];
 
@@ -96,11 +96,11 @@ export default function Publications() {
               <pre className="text-xs sm:text-sm font-mono text-muted-foreground overflow-x-auto">
 {`@article{
 anonymous2026complexitydeep,
-title={'{COMPLEXITY}-{DEEP}: A Language Model Architecture with Mu-Guided Attention and Token-Routed {MLP}'},
+title={'{COMPLEXITY}-{DEEP}: Deterministic Lexical Routing with Token-Routed {MLP}'},
 author={Anonymous},
 journal={Submitted to Transactions on Machine Learning Research},
 year={2026},
-url={https://openreview.net/forum?id=jZq6EVboC6},
+url={https://openreview.net/forum?id=Jd9jhTnkUy},
 note={Under review}
 }`}
               </pre>

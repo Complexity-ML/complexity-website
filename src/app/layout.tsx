@@ -17,12 +17,12 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.complexity-ai.fr"),
   alternates: { canonical: "./" },
   title: "Complexity-ML | Open-Source AI Lab",
-  description: "Building efficient transformer architectures with Mu-Guided Dynamics and Token-Routed MLP. Open-source AI research from Paris.",
+  description: "Building efficient transformer architectures with deterministic lexical routing and shared-expert Token-Routed MLP. Open-source AI research from Paris.",
   keywords: ["AI", "Machine Learning", "Transformers", "LLM", "MoE", "PyTorch", "Open Source"],
   authors: [{ name: "Boris Peyriguere" }],
   openGraph: {
     title: "Complexity-ML | Open-Source AI Lab",
-    description: "Building efficient transformer architectures with Mu-Guided Dynamics and Token-Routed MLP.",
+    description: "Building efficient transformer architectures with deterministic lexical routing and shared-expert Token-Routed MLP.",
     url: "https://www.complexity-ai.fr",
     siteName: "Complexity-ML",
     type: "website",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Complexity-ML | Open-Source AI Lab",
-    description: "Building efficient transformer architectures with Mu-Guided Dynamics and Token-Routed MLP.",
+    description: "Building efficient transformer architectures with deterministic lexical routing and shared-expert Token-Routed MLP.",
   },
   verification: {
     google: "H4DZCSF0al4GA7R-OuD-qMs8Mu2FKzFTJ7G8tlnBx3w",

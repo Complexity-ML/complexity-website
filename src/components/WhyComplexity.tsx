@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, BrainCircuit, GitBranch, Layers3, Zap } from "lucide-react";
+import { ArrowRight, BarChart3, GitBranch, Layers3, Zap } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,22 +11,22 @@ const steps = [
   {
     icon: GitBranch,
     title: "Route tokens deterministically",
-    description: "Each token maps to a balanced expert path without a learned router collapse failure mode.",
+    description: "Tokens are assigned once by a Zipf-balanced frequency table, eliminating learned routers and auxiliary load-balancing losses.",
   },
   {
     icon: Layers3,
     title: "Keep a shared lexical expert",
-    description: "Common language structure remains available while specialized experts handle routed compute.",
+    description: "A dense shared path handles syntax and common patterns while routed experts specialize on lexical partitions.",
   },
   {
-    icon: BrainCircuit,
-    title: "Guide attention with μ",
-    description: "Mu-guided dynamics inject layer-to-layer state into attention projections for stable adaptation.",
+    icon: BarChart3,
+    title: "Correct the scaling comparison",
+    description: "The current result is a 300M iso-parameter, iso-batch comparison over 8B FineWeb-Edu tokens.",
   },
   {
     icon: Zap,
     title: "Serve with graph-friendly kernels",
-    description: "Deterministic paths are easier to batch, capture, and optimize in inference engines.",
+    description: "The 187M model reaches 8,078 tok/s in vLLM 0.18; the corrected 300M result reports quality at matched tokens, not a pure speed win.",
   },
 ];
 
@@ -34,17 +34,17 @@ const faqs = [
   {
     question: "Why not just scale dense models?",
     answer:
-      "Dense models activate the same full MLP for every token. Complexity-Deep explores routing compute toward token-specific expert paths, improving active-parameter efficiency without giving up a shared lexical path.",
+      "The paper studies a conditional capacity/compute trade-off: a shared dense branch plus token-conditioned routed branches, compared against dense baselines at matched budgets.",
   },
   {
     question: "What makes the routing robust?",
     answer:
-      "The routing is deterministic and Zipf-balanced, so expert utilization does not depend on a learned router staying well-behaved during training or inference.",
+      "The routing table is built by greedy bin-packing over empirical token frequencies. In the corrected 300M run, final expert utilization remains near-balanced with no dead experts.",
   },
   {
     question: "Is this only a paper concept?",
     answer:
-      "No. The site links to code, model artifacts, PyPI packages, Hugging Face releases, benchmarks, and a live demo surface so the stack can be inspected end-to-end.",
+      "The paper reports component ablations at 187M, a corrected 300M iso-parameter run over 8B FineWeb-Edu tokens, and vLLM inference results for the 187M model.",
   },
 ];
 
@@ -68,7 +68,7 @@ export default function WhyComplexity() {
               Less brute force. More routed intelligence.
             </h2>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-              The site should make the research feel understandable at a glance: what changes, why it matters, and where to verify the claims.
+              COMPLEXITY-DEEP now centers on deterministic lexical routing, a shared lexical expert, Zipf-balanced bin-packing, and corrected 300M scaling evidence over an 8B-token budget.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Button asChild>
@@ -87,7 +87,7 @@ export default function WhyComplexity() {
             <CardHeader className="border-b border-border/50">
               <CardTitle>Token-routed transformer, explained</CardTitle>
               <CardDescription>
-                A shadcn-powered section that turns the architecture into digestible product storytelling.
+                Updated from the new OpenReview paper: lexical routing, shared expert, Zipf balance, and corrected scaling caveats.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">

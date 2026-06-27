@@ -13,14 +13,14 @@ const signals = [
   {
     icon: Cpu,
     label: "Efficient activation",
-    value: "~105M active",
-    detail: "per token, routed experts",
+    value: "300M iso-run",
+    detail: "8B-token comparison",
   },
   {
     icon: GitBranch,
     label: "Deterministic routing",
-    value: "Zipf balanced",
-    detail: "stable expert utilization",
+    value: "0.248/0.264/0.248/0.240",
+    detail: "final expert utilization",
   },
   {
     icon: ShieldCheck,
