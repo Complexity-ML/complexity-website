@@ -17,6 +17,12 @@ import { MonitorPanel } from "./MonitorPanel";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { ChatSidebar } from "./ChatSidebar";
 
+const MODES: Mode[] = ["TR-MoE", "compare", "dense"];
+
+function parseMode(mode: string | null): Mode {
+  return MODES.includes(mode as Mode) ? (mode as Mode) : "TR-MoE";
+}
+
 export default function DemoPage() {
   return (
     <Suspense>
@@ -30,7 +36,7 @@ export default function DemoPage() {
 function DemoContent() {
   const searchParams = useSearchParams();
   const { data: session } = useSession();
-  const initialMode = (searchParams.get("mode") as Mode) || "TR-MoE";
+  const initialMode = parseMode(searchParams.get("mode"));
   const userId = (session?.user as Record<string, unknown> | undefined)?.id as string | undefined;
 
   const chat = useChat(initialMode === "dense" ? "dense" : initialMode === "compare" ? "TR-MoE" : initialMode);

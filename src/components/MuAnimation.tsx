@@ -32,9 +32,15 @@ export default function MuAnimation() {
     const el = scrollRef.current;
     if (!el) return;
 
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) {
+      el.style.transform = "translateX(0)";
+      return;
+    }
+
     let animationId: number;
     let position = 0;
-    const speed = 0.5; // pixels per frame
+    const speed = 0.32; // pixels per frame
 
     const animate = () => {
       position += speed;
@@ -54,13 +60,13 @@ export default function MuAnimation() {
   return (
     <div className="relative w-full h-full">
       {/* Scrolling equation ticker */}
-      <div className="absolute bottom-24 sm:bottom-28 left-0 right-0 overflow-hidden pointer-events-none">
+      <div className="pointer-events-none absolute bottom-8 left-0 right-0 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_16%,black_84%,transparent)] sm:bottom-12">
         <motion.div
           ref={scrollRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="flex whitespace-nowrap font-mono text-sm sm:text-lg md:text-xl text-primary font-medium tracking-wide"
+          className="flex whitespace-nowrap font-mono text-sm font-medium tracking-wide text-primary/70 sm:text-lg md:text-xl"
         >
           <EquationStrip />
           <EquationStrip />

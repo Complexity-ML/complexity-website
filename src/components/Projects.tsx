@@ -26,7 +26,7 @@ const projects = [
     status: "Active",
     links: {
       github: "https://github.com/Complexity-ML/vllm-i64",
-      demo: "/demo?mode=python",
+      demo: "/demo?mode=TR-MoE",
     },
   },
   {
@@ -37,7 +37,7 @@ const projects = [
     status: "Available",
     links: {
       huggingface: "https://huggingface.co/Pacific-i64",
-      demo: "/demo?mode=chat",
+      demo: "/demo?mode=TR-MoE",
     },
   },
   {
@@ -82,7 +82,7 @@ const itemVariants = {
 
 export default function Projects() {
   return (
-    <section id="projects" className="py-16 sm:py-24 px-4 sm:px-6">
+    <section id="projects" className="px-4 py-16 sm:px-6 sm:py-24">
       <div className="container mx-auto max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -92,9 +92,12 @@ export default function Projects() {
           className="mb-10 sm:mb-16"
         >
           <p className="text-primary font-mono text-sm mb-2">{"// PROJECTS"}</p>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">
-            What We&apos;re Building
+          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl md:text-5xl">
+            Production-grade research artifacts
           </h2>
+          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            Explore the architecture, inference engine, model releases, and papers behind the Complexity stack.
+          </p>
         </motion.div>
 
         <motion.div
@@ -106,7 +109,8 @@ export default function Projects() {
         >
           {projects.map((project) => (
             <motion.div key={project.title} variants={itemVariants}>
-              <Card className="h-full bg-card/50 backdrop-blur border-border/50 hover:border-primary/50 transition-colors group">
+              <Card className="group relative h-full overflow-hidden border-border/50 bg-card/55 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:bg-card/75 hover:shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-lg sm:text-xl group-hover:text-primary transition-colors">
