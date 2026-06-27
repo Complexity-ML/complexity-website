@@ -24,12 +24,8 @@ const heroStats = [
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative flex min-h-screen items-center justify-center overflow-hidden pt-24 pb-16">
       <GridBackground />
-
-      <div className="absolute inset-0 z-0 opacity-70" aria-hidden="true">
-        <RoutingAnimation />
-      </div>
 
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
         <motion.div
@@ -63,7 +59,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-[-0.06em] leading-[0.95] mb-5 sm:mb-7"
+            className="mx-auto mb-5 max-w-5xl text-4xl font-bold leading-[0.96] tracking-[-0.055em] sm:mb-7 sm:text-5xl md:text-7xl lg:text-8xl"
           >
             <span className="text-primary">{"//"}</span> COMPLEXITY
             <br />
@@ -74,7 +70,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-base sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8 sm:mb-10 px-2 leading-relaxed"
+            className="mx-auto mb-8 max-w-3xl px-2 text-base leading-relaxed text-muted-foreground sm:mb-10 sm:text-xl md:text-2xl"
           >
             Building efficient transformer architectures with{" "}
             <span className="text-primary">deterministic lexical routing</span> and a{" "}
@@ -85,24 +81,22 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 px-4 sm:px-0"
+            className="mx-auto grid max-w-xl grid-cols-1 gap-3 px-4 sm:grid-cols-[1fr_auto_auto] sm:px-0"
           >
             <Button size="lg" className="shadow-[0_0_40px_rgba(74,222,128,0.22)]" asChild>
-              <a href="/demo">
-                Try the live demo
-                <ArrowRight className="size-5" />
+              <a href="https://openreview.net/forum?id=Jd9jhTnkUy" target="_blank" rel="noopener noreferrer">
+                <BookOpen className="size-5" />
+                Read the paper
+                <ArrowRight className="size-4" />
               </a>
             </Button>
             <Button variant="outline" size="lg" asChild>
+              <a href="/demo">Live demo</a>
+            </Button>
+            <Button variant="ghost" size="lg" className="text-muted-foreground hover:text-foreground" asChild>
               <a href="https://github.com/Complexity-ML" target="_blank" rel="noopener noreferrer">
                 <Github className="size-5" />
                 GitHub
-              </a>
-            </Button>
-            <Button variant="ghost" size="lg" className="text-muted-foreground hover:text-foreground" asChild>
-              <a href="https://openreview.net/forum?id=Jd9jhTnkUy" target="_blank" rel="noopener noreferrer">
-                <BookOpen className="size-5" />
-                Paper
               </a>
             </Button>
           </motion.div>
@@ -131,6 +125,15 @@ export default function Hero() {
           >
             <Sparkles className="size-3.5 text-primary" />
             <span>Token-routed inference, benchmarked and open for inspection.</span>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.25 }}
+            className="mx-auto mt-8 max-w-5xl overflow-hidden rounded-2xl border border-border/35 bg-background/30 py-3 backdrop-blur-sm"
+          >
+            <RoutingAnimation />
           </motion.div>
         </motion.div>
       </div>

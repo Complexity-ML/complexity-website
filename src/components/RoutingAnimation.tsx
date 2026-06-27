@@ -55,21 +55,19 @@ export default function RoutingAnimation() {
   }, []);
 
   return (
-    <div className="relative h-full w-full">
-      <div className="pointer-events-none absolute left-0 right-0 top-[31%] -translate-y-1/2 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_18%,black_82%,transparent)] sm:top-[34%]">
-        <motion.div
-          ref={scrollRef}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.5 }}
-          className="flex whitespace-nowrap font-mono text-sm font-medium tracking-wide text-primary/20 sm:text-lg md:text-xl"
-        >
-          <EquationStrip />
-          <EquationStrip />
-          <EquationStrip />
-          <EquationStrip />
-        </motion.div>
-      </div>
+    <div className="relative w-full overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_18%,black_82%,transparent)]">
+      <motion.div
+        ref={scrollRef}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 0.5 }}
+        className="flex whitespace-nowrap font-mono text-xs font-medium tracking-wide text-primary/35 sm:text-sm md:text-base"
+      >
+        <EquationStrip />
+        <EquationStrip />
+        <EquationStrip />
+        <EquationStrip />
+      </motion.div>
     </div>
   );
 }
