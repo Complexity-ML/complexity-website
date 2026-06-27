@@ -4,6 +4,11 @@ import { useRef, useMemo, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
+function stableColorNoise(x: number, z: number, channel: number) {
+  const value = Math.sin(x * 12.9898 + z * 78.233 + channel * 37.719) * 43758.5453;
+  return value - Math.floor(value);
+}
+
 function Grid() {
   const meshRef = useRef<THREE.Points>(null);
   const time = useRef(0);
@@ -17,7 +22,11 @@ function Grid() {
     for (let x = -gridSize; x <= gridSize; x++) {
       for (let z = -gridSize; z <= gridSize; z++) {
         positions.push(x * spacing, 0, z * spacing);
-        colors.push(0.2 + Math.random() * 0.1, 0.8 + Math.random() * 0.2, 0.4 + Math.random() * 0.1);
+        colors.push(
+          0.2 + stableColorNoise(x, z, 0) * 0.1,
+          0.8 + stableColorNoise(x, z, 1) * 0.2,
+          0.4 + stableColorNoise(x, z, 2) * 0.1,
+        );
       }
     }
 

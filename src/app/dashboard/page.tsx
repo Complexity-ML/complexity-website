@@ -158,10 +158,13 @@ export default function DashboardPage() {
           ))}
         </div>
         <div className="border-t border-border">
-          <img
+          <Image
             src="/benchmark_throughput.png"
             alt="vLLM benchmark throughput"
-            className="w-full"
+            width={2780}
+            height={1968}
+            sizes="(min-width: 1024px) 896px, 100vw"
+            className="w-full h-auto"
           />
         </div>
       </div>
@@ -173,7 +176,14 @@ export default function DashboardPage() {
             <p className="text-sm font-medium">Loss Curves</p>
             <p className="text-xs text-muted-foreground">Dense vs Token-Routed (500M tokens)</p>
           </div>
-          <img src="/loss_curves.png" alt="Training loss curves" className="w-full" />
+          <Image
+            src="/loss_curves.png"
+            alt="Training loss curves"
+            width={1976}
+            height={1176}
+            sizes="(min-width: 640px) 50vw, 100vw"
+            className="w-full h-auto"
+          />
         </div>
 
         <div className="rounded-lg border border-border overflow-hidden">
@@ -181,7 +191,14 @@ export default function DashboardPage() {
             <p className="text-sm font-medium">Expert Balance</p>
             <p className="text-xs text-muted-foreground">Zipf bin-packing — 1.0000x balance</p>
           </div>
-          <img src="/expert_balance.png" alt="Expert load balance" className="w-full" />
+          <Image
+            src="/expert_balance.png"
+            alt="Expert load balance"
+            width={2777}
+            height={973}
+            sizes="(min-width: 640px) 50vw, 100vw"
+            className="w-full h-auto"
+          />
         </div>
       </div>
 
@@ -193,7 +210,14 @@ export default function DashboardPage() {
             Ratio of Mu contribution to K, Q, V projections per layer (~50%)
           </p>
         </div>
-        <img src="/mu_contribution.png" alt="Mu contribution per layer" className="w-full" />
+        <Image
+          src="/mu_contribution.png"
+          alt="Mu contribution per layer"
+          width={1975}
+          height={976}
+          sizes="(min-width: 1024px) 896px, 100vw"
+          className="w-full h-auto"
+        />
       </div>
 
       {/* Architecture */}
@@ -205,10 +229,13 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="p-4 flex justify-center bg-white/5">
-          <img
+          <Image
             src="/architecture.png"
             alt="Complexity-Deep architecture diagram"
-            className="max-h-[500px] object-contain"
+            width={547}
+            height={1266}
+            sizes="547px"
+            className="max-h-[500px] w-auto object-contain"
           />
         </div>
       </div>

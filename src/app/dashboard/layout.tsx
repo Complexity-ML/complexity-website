@@ -40,7 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Logo */}
         <div className="px-4 py-5 border-b border-border/50">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-primary font-mono text-lg">//</span>
+            <span className="text-primary font-mono text-lg">{"//"}</span>
             <span className="font-bold">COMPLEXITY</span>
           </Link>
         </div>

@@ -28,7 +28,7 @@ export default function Publications() {
           transition={{ duration: 0.6 }}
           className="mb-10 sm:mb-16"
         >
-          <p className="text-primary font-mono text-sm mb-2">// PUBLICATIONS</p>
+          <p className="text-primary font-mono text-sm mb-2">{"// PUBLICATIONS"}</p>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">Research</h2>
         </motion.div>
 

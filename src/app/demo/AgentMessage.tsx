@@ -2,6 +2,7 @@
 
 import type { AgentState } from "./useAgent";
 
-export function AgentMessage({ agent: _agent }: { agent: AgentState }) {
+export function AgentMessage({ agent }: { agent: AgentState }) {
+  void agent;
   return null;
 }

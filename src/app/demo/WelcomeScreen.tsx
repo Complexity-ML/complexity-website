@@ -74,7 +74,7 @@ export function WelcomeScreen({
         animate={{ opacity: 1, y: 0 }}
         className="text-center w-full max-w-xl mb-6"
       >
-        <p className="font-mono text-3xl text-primary mb-2">//</p>
+        <p className="font-mono text-3xl text-primary mb-2">{"//"}</p>
         <h2 className="text-xl font-bold mb-1">{MODE_TITLES[mode]}</h2>
         <p className="text-muted-foreground text-sm max-w-sm mx-auto">
           {DESCRIPTIONS[mode]}

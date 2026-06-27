@@ -46,7 +46,7 @@ export default function Navigation() {
         <div className="flex items-center justify-between">
           <div className="flex-1 flex items-center">
             <Link href="/" className="flex items-center gap-2">
-              <span className="text-primary font-mono text-lg">//</span>
+              <span className="text-primary font-mono text-lg">{"//"}</span>
               <span className="font-bold text-lg">COMPLEXITY</span>
             </Link>
           </div>
@@ -100,7 +100,7 @@ export default function Navigation() {
               <SheetContent side="right" className="w-64">
                 <SheetHeader>
                   <SheetTitle className="flex items-center gap-2">
-                    <span className="text-primary font-mono">//</span>
+                    <span className="text-primary font-mono">{"//"}</span>
                     COMPLEXITY
                   </SheetTitle>
                 </SheetHeader>

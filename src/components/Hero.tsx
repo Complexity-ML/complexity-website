@@ -59,7 +59,7 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-4 sm:mb-6"
           >
-            <span className="text-primary">//</span> COMPLEXITY
+            <span className="text-primary">{"//"}</span> COMPLEXITY
             <br />
             <span className="text-muted-foreground">MACHINE LEARNING</span>
           </motion.h1>

@@ -5,6 +5,15 @@ import { Copy, Check, Key, RefreshCw, Eye, EyeOff, Plus, Trash2, ExternalLink } 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
+type ExtKey = { provider: string; prefix: string; api_key?: string; created_at: string };
+
+const PROVIDERS: Record<string, { label: string; placeholder: string }> = {
+  openai: { label: "OpenAI", placeholder: "sk-..." },
+  anthropic: { label: "Anthropic", placeholder: "sk-ant-..." },
+  google: { label: "Google AI", placeholder: "AIza..." },
+  mistral: { label: "Mistral", placeholder: "..." },
+};
+
 export default function KeysPage() {
   const [prefix, setPrefix] = useState<string | null>(null);
   const [hasKey, setHasKey] = useState(false);
@@ -15,19 +24,11 @@ export default function KeysPage() {
   const [revealing, setRevealing] = useState(false);
 
   // External keys state
-  type ExtKey = { provider: string; prefix: string; api_key?: string; created_at: string };
   const [extKeys, setExtKeys] = useState<ExtKey[]>([]);
   const [extRevealing, setExtRevealing] = useState<string | null>(null);
   const [addingProvider, setAddingProvider] = useState<string | null>(null);
   const [newExtKey, setNewExtKey] = useState("");
   const [extLoading, setExtLoading] = useState(false);
-
-  const PROVIDERS: Record<string, { label: string; placeholder: string }> = {
-    openai: { label: "OpenAI", placeholder: "sk-..." },
-    anthropic: { label: "Anthropic", placeholder: "sk-ant-..." },
-    google: { label: "Google AI", placeholder: "AIza..." },
-    mistral: { label: "Mistral", placeholder: "..." },
-  };
 
   useEffect(() => {
     fetch("/api/keys")

@@ -22,7 +22,7 @@ function SignInContent() {
       <div className="w-full max-w-sm space-y-6 px-4">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold">
-            <span className="text-primary font-mono">//</span> COMPLEXITY
+            <span className="text-primary font-mono">{"//"}</span> COMPLEXITY
           </h1>
           <p className="text-sm text-muted-foreground">
             Sign in to access your partitioned workspace

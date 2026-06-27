@@ -86,7 +86,7 @@ export default function I64Page() {
               className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6"
             >
               <span className="text-muted-foreground">DENSE</span>
-              <span className="text-primary mx-4 sm:mx-6">//</span>
+              <span className="text-primary mx-4 sm:mx-6">{"//"}</span>
               <span className="text-foreground">i64</span>
             </motion.h1>
 
@@ -170,7 +170,7 @@ export default function I64Page() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <p className="font-mono text-xs text-muted-foreground mb-4">// THE CASE FOR i64</p>
+          <p className="font-mono text-xs text-muted-foreground mb-4">{"// THE CASE FOR i64"}</p>
           <h2 className="text-2xl sm:text-4xl font-bold tracking-tight">
             Three problems. Three solutions.
           </h2>
@@ -220,7 +220,7 @@ export default function I64Page() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <p className="font-mono text-xs text-muted-foreground mb-4">// GET STARTED</p>
+            <p className="font-mono text-xs text-muted-foreground mb-4">{"// GET STARTED"}</p>
             <h2 className="text-2xl sm:text-4xl font-bold tracking-tight mb-4">
               Try it on the <span className="text-primary">demo</span>
             </h2>

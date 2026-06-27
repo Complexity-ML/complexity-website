@@ -91,7 +91,7 @@ export default function Projects() {
           transition={{ duration: 0.6 }}
           className="mb-10 sm:mb-16"
         >
-          <p className="text-primary font-mono text-sm mb-2">// PROJECTS</p>
+          <p className="text-primary font-mono text-sm mb-2">{"// PROJECTS"}</p>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">
             What We&apos;re Building
           </h2>

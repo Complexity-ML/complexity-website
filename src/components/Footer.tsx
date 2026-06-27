@@ -11,7 +11,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="sm:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <span className="text-primary font-mono text-lg">//</span>
+              <span className="text-primary font-mono text-lg">{"//"}</span>
               <span className="font-bold text-lg">COMPLEXITY</span>
             </div>
             <p className="text-muted-foreground text-sm max-w-md">

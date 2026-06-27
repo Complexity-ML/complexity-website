@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 
@@ -14,7 +15,7 @@ export default function Benchmark() {
           transition={{ duration: 0.6 }}
           className="mb-10 sm:mb-16"
         >
-          <p className="text-primary font-mono text-sm mb-2">// INFERENCE</p>
+          <p className="text-primary font-mono text-sm mb-2">{"// INFERENCE"}</p>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">
             vLLM Benchmark
           </h2>
@@ -35,10 +36,13 @@ export default function Benchmark() {
             <Badge variant="outline">100 concurrent requests</Badge>
             <Badge variant="outline">TTFT 29.3 ms</Badge>
           </div>
-          <img
+          <Image
             src="/benchmark_throughput.png"
             alt="vLLM inference benchmark — 8,078 tokens/s sustained, 10,179 tokens/s peak on a single NVIDIA RTX PRO 6000"
-            className="w-full"
+            width={2780}
+            height={1968}
+            sizes="(min-width: 1152px) 1152px, 100vw"
+            className="w-full h-auto"
           />
           <div className="p-4 sm:p-6">
             <p className="text-sm text-muted-foreground">
@@ -56,7 +60,7 @@ export default function Benchmark() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mt-10 sm:mt-16"
         >
-          <p className="text-primary font-mono text-sm mb-2">// EXPERT ANALYSIS</p>
+          <p className="text-primary font-mono text-sm mb-2">{"// EXPERT ANALYSIS"}</p>
           <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6">
             Expert t-SNE 3D
           </h3>

@@ -46,7 +46,7 @@ export function ChatHeader({
             href="/"
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
-            <span className="text-primary font-mono text-lg">//</span>
+            <span className="text-primary font-mono text-lg">{"//"}</span>
             <span className="font-bold text-lg hidden sm:inline">COMPLEXITY</span>
           </Link>
           <Separator orientation="vertical" className="h-5 hidden sm:block" />

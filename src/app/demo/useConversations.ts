@@ -32,7 +32,6 @@ export function useConversations(userId?: string) {
   useEffect(() => {
     loaded.current = false;
     if (!isAuthenticated) {
-      setConversations([]);
       loaded.current = true;
       return;
     }
@@ -59,7 +58,8 @@ export function useConversations(userId?: string) {
       });
   }, [isAuthenticated]);
 
-  const activeConversation = conversations.find((c) => c.id === activeId) ?? null;
+  const visibleConversations = isAuthenticated ? conversations : [];
+  const activeConversation = visibleConversations.find((c) => c.id === activeId) ?? null;
 
   const createConversation = useCallback(
     (mode: Mode): string => {
@@ -172,10 +172,10 @@ export function useConversations(userId?: string) {
     [isAuthenticated, conversations],
   );
 
-  const isFull = conversations.length >= MAX_CONVERSATIONS;
+  const isFull = visibleConversations.length >= MAX_CONVERSATIONS;
 
   return {
-    conversations,
+    conversations: visibleConversations,
     activeId,
     activeConversation,
     createConversation,

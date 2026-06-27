@@ -36,7 +36,7 @@ export default function About() {
           transition={{ duration: 0.6 }}
           className="mb-10 sm:mb-16"
         >
-          <p className="text-primary font-mono text-sm mb-2">// ABOUT</p>
+          <p className="text-primary font-mono text-sm mb-2">{"// ABOUT"}</p>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 sm:mb-8">Our Mission</h2>
 
           <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">
