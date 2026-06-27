@@ -1,29 +1,29 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { ArrowRight, GitCompareArrows, Route, Scale, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import type { Mode, SuggestionGroup } from "./config";
 import { DESCRIPTIONS, SUGGESTIONS } from "./config";
 
-const STATS = [
-  { label: "params", value: "384M" },
-  { label: "routing", value: "Zipf bin-packing" },
-  { label: "experts", value: "4" },
-  { label: "active", value: "~105M/token" },
-  { label: "engine", value: "vllm-i64 (CPU)" },
-];
-
 const MODE_TITLES: Record<Mode, string> = {
-  "TR-MoE": "TR-MoE-400M",
-  compare: "TR-MoE vs Dense",
-  dense: "Dense-400M",
+  "TR-MoE": "Try deterministic lexical routing",
+  compare: "Compare routed vs dense generation",
+  dense: "Probe the dense baseline",
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
-  "TR-MoE": "384M Token-Routed MoE \u2014 outputs may require review",
-  compare: "Side-by-side comparison \u2014 same prompt, two architectures",
-  dense: "384M Dense baseline \u2014 outputs may require review",
+  "TR-MoE": "Public demo: 187M serving stack. Paper scaling claim: corrected 306.5M iso-parameter run over 8B tokens.",
+  compare: "Qualitative side-by-side demo. Treat it as inspection, not a benchmark table.",
+  dense: "Dense baseline for qualitative comparison with token-routed generation.",
 };
+
+const proof = [
+  { icon: Route, label: "routing", value: "fixed lexical table" },
+  { icon: Scale, label: "scaling", value: "306.5M / 8B tokens" },
+  { icon: Zap, label: "serving", value: "8,078 tok/s reported" },
+];
 
 function SuggestionGroupBlock({
   group,
@@ -34,17 +34,18 @@ function SuggestionGroupBlock({
 }) {
   return (
     <div>
-      <p className="text-[10px] font-mono text-primary/50 uppercase tracking-widest mb-3">
+      <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.24em] text-primary/60">
         {group.label}
       </p>
-      <div className="flex flex-wrap justify-center gap-2">
-        {group.prompts.map((prompt) => (
+      <div className="grid gap-2 sm:grid-cols-2">
+        {group.prompts.slice(0, 4).map((prompt) => (
           <button
             key={prompt}
             onClick={() => onSelect(prompt)}
-            className="rounded-full bg-card/50 border border-border/50 px-3.5 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/60 hover:border-primary/30 transition-all cursor-pointer"
+            className="group rounded-2xl border border-border/50 bg-card/45 px-4 py-3 text-left text-xs text-muted-foreground transition-all hover:border-primary/35 hover:bg-card/70 hover:text-foreground"
           >
-            {prompt}
+            <span>{prompt}</span>
+            <ArrowRight className="mt-2 size-3 text-primary/50 opacity-0 transition-opacity group-hover:opacity-100" />
           </button>
         ))}
       </div>
@@ -61,52 +62,63 @@ export function WelcomeScreen({
   totalRequests: number | null;
   onSelectPrompt: (prompt: string) => void;
 }) {
-  const allStats = [
-    ...STATS,
-    { label: "requests", value: totalRequests !== null ? totalRequests.toLocaleString() : "\u2014" },
-  ];
-
   return (
-    <div className="flex flex-col items-center px-4 sm:px-6 py-6">
-      {/* Hero — compact */}
+    <div className="mx-auto flex min-h-full w-full max-w-6xl flex-col px-4 py-8 sm:px-6 lg:py-12">
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center w-full max-w-xl mb-6"
+        className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start"
       >
-        <p className="font-mono text-3xl text-primary mb-2">{"//"}</p>
-        <h2 className="text-xl font-bold mb-1">{MODE_TITLES[mode]}</h2>
-        <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-          {DESCRIPTIONS[mode]}
-        </p>
-        <div className="flex flex-wrap justify-center gap-2 mt-4">
-          {allStats.map((stat) => (
-            <Badge
-              key={stat.label}
-              variant="outline"
-              className="gap-1.5 font-mono text-[10px] py-1 px-2.5 bg-card/30"
-            >
-              <span className="text-muted-foreground/60">{stat.label}</span>
-              <span className="text-primary/80">{stat.value}</span>
-            </Badge>
-          ))}
+        <div>
+          <Badge className="mb-5 gap-2 border-primary/30 bg-primary/10 text-primary">
+            <GitCompareArrows className="size-3.5" />
+            {mode}
+          </Badge>
+          <h2 className="max-w-xl text-3xl font-bold tracking-tight sm:text-5xl">
+            {MODE_TITLES[mode]}
+          </h2>
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            {DESCRIPTIONS[mode]}
+          </p>
+
+          <div className="mt-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+            {proof.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Card key={item.label} className="border-border/55 bg-card/45">
+                  <CardContent className="p-4">
+                    <Icon className="mb-3 size-4 text-primary" />
+                    <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                      {item.label}
+                    </p>
+                    <p className="mt-1 text-sm font-medium">{item.value}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
+
+        <Card className="border-border/60 bg-card/45 backdrop-blur">
+          <CardContent className="space-y-6 p-5 sm:p-6">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.24em] text-primary">starter prompts</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Start with a short continuation prompt, then inspect latency, tokens, and output shape.
+              </p>
+            </div>
+            <div className="space-y-5">
+              {SUGGESTIONS[mode].slice(0, 2).map((group) => (
+                <SuggestionGroupBlock key={group.label} group={group} onSelect={onSelectPrompt} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
-      {/* All suggestions — contained with max-height scroll */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-        className="w-full max-w-2xl space-y-4 max-h-[50vh] overflow-y-auto scrollbar-none pr-1"
-      >
-        {SUGGESTIONS[mode].map((group) => (
-          <SuggestionGroupBlock key={group.label} group={group} onSelect={onSelectPrompt} />
-        ))}
-      </motion.div>
-
-      <p className="text-[10px] text-muted-foreground/30 text-center mt-4 font-mono">
+      <p className="mt-6 text-center font-mono text-[10px] text-muted-foreground/45">
         {MODE_DISCLAIMERS[mode]}
+        {totalRequests !== null && ` · ${totalRequests.toLocaleString()} saved requests`}
       </p>
     </div>
   );

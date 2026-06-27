@@ -38,7 +38,7 @@ export function ChatHeader({
   const modelLabel = MODEL_NAMES[mode];
 
   return (
-    <header className="border-b border-border/50 bg-background/80 backdrop-blur-lg sticky top-0 z-50">
+    <header className="z-50 shrink-0 border-b border-border/50 bg-background/90 backdrop-blur-xl">
       <div className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
         {/* Logo — hide text on mobile */}
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">

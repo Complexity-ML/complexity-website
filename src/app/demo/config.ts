@@ -25,24 +25,24 @@ export const COMPARE_ENDPOINTS = {
 };
 
 export const MODEL_NAMES: Record<Mode, string> = {
-  "TR-MoE": "TR-MoE-400M",
-  compare: "TR-MoE vs Dense",
-  dense: "Dense-400M",
+  "TR-MoE": "Token-Routed 187M",
+  compare: "Token-Routed vs Dense",
+  dense: "Dense baseline",
 };
 
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE":
-    "Token-Routed MoE 384M — 4 experts, Zipf routing, ~105M active params per token. CPU inference.",
+    "Deterministic lexical routing with a shared expert. The public demo highlights the 187M serving stack, separate from the corrected 306.5M scaling run.",
   compare:
-    "Side-by-side: Token-Routed MoE vs Dense baseline — same prompt, 384M iso-params, real-time comparison.",
+    "Side-by-side comparison for intuition: same prompt, dense baseline versus token-routed generation.",
   dense:
-    "Dense SwiGLU 384M — Standard dense transformer baseline for comparison.",
+    "Dense transformer baseline for comparison against routed generation.",
 };
 
 export const FOOTERS: Record<Mode, string> = {
-  "TR-MoE": "Token-Routed MoE 384M — 4 experts — CPU inference",
-  compare: "TR-MoE vs Dense — 384M iso-params comparison",
-  dense: "Dense SwiGLU 384M — Baseline",
+  "TR-MoE": "Demo model: token-routed 187M serving stack — paper scaling result is 306.5M / 8B tokens",
+  compare: "Comparison mode — useful for qualitative inspection, not a paper benchmark",
+  dense: "Dense baseline — qualitative comparison only",
 };
 
 export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
