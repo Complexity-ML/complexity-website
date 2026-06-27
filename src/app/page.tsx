@@ -1,8 +1,6 @@
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
-import TrustBar from "@/components/TrustBar";
-import PaperUpdate from "@/components/PaperUpdate";
-import WhyComplexity from "@/components/WhyComplexity";
+import ResearchStory from "@/components/ResearchStory";
 import Projects from "@/components/Projects";
 import Benchmark from "@/components/Benchmark";
 import Publications from "@/components/Publications";
@@ -14,9 +12,7 @@ export default function Home() {
     <main className="min-h-screen">
       <Navigation />
       <Hero />
-      <TrustBar />
-      <PaperUpdate />
-      <WhyComplexity />
+      <ResearchStory />
       <Projects />
       <Benchmark />
       <Publications />

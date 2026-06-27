@@ -2,9 +2,10 @@
 
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import { ArrowRight, BookOpen, Github, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, BookOpen, Github, Route, Scale, TrendingDown, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const GridBackground = dynamic(() => import("./GridBackground"), {
   ssr: false,
@@ -18,71 +19,43 @@ const RoutingAnimation = dynamic(() => import("./RoutingAnimation"), {
 
 const heroStats = [
   { value: "8,078", label: "tok/s sustained" },
-  { value: "29 ms", label: "median TTFT" },
-  { value: "4", label: "routed experts" },
+  { value: "306.5M", label: "iso-param run" },
+  { value: "−0.0163", label: "final loss gap" },
+];
+
+const routeFlow = [
+  { icon: Route, label: "Token", value: "token_id" },
+  { icon: Scale, label: "Balance", value: "Zipf freq" },
+  { icon: Zap, label: "Dispatch", value: "expert e" },
+  { icon: TrendingDown, label: "Result", value: "TR < Dense" },
 ];
 
 export default function Hero() {
   return (
-    <section className="relative flex min-h-screen items-center justify-center overflow-hidden pt-24 pb-16">
+    <section className="relative overflow-hidden px-4 pt-24 pb-14 sm:px-6 sm:pt-28 lg:pb-20">
       <GridBackground />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background to-transparent" />
 
-      <div className="container mx-auto px-4 sm:px-6 relative z-10">
+      <div className="container relative z-10 mx-auto grid max-w-6xl gap-8 lg:grid-cols-2 lg:items-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-center"
+          transition={{ duration: 0.7, delay: 0.1 }}
         >
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="font-mono text-xs sm:text-sm text-muted-foreground mb-6 sm:mb-8"
-          >
-            48.8566° N, 2.3522° E
-          </motion.p>
+          <Badge className="mb-6 gap-2 border-primary/30 bg-primary/10 px-4 py-2 text-primary shadow-[0_0_30px_rgba(74,222,128,0.16)]">
+            <span className="size-2 rounded-full bg-primary" />
+            Updated OpenReview paper
+          </Badge>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="mb-6 sm:mb-8"
-          >
-            <Badge className="gap-2 px-4 py-2 text-sm bg-primary/10 text-primary border-primary/30 shadow-[0_0_30px_rgba(74,222,128,0.18)]">
-              <span className="size-2 rounded-full bg-primary animate-pulse" />
-              OPEN-SOURCE AI LAB
-            </Badge>
-          </motion.div>
+          <h1 className="max-w-4xl text-5xl font-bold leading-[0.95] tracking-[-0.06em] sm:text-6xl lg:text-7xl">
+            Deterministic routing for efficient transformers.
+          </h1>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="mx-auto mb-5 max-w-5xl text-4xl font-bold leading-[0.96] tracking-[-0.055em] sm:mb-7 sm:text-5xl md:text-7xl lg:text-8xl"
-          >
-            <span className="text-primary">{"//"}</span> COMPLEXITY
-            <br />
-            <span className="text-muted-foreground">MACHINE LEARNING</span>
-          </motion.h1>
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-xl">
+            COMPLEXITY-DEEP now focuses on lexical token routing, Zipf-balanced expert assignment, and a shared lexical expert — with corrected matched-budget scaling evidence.
+          </p>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="mx-auto mb-8 max-w-3xl px-2 text-base leading-relaxed text-muted-foreground sm:mb-10 sm:text-xl md:text-2xl"
-          >
-            Building efficient transformer architectures with{" "}
-            <span className="text-primary">deterministic lexical routing</span> and a{" "}
-            <span className="text-primary">shared-expert Token-Routed MLP</span>
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="mx-auto grid max-w-xl grid-cols-1 gap-3 px-4 sm:grid-cols-[1fr_auto_auto] sm:px-0"
-          >
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button size="lg" className="shadow-[0_0_40px_rgba(74,222,128,0.22)]" asChild>
               <a href="https://openreview.net/forum?id=Jd9jhTnkUy" target="_blank" rel="noopener noreferrer">
                 <BookOpen className="size-5" />
@@ -99,60 +72,63 @@ export default function Hero() {
                 GitHub
               </a>
             </Button>
-          </motion.div>
+          </div>
+        </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1 }}
-            className="mx-auto mt-8 grid max-w-2xl grid-cols-3 gap-2 rounded-2xl border border-border/50 bg-background/45 p-2 backdrop-blur-md sm:mt-10 sm:gap-3"
-          >
-            {heroStats.map((stat) => (
-              <div key={stat.label} className="rounded-xl border border-border/40 bg-card/40 px-3 py-3">
-                <div className="text-lg font-bold text-foreground sm:text-2xl">{stat.value}</div>
-                <div className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground sm:text-xs">
-                  {stat.label}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.25 }}
+        >
+          <Card className="mx-auto w-full max-w-xl overflow-hidden border-border/70 bg-card/65 shadow-2xl shadow-black/30 backdrop-blur-xl">
+            <CardHeader className="border-b border-border/50">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="font-mono text-xs uppercase tracking-[0.24em] text-primary">routing table</p>
+                  <CardTitle className="mt-2 text-xl">Token → expert, no learned router</CardTitle>
                 </div>
+                <Badge variant="outline" className="border-primary/30 text-primary">
+                  4 experts
+                </Badge>
               </div>
-            ))}
-          </motion.div>
+            </CardHeader>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.75 }}
-            transition={{ duration: 0.8, delay: 1.15 }}
-            className="mx-auto mt-5 flex items-center justify-center gap-2 text-xs text-muted-foreground"
-          >
-            <Sparkles className="size-3.5 text-primary" />
-            <span>Token-routed inference, benchmarked and open for inspection.</span>
-          </motion.div>
+            <CardContent className="space-y-5 p-5 sm:p-6">
+              <div className="grid grid-cols-3 gap-2">
+                {heroStats.map((stat) => (
+                  <div key={stat.label} className="rounded-2xl border border-primary/15 bg-background/70 p-3 text-center">
+                    <div className="text-lg font-bold text-foreground sm:text-2xl">{stat.value}</div>
+                    <div className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {stat.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.25 }}
-            className="mx-auto mt-8 max-w-5xl overflow-hidden rounded-2xl border border-border/35 bg-background/30 py-3 backdrop-blur-sm"
-          >
-            <RoutingAnimation />
-          </motion.div>
+              <div className="grid gap-2 sm:grid-cols-4">
+                {routeFlow.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={item.label} className="rounded-2xl border border-border/40 bg-background/30 p-3">
+                      <Icon className="mb-3 size-4 text-primary" />
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{item.label}</p>
+                      <p className="mt-1 font-mono text-xs text-foreground">{item.value}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="overflow-hidden rounded-2xl border border-border/40 bg-background/35 py-3">
+                <RoutingAnimation />
+              </div>
+
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                The corrected 300M run is evaluated at matched tokens over an 8B FineWeb-Edu budget; the 187M model provides the vLLM throughput benchmark.
+              </p>
+            </CardContent>
+          </Card>
         </motion.div>
       </div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1.2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden sm:block"
-      >
-        <div className="flex flex-col items-center gap-2 text-muted-foreground">
-          <span className="text-xs font-mono">SCROLL</span>
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="w-px h-8 bg-gradient-to-b from-muted-foreground to-transparent"
-          />
-        </div>
-      </motion.div>
     </section>
   );
 }
