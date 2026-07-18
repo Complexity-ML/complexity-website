@@ -18,6 +18,7 @@ import {
 
 const NAV_LINKS = [
   { href: "/demo", label: "Chat", highlight: true },
+  { href: "/labo-ai", label: "LABO AI", highlight: true },
   { href: "#projects", label: "Projects" },
   { href: "#benchmark", label: "Benchmark" },
   { href: "#publications", label: "Publications" },

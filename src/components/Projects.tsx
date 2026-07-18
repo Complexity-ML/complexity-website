@@ -8,6 +8,17 @@ import { Button } from "@/components/ui/button";
 
 const projects = [
   {
+    title: "LABO AI",
+    description:
+      "Agentic desktop laboratory for building, inspecting and executing PyTorch architectures as typed atomic graphs.",
+    tags: ["OpenAI", "Electron", "PyTorch", "Visual Graphs"],
+    status: "Available",
+    links: {
+      github: "https://github.com/Complexity-ML/labo-ai",
+      labo: "/labo-ai",
+    },
+  },
+  {
     title: "Complexity-Deep",
     description:
       "Token-Routed MLP with deterministic lexical routing, Zipf-balanced bin-packing, and a shared lexical expert.",
@@ -173,6 +184,14 @@ export default function Projects() {
                         <a href={project.links.demo}>
                           <span className="size-2 rounded-full bg-primary animate-pulse" />
                           Try Live
+                        </a>
+                      </Button>
+                    )}
+                    {project.links.labo && (
+                      <Button variant="ghost" size="sm" className="text-primary" asChild>
+                        <a href={project.links.labo}>
+                          <ExternalLink className="size-4" />
+                          Download
                         </a>
                       </Button>
                     )}
