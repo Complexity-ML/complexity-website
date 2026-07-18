@@ -4,6 +4,8 @@ import { ArrowLeft, Download, ExternalLink } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "LABO AI Web Alpha | Visual neural architecture editor",
@@ -11,7 +13,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/labo-ai/live" },
 };
 
-export default function LaboLivePage() {
+export default async function LaboLivePage() {
+  const session = await getServerSession(authOptions);
   return (
     <main className="h-dvh overflow-hidden bg-[#07080b]">
       <Navigation />
@@ -21,7 +24,9 @@ export default function LaboLivePage() {
             <Link href="/labo-ai" className="flex items-center gap-2 text-xs text-white/45 transition-colors hover:text-white"><ArrowLeft className="size-3.5" />Product</Link>
             <span className="h-4 w-px bg-white/10" />
             <span className="truncate font-mono text-[10px] uppercase tracking-[0.18em] text-violet-300">LABO AI / live workspace</span>
-            <Badge className="hidden border-emerald-400/25 bg-emerald-400/10 text-emerald-200 sm:inline-flex">No account required</Badge>
+            <Badge className={`hidden sm:inline-flex ${session ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-200" : "border-amber-400/25 bg-amber-400/10 text-amber-200"}`}>
+              {session ? "Private workspace · auto-saved" : "Guest workspace · not saved"}
+            </Badge>
           </div>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="ghost" className="text-white/55" asChild><Link href="/labo-ai#download"><Download className="size-3.5" />Desktop</Link></Button>

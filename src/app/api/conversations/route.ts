@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { LABO_WORKSPACE_MODE } from "@/lib/labo-workspace";
 
 const MAX_CONVERSATIONS = 10;
 
@@ -15,7 +16,7 @@ export async function GET() {
   const dbId = (session.user as Record<string, unknown>).dbId as string;
 
   const conversations = await prisma.conversation.findMany({
-    where: { userId: dbId },
+    where: { userId: dbId, mode: { not: LABO_WORKSPACE_MODE } },
     orderBy: { updatedAt: "desc" },
     select: {
       id: true,
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
   const dbId = (session.user as Record<string, unknown>).dbId as string;
 
   // Enforce limit
-  const count = await prisma.conversation.count({ where: { userId: dbId } });
+  const count = await prisma.conversation.count({ where: { userId: dbId, mode: { not: LABO_WORKSPACE_MODE } } });
   if (count >= MAX_CONVERSATIONS) {
     return NextResponse.json(
       { error: `Maximum ${MAX_CONVERSATIONS} conversations. Delete one first.` },
