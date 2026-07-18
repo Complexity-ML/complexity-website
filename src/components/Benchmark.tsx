@@ -60,15 +60,26 @@ export default function Benchmark() {
             </div>
             <span className="rounded-full border border-emerald-400/20 bg-emerald-400/[0.07] px-3 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-emerald-200">verified artifact</span>
           </div>
-          <div className="bg-[#090b10] p-2 sm:p-4 lg:p-6">
-            <Image
-              src="/benchmark_throughput.png"
-              alt="vLLM inference benchmark — 8,078 tokens/s sustained, 10,179 tokens/s peak on a single NVIDIA RTX PRO 6000"
-              width={2780}
-              height={1968}
-              sizes="(min-width: 1600px) 1440px, (min-width: 768px) calc(100vw - 64px), 100vw"
-              className="h-auto w-full rounded-xl"
-            />
+          <div className="flex justify-center bg-[#090b10] p-3 sm:p-5 lg:p-8">
+            <a
+              href="/benchmark_throughput.png"
+              target="_blank"
+              rel="noreferrer"
+              className="group relative flex max-h-[500px] w-full items-center justify-center overflow-hidden rounded-xl bg-white/[0.025]"
+              aria-label="Open the complete benchmark image"
+            >
+              <Image
+                src="/benchmark_throughput.png"
+                alt="vLLM inference benchmark — 8,078 tokens/s sustained, 10,179 tokens/s peak on a single NVIDIA RTX PRO 6000"
+                width={2780}
+                height={1968}
+                sizes="(min-width: 1024px) 880px, (min-width: 640px) 80vw, calc(100vw - 48px)"
+                className="max-h-[500px] w-auto max-w-full object-contain transition-opacity duration-200 group-hover:opacity-90"
+              />
+              <span className="absolute bottom-3 right-3 rounded-full border border-black/10 bg-black/70 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-white/80 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                open full size
+              </span>
+            </a>
           </div>
           <figcaption className="border-t border-white/[0.07] px-4 py-4 text-xs leading-6 text-white/42 sm:px-6">
             The separate 300M training comparison uses an 8B-token FineWeb-Edu budget. Token-Routed first wins at logged train step 740 and validation step 750, ending with a −0.0163 smoothed training-loss gap.
