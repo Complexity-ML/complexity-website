@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 const REPOSITORY = "Complexity-ML/labo-ai";
 const FALLBACK_VERSION = "0.1.0";
-const FALLBACK_RELEASE = `https://github.com/${REPOSITORY}/releases/tag/v${FALLBACK_VERSION}`;
+const LATEST_RELEASE = `https://github.com/${REPOSITORY}/releases/latest`;
 const FALLBACK_ASSETS = `https://github.com/${REPOSITORY}/releases/download/v${FALLBACK_VERSION}`;
 
 interface GitHubRelease {
@@ -24,7 +24,7 @@ interface DesktopRelease {
 function fallbackRelease(): DesktopRelease {
   return {
     version: FALLBACK_VERSION,
-    releaseUrl: FALLBACK_RELEASE,
+    releaseUrl: LATEST_RELEASE,
     macDmg: `${FALLBACK_ASSETS}/LABO-AI-${FALLBACK_VERSION}-arm64.dmg`,
     macZip: `${FALLBACK_ASSETS}/LABO-AI-${FALLBACK_VERSION}-arm64-mac.zip`,
     windowsExe: `${FALLBACK_ASSETS}/LABO-AI-${FALLBACK_VERSION}-x64.exe`,
@@ -36,7 +36,7 @@ async function latestDesktopRelease(): Promise<DesktopRelease> {
   try {
     const response = await fetch(`https://api.github.com/repos/${REPOSITORY}/releases/latest`, {
       headers: { Accept: "application/vnd.github+json" },
-      next: { revalidate: 3600 },
+      cache: "no-store",
     });
     if (!response.ok) return fallbackRelease();
     const release = await response.json() as GitHubRelease;
@@ -44,7 +44,7 @@ async function latestDesktopRelease(): Promise<DesktopRelease> {
     const asset = (suffix: string) => release.assets.find((candidate) => candidate.name === `LABO-AI-${version}-${suffix}`)?.browser_download_url;
     const result = {
       version,
-      releaseUrl: release.html_url,
+      releaseUrl: LATEST_RELEASE,
       macDmg: asset("arm64.dmg"),
       macZip: asset("arm64-mac.zip"),
       windowsExe: asset("x64.exe"),
