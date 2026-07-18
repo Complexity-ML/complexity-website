@@ -61,7 +61,9 @@ function SignInContent() {
               </svg>
               Continue with Google
             </Button>
-            <p className="pt-3 text-center text-[10px] leading-5 text-white/28">Authentication is handled by the selected OAuth provider. Complexity never receives your password.</p>
+            <p className="pt-3 text-center text-[10px] leading-5 text-white/32">
+              Authentication is handled by the selected OAuth provider. Complexity never receives your password. Your provider identifier, name, email and avatar are used to create your account and operate the service. Read the <Link href="/privacy" className="text-white/60 underline underline-offset-2 hover:text-white">privacy notice</Link>.
+            </p>
           </div>
         </div>
       </section>

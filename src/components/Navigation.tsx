@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Github, Menu, MessageSquare, Sparkles } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import { CircleUserRound, Github, LogIn, LogOut, Menu, MessageSquare, Settings, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -28,7 +30,10 @@ const NAV_LINKS = [
 
 export default function Navigation() {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
   const [scrolled, setScrolled] = useState(false);
+  const user = session?.user;
+  const callbackUrl = `/auth/signin?callbackUrl=${encodeURIComponent(pathname || "/")}`;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 24);
@@ -93,6 +98,41 @@ export default function Navigation() {
             </Link>
           </Button>
 
+          {status === "authenticated" ? (
+            <div className="hidden items-center gap-1 rounded-xl border border-emerald-300/20 bg-emerald-300/[0.055] p-1 md:flex">
+              <Link
+                href="/dashboard/settings"
+                className="flex h-8 min-w-0 items-center gap-2 rounded-lg px-2 text-left transition-colors hover:bg-white/[0.06]"
+                aria-label="Open account settings"
+              >
+                {user?.image ? (
+                  <Image src={user.image} alt="" width={24} height={24} className="size-6 rounded-md" />
+                ) : (
+                  <CircleUserRound className="size-5 text-emerald-200" />
+                )}
+                <span className="max-w-28 truncate text-xs font-medium text-white/80">
+                  {user?.name || user?.email || "My account"}
+                </span>
+                <span className="size-1.5 shrink-0 rounded-full bg-emerald-300" title="Signed in" />
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 text-white/40 hover:text-white"
+                aria-label="Sign out"
+                onClick={() => void signOut({ callbackUrl: "/" })}
+              >
+                <LogOut className="size-3.5" />
+              </Button>
+            </div>
+          ) : status === "unauthenticated" ? (
+            <Button variant="outline" size="sm" className="hidden h-9 border-white/10 md:inline-flex" asChild>
+              <Link href={callbackUrl}><LogIn className="size-3.5" /> Sign in</Link>
+            </Button>
+          ) : (
+            <span className="hidden h-9 w-24 animate-pulse rounded-xl bg-white/[0.04] md:block" aria-label="Loading account" />
+          )}
+
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation">
@@ -122,6 +162,28 @@ export default function Navigation() {
                   </SheetClose>
                 ))}
                 <Separator className="my-3" />
+                {status === "authenticated" ? (
+                  <div className="mb-3 rounded-xl border border-emerald-300/15 bg-emerald-300/[0.045] p-3">
+                    <div className="flex items-center gap-3">
+                      {user?.image ? <Image src={user.image} alt="" width={36} height={36} className="size-9 rounded-lg" /> : <CircleUserRound className="size-9 text-emerald-200" />}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{user?.name || "Signed in"}</p>
+                        <p className="truncate text-[10px] text-white/35">{user?.email}</p>
+                      </div>
+                      <span className="size-2 rounded-full bg-emerald-300" title="Signed in" />
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <SheetClose asChild>
+                        <Button variant="outline" size="sm" className="border-white/10" asChild><Link href="/dashboard/settings"><Settings className="size-3.5" /> Account</Link></Button>
+                      </SheetClose>
+                      <Button variant="outline" size="sm" className="border-white/10" onClick={() => void signOut({ callbackUrl: "/" })}><LogOut className="size-3.5" /> Sign out</Button>
+                    </div>
+                  </div>
+                ) : status === "unauthenticated" ? (
+                  <SheetClose asChild>
+                    <Button className="mb-3 w-full justify-center bg-white text-black hover:bg-white/85" asChild><Link href={callbackUrl}><LogIn className="size-4" /> Sign in</Link></Button>
+                  </SheetClose>
+                ) : null}
                 <SheetClose asChild>
                   <Button className="justify-center bg-white text-black hover:bg-white/85" asChild>
                     <Link href="/demo">

@@ -30,6 +30,14 @@ const groups = [
       { label: "PyPI", href: "https://pypi.org/project/complexity-deep/" },
     ],
   },
+  {
+    title: "Account",
+    links: [
+      { label: "My account", href: "/dashboard/settings" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Sign in", href: "/auth/signin" },
+    ],
+  },
 ];
 
 export default function Footer() {
@@ -48,7 +56,7 @@ export default function Footer() {
             <p className="mt-8 font-mono text-[9px] uppercase tracking-[0.2em] text-white/22">Paris · France · Open science</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
             {groups.map((group) => (
               <div key={group.title}>
                 <p className="mb-4 font-mono text-[9px] uppercase tracking-[0.2em] text-white/28">{group.title}</p>

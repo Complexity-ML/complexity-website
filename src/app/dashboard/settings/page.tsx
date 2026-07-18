@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
-import { AlertTriangle, LogOut, Shield, Trash2 } from "lucide-react";
+import { AlertTriangle, Download, ExternalLink, LogOut, Shield, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -87,6 +87,22 @@ export default function SettingsPage() {
           <p className="text-xs text-muted-foreground">
             Your account is secured via GitHub OAuth.
           </p>
+        </div>
+      </div>
+
+      {/* Sign out */}
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="px-5 py-4 bg-card/50 border-b border-border">
+          <p className="text-sm font-medium">Your data and privacy</p>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">Download the personal data held for this account. Secret values and OAuth tokens are excluded from the export for your security.</p>
+        </div>
+        <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row">
+          <Button variant="outline" size="sm" asChild>
+            <a href="/api/account/export" download><Download className="mr-1.5 size-4" />Download my data</a>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <a href="/privacy" target="_blank" rel="noopener noreferrer"><ExternalLink className="mr-1.5 size-4" />Privacy notice</a>
+          </Button>
         </div>
       </div>
 
