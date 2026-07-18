@@ -2,33 +2,27 @@ import { Apple, Check, Download, ExternalLink, MonitorDown, ShieldCheck } from "
 import { Button } from "@/components/ui/button";
 
 const REPOSITORY = "Complexity-ML/labo-ai";
-const FALLBACK_VERSION = "0.1.0";
 const LATEST_RELEASE = `https://github.com/${REPOSITORY}/releases/latest`;
-const FALLBACK_ASSETS = `https://github.com/${REPOSITORY}/releases/download/v${FALLBACK_VERSION}`;
+const LATEST_DOWNLOADS = {
+  macDmg: "/download/labo-ai/mac-dmg",
+  macZip: "/download/labo-ai/mac-zip",
+  windowsExe: "/download/labo-ai/windows-installer",
+  windowsZip: "/download/labo-ai/windows-zip",
+};
 
 interface GitHubRelease {
   tag_name: string;
-  html_url: string;
-  assets: Array<{ name: string; browser_download_url: string }>;
 }
 
 interface DesktopRelease {
-  version: string;
+  version: string | null;
   releaseUrl: string;
-  macDmg: string;
-  macZip: string;
-  windowsExe: string;
-  windowsZip: string;
 }
 
 function fallbackRelease(): DesktopRelease {
   return {
-    version: FALLBACK_VERSION,
+    version: null,
     releaseUrl: LATEST_RELEASE,
-    macDmg: `${FALLBACK_ASSETS}/LABO-AI-${FALLBACK_VERSION}-arm64.dmg`,
-    macZip: `${FALLBACK_ASSETS}/LABO-AI-${FALLBACK_VERSION}-arm64-mac.zip`,
-    windowsExe: `${FALLBACK_ASSETS}/LABO-AI-${FALLBACK_VERSION}-x64.exe`,
-    windowsZip: `${FALLBACK_ASSETS}/LABO-AI-${FALLBACK_VERSION}-x64-win.zip`,
   };
 }
 
@@ -40,18 +34,10 @@ async function latestDesktopRelease(): Promise<DesktopRelease> {
     });
     if (!response.ok) return fallbackRelease();
     const release = await response.json() as GitHubRelease;
-    const version = release.tag_name.replace(/^v/, "");
-    const asset = (suffix: string) => release.assets.find((candidate) => candidate.name === `LABO-AI-${version}-${suffix}`)?.browser_download_url;
-    const result = {
-      version,
+    return {
+      version: release.tag_name.replace(/^v/, ""),
       releaseUrl: LATEST_RELEASE,
-      macDmg: asset("arm64.dmg"),
-      macZip: asset("arm64-mac.zip"),
-      windowsExe: asset("x64.exe"),
-      windowsZip: asset("x64-win.zip"),
     };
-    if (!result.macDmg || !result.macZip || !result.windowsExe || !result.windowsZip) return fallbackRelease();
-    return result as DesktopRelease;
   } catch {
     return fallbackRelease();
   }
@@ -64,7 +50,7 @@ export default async function LaboDownloads() {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto h-72 max-w-3xl bg-violet-600/10 blur-[110px]" />
       <div className="site-shell relative">
         <div className="text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-violet-300">Download v{release.version}</p>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-violet-300">Download {release.version ? `v${release.version}` : "latest"}</p>
           <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">Run the complete local laboratory.</h2>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">Desktop adds the native PyTorch player and OS-encrypted local credentials to the visual editor.</p>
         </div>
@@ -73,15 +59,15 @@ export default async function LaboDownloads() {
             <Apple className="size-8 text-white" />
             <h3 className="mt-5 text-xl font-semibold">macOS</h3>
             <p className="mt-2 text-sm text-muted-foreground">Apple silicon · macOS 12 or later</p>
-            <Button className="mt-7 w-full bg-white text-black hover:bg-white/85" asChild><a href={release.macDmg}><Download className="size-4" />Download DMG</a></Button>
-            <Button variant="ghost" className="mt-2 w-full text-white/55" asChild><a href={release.macZip}>Portable ZIP</a></Button>
+            <Button className="mt-7 w-full bg-white text-black hover:bg-white/85" asChild><a href={LATEST_DOWNLOADS.macDmg}><Download className="size-4" />Download DMG</a></Button>
+            <Button variant="ghost" className="mt-2 w-full text-white/55" asChild><a href={LATEST_DOWNLOADS.macZip}>Portable ZIP</a></Button>
           </article>
           <article className="rounded-2xl border border-white/10 bg-card/80 p-7">
             <MonitorDown className="size-8 text-sky-300" />
             <h3 className="mt-5 text-xl font-semibold">Windows</h3>
             <p className="mt-2 text-sm text-muted-foreground">Windows 10/11 · x64</p>
-            <Button className="mt-7 w-full bg-sky-500 text-white hover:bg-sky-400" asChild><a href={release.windowsExe}><Download className="size-4" />Download installer</a></Button>
-            <Button variant="ghost" className="mt-2 w-full text-white/55" asChild><a href={release.windowsZip}>Portable ZIP</a></Button>
+            <Button className="mt-7 w-full bg-sky-500 text-white hover:bg-sky-400" asChild><a href={LATEST_DOWNLOADS.windowsExe}><Download className="size-4" />Download installer</a></Button>
+            <Button variant="ghost" className="mt-2 w-full text-white/55" asChild><a href={LATEST_DOWNLOADS.windowsZip}>Portable ZIP</a></Button>
           </article>
         </div>
         <div className="mx-auto mt-5 flex max-w-5xl flex-col items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-6 py-5 text-sm sm:flex-row">
