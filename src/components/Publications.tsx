@@ -1,112 +1,78 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { BookOpen } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { ArrowUpRight, BookOpen, Copy } from "lucide-react";
+import { useState } from "react";
+import SectionHeading from "@/components/SectionHeading";
 import { Button } from "@/components/ui/button";
 
-const publications = [
-  {
-    title: "Token identity provides a fixed routing signal for residual experts in language models",
-    authors: "Anonymous",
-    venue: "Research manuscript",
-    year: "2026",
-    doi: null,
-    url: "/papers/token-identity-routing-residual-experts.pdf",
-    abstract: "We test whether token identity alone can allocate narrow residual expert capacity while a shared dense MLP preserves contextual processing. The manuscript reports a matched 306.5M-parameter, 8B-token comparison, standard task evaluations, and learned-router controls.",
-  },
-];
+const citation = `@article{anonymous2026tokenidentity,
+  title={Token identity provides a fixed routing signal for residual experts in language models},
+  author={Anonymous},
+  journal={Research manuscript},
+  year={2026},
+  url={https://www.complexity-ai.fr/papers/token-identity-routing-residual-experts.pdf}
+}`;
 
 export default function Publications() {
+  const [copied, setCopied] = useState(false);
+
+  const copyCitation = async () => {
+    await navigator.clipboard.writeText(citation);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  };
+
   return (
-    <section id="publications" className="py-16 sm:py-24 px-4 sm:px-6 bg-secondary/30">
-      <div className="container mx-auto max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-10 sm:mb-16"
-        >
-          <p className="text-primary font-mono text-sm mb-2">{"// PUBLICATIONS"}</p>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">Research</h2>
-        </motion.div>
+    <section id="publications" className="site-section scroll-mt-24 border-b border-white/[0.055] bg-black/[0.12]">
+      <div className="site-shell">
+        <SectionHeading
+          eyebrow="Publication"
+          title="One result, documented end to end."
+          description="The manuscript, experimental boundaries and reusable citation live together instead of being scattered across external pages."
+        />
 
-        <div className="space-y-4 sm:space-y-6">
-          {publications.map((pub, index) => (
-            <motion.div
-              key={pub.url}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <Card className="bg-card/50 backdrop-blur border-border/50 hover:border-primary/50 transition-colors">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex flex-col md:flex-row md:items-start gap-4 sm:gap-6">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base sm:text-xl font-semibold mb-2 hover:text-primary transition-colors">
-                        <a href={pub.url} target="_blank" rel="noopener noreferrer">
-                          {pub.title}
-                        </a>
-                      </h3>
-                      <p className="text-muted-foreground text-sm mb-2">{pub.authors}</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-                        {pub.venue} &bull; {pub.year}
-                      </p>
-                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-3 sm:line-clamp-none">
-                        {pub.abstract}
-                      </p>
-                    </div>
-                    <div className="flex flex-col gap-2 shrink-0">
-                      <Button size="sm" asChild>
-                        <a href={pub.url} target="_blank" rel="noopener noreferrer">
-                          <BookOpen className="size-4" />
-                          Read Paper
-                        </a>
-                      </Button>
-                      {pub.doi && (
-                        <span className="text-[10px] sm:text-xs text-muted-foreground font-mono">
-                          DOI: {pub.doi}
-                        </span>
-                      )}
-                      {!pub.doi && (
-                        <span className="text-[10px] sm:text-xs text-muted-foreground font-mono">
-                          Hosted PDF
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+        <article className="grid overflow-hidden rounded-2xl border border-white/[0.075] bg-white/[0.025] lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="flex min-h-[430px] flex-col p-6 sm:p-8 lg:p-10 xl:p-12">
+            <div className="flex items-center justify-between">
+              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/[0.07] px-3 py-1 font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-200">2026 manuscript</span>
+              <BookOpen className="size-5 text-white/24" />
+            </div>
+            <div className="mt-auto pt-20">
+              <h3 className="max-w-4xl text-balance text-3xl font-semibold leading-[1.08] tracking-[-0.045em] sm:text-4xl xl:text-5xl">
+                Token identity provides a fixed routing signal for residual experts in language models
+              </h3>
+              <p className="mt-5 max-w-3xl text-sm leading-7 text-white/48 sm:text-base">
+                A parameter- and token-matched study of fixed token routing, dense shared computation and narrow residual experts—with standard task evaluation and learned-router controls.
+              </p>
+              <Button className="mt-8 bg-white text-black hover:bg-white/85" asChild>
+                <a href="/papers/token-identity-routing-residual-experts.pdf" target="_blank" rel="noopener noreferrer">
+                  Read hosted paper
+                  <ArrowUpRight className="size-4" />
+                </a>
+              </Button>
+            </div>
+          </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-8 sm:mt-12"
-        >
-          <h3 className="text-lg font-semibold mb-4">Cite Our Work</h3>
-          <Card className="overflow-hidden">
-            <CardContent className="p-3 sm:p-4">
-              <pre className="text-xs sm:text-sm font-mono text-muted-foreground overflow-x-auto">
-{`@article{
-anonymous2026tokenidentity,
-title={Token identity provides a fixed routing signal for residual experts in language models},
-author={Anonymous},
-journal={Research manuscript},
-year={2026},
-url={https://www.complexity-ai.fr/papers/token-identity-routing-residual-experts.pdf},
-note={Double-anonymized manuscript}
-}`}
-              </pre>
-            </CardContent>
-          </Card>
-        </motion.div>
+          <div className="flex flex-col border-t border-white/[0.07] bg-[#080a0e] lg:border-l lg:border-t-0">
+            <div className="flex items-center justify-between border-b border-white/[0.07] px-5 py-4">
+              <span className="font-mono text-[10px] text-white/38">citation.bib</span>
+              <button onClick={copyCitation} className="flex items-center gap-2 text-[10px] text-white/35 transition-colors hover:text-white" type="button">
+                <Copy className="size-3.5" />
+                {copied ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <pre className="scrollbar-none flex-1 overflow-x-auto whitespace-pre-wrap p-5 font-mono text-[11px] leading-6 text-white/46 sm:p-7 sm:text-xs">
+              <code>
+                <span className="text-violet-300">@article</span>{`{anonymous2026tokenidentity,\n`}
+                <span className="text-sky-300">  title</span>{`={Token identity provides a fixed routing signal for residual experts in language models},\n`}
+                <span className="text-sky-300">  author</span>{`={Anonymous},\n`}
+                <span className="text-sky-300">  journal</span>{`={Research manuscript},\n`}
+                <span className="text-sky-300">  year</span>{`={2026},\n`}
+                <span className="text-sky-300">  url</span>{`={https://www.complexity-ai.fr/papers/token-identity-routing-residual-experts.pdf}\n}`}
+              </code>
+            </pre>
+          </div>
+        </article>
       </div>
     </section>
   );

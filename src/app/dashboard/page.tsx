@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 const MODEL_SPECS = [
   { icon: Cpu, label: "Scaling run", value: "306.5M" },
   { icon: Layers, label: "Experts", value: "4, top-k=2" },
-  { icon: Zap, label: "Routing", value: "Zipf bin-pack" },
+  { icon: Zap, label: "Routing", value: "Fixed token table" },
   { icon: Timer, label: "Training", value: "8B tokens" },
 ];
 
@@ -132,7 +132,7 @@ export default function DashboardPage() {
         </div>
         <div className="px-5 py-3 bg-muted/20 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            Decoder-only transformer family with Token-Routed MLP, Zipf bin-packing, Shared Lexical Expert, GQA, RoPE, and SwiGLU. Updated from the latest research manuscript.
+            Decoder-only transformer family with deterministic Token-Routed MLP, Shared Lexical Expert, GQA, RoPE, and SwiGLU. Updated from the latest research manuscript.
           </p>
         </div>
       </div>
@@ -188,7 +188,7 @@ export default function DashboardPage() {
         <div className="rounded-lg border border-border overflow-hidden">
           <div className="px-5 py-3 bg-card/50 border-b border-border">
             <p className="text-sm font-medium">Expert Balance</p>
-            <p className="text-xs text-muted-foreground">Zipf bin-packing — 1.0000x balance</p>
+            <p className="text-xs text-muted-foreground">Fixed token assignment — measured expert traffic</p>
           </div>
           <Image
             src="/expert_balance.png"

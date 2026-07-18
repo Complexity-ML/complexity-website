@@ -1,136 +1,146 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Menu, Github, LogIn } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Github, Menu, MessageSquare, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
-  SheetTrigger,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetClose,
+  SheetTrigger,
 } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
+import LogoMark from "@/components/LogoMark";
 
 const NAV_LINKS = [
-  { href: "/demo", label: "Chat", highlight: true },
-  { href: "/labo-ai", label: "LABO AI", highlight: true },
-  { href: "#projects", label: "Projects" },
-  { href: "#benchmark", label: "Benchmark" },
-  { href: "#publications", label: "Publications" },
-  { href: "#about", label: "About" },
+  { href: "/#research", label: "Research" },
+  { href: "/#projects", label: "Projects" },
+  { href: "/#benchmark", label: "Benchmarks" },
+  { href: "/i64", label: "Architecture" },
+  { href: "/labo-ai", label: "LABO AI", accent: true },
 ];
 
 export default function Navigation() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
+    const handleScroll = () => setScrolled(window.scrollY > 24);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const isActive = (href: string) => {
+    const route = href.split("#")[0] || "/";
+    return route !== "/" && pathname === route;
+  };
+
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-background/80 backdrop-blur-lg border-b border-border/50" : ""
-      }`}
+    <motion.header
+      initial={false}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.45 }}
+      className="fixed inset-x-0 top-0 z-50 px-2 pt-2 sm:px-4 sm:pt-3"
     >
-      <div className="container mx-auto px-4 sm:px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex-1 flex items-center">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-primary font-mono text-lg">{"//"}</span>
-              <span className="font-bold text-lg">COMPLEXITY</span>
-            </Link>
-          </div>
+      <div
+        className={cn(
+          "mx-auto flex h-14 max-w-[132rem] items-center rounded-2xl border px-3 transition-all duration-300 sm:h-16 sm:px-4",
+          scrolled
+            ? "border-white/10 bg-[#0a0c11]/88 shadow-[0_18px_70px_rgba(0,0,0,.38)] backdrop-blur-2xl"
+            : "border-white/[0.07] bg-[#0a0c11]/55 backdrop-blur-xl",
+        )}
+      >
+        <Link href="/" className="group flex min-w-0 items-center gap-2.5 sm:gap-3">
+          <LogoMark className="size-8 rounded-lg transition-colors group-hover:bg-emerald-300/[0.12] sm:size-9" />
+          <span className="hidden text-sm font-semibold tracking-[0.08em] text-white sm:inline">
+            COMPLEXITY
+          </span>
+        </Link>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-8">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-sm transition-colors ${
-                  link.highlight
-                    ? "text-primary font-medium hover:text-primary/80"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-
-          <div className="flex-1 flex items-center justify-end gap-2">
-            <Button variant="ghost" size="icon" asChild>
-              <a href="https://github.com/Complexity-ML" target="_blank" rel="noopener noreferrer">
-                <Github className="size-5" />
-              </a>
-            </Button>
-            <Button variant="ghost" size="icon" asChild>
-              <a href="https://huggingface.co/Pacific-i64" target="_blank" rel="noopener noreferrer">
-                <span className="text-lg">🤗</span>
-              </a>
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => signIn()}
-              className="hidden sm:flex gap-1.5"
+        <nav className="mx-auto hidden items-center gap-1 lg:flex">
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "rounded-lg px-3 py-2 text-xs font-medium text-white/52 transition-colors hover:bg-white/[0.055] hover:text-white",
+                isActive(link.href) && "bg-white/[0.07] text-white",
+                link.accent && "text-violet-300 hover:text-violet-200",
+              )}
             >
-              <LogIn className="size-4" />
-              Sign in
-            </Button>
+              {link.label}
+            </Link>
+          ))}
+        </nav>
 
-            {/* Mobile hamburger */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <Menu className="size-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-64">
-                <SheetHeader>
-                  <SheetTitle className="flex items-center gap-2">
-                    <span className="text-primary font-mono">{"//"}</span>
-                    COMPLEXITY
-                  </SheetTitle>
-                </SheetHeader>
-                <Separator />
-                <nav className="flex flex-col gap-1 px-4">
-                  {NAV_LINKS.map((link) => (
-                    <SheetClose key={link.href} asChild>
-                      <Button variant="ghost" className="justify-start" asChild>
-                        <Link href={link.href}>{link.label}</Link>
-                      </Button>
-                    </SheetClose>
-                  ))}
-                  <Separator className="my-2" />
-                  <SheetClose asChild>
-                    <Button
-                      variant="ghost"
-                      className="justify-start gap-2"
-                      onClick={() => signIn()}
+        <div className="ml-auto flex items-center gap-1.5">
+          <Button variant="ghost" size="icon" className="hidden text-white/55 hover:text-white sm:inline-flex" asChild>
+            <a href="https://github.com/Complexity-ML" target="_blank" rel="noopener noreferrer" aria-label="Complexity-ML on GitHub">
+              <Github className="size-4" />
+            </a>
+          </Button>
+          <Button size="sm" className="hidden h-9 bg-white px-4 text-black hover:bg-white/85 md:inline-flex" asChild>
+            <Link href="/demo">
+              <MessageSquare className="size-3.5" />
+              Open demo
+            </Link>
+          </Button>
+
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation">
+                <Menu className="size-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[min(21rem,90vw)] border-white/10 bg-[#0b0d12] p-0">
+              <SheetHeader className="border-b border-white/10 p-5">
+                <SheetTitle className="flex items-center gap-3 text-left">
+                  <LogoMark className="size-9 rounded-lg" />
+                  COMPLEXITY
+                </SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col gap-1 p-4">
+                {NAV_LINKS.map((link) => (
+                  <SheetClose key={link.href} asChild>
+                    <Link
+                      href={link.href}
+                      className={cn(
+                        "flex items-center justify-between rounded-xl px-4 py-3 text-sm text-white/65 transition-colors hover:bg-white/[0.06] hover:text-white",
+                        isActive(link.href) && "bg-white/[0.07] text-white",
+                      )}
                     >
-                      <LogIn className="size-4" />
-                      Sign in
-                    </Button>
+                      {link.label}
+                      {link.accent && <Sparkles className="size-4 text-violet-300" />}
+                    </Link>
                   </SheetClose>
-                </nav>
-              </SheetContent>
-            </Sheet>
-          </div>
+                ))}
+                <Separator className="my-3" />
+                <SheetClose asChild>
+                  <Button className="justify-center bg-white text-black hover:bg-white/85" asChild>
+                    <Link href="/demo">
+                      <MessageSquare className="size-4" />
+                      Open demo
+                    </Link>
+                  </Button>
+                </SheetClose>
+                <Button variant="outline" className="mt-2 border-white/10" asChild>
+                  <a href="https://github.com/Complexity-ML" target="_blank" rel="noopener noreferrer">
+                    <Github className="size-4" />
+                    GitHub
+                  </a>
+                </Button>
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
-    </motion.nav>
+    </motion.header>
   );
 }

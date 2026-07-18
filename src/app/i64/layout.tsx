@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Dense vs i64 — Complexity ML',
   description:
-    'Why brute-forcing compute is no longer the answer. Compare dense transformer architectures against deterministic lexical routing, shared experts, and Zipf-balanced Token-Routed MLP.',
+    'Compare dense transformer architectures against deterministic token-identity routing, shared experts, and Token-Routed MLP.',
   keywords: [
     'transformer architecture',
     'token routing',
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Dense vs i64 — Complexity ML',
     description:
-      'Token-routed MLP with deterministic lexical routing, Zipf-balanced bin-packing, and a shared lexical expert.',
+      'Token-routed MLP with deterministic token-identity routing and a shared lexical expert.',
     url: 'https://www.complexity-ai.fr/i64',
     siteName: 'Complexity ML',
     type: 'website',
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Dense vs i64 — Complexity ML',
     description:
-      'Token-routed MLP with deterministic lexical routing, Zipf-balanced bin-packing, and a shared lexical expert.',
+      'Token-routed MLP with deterministic token-identity routing and a shared lexical expert.',
   },
   alternates: {
     canonical: 'https://www.complexity-ai.fr/i64',

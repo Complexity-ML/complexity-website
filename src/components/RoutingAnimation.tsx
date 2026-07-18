@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 const equations = [
-  "expert_idx(t) = BinPack(t, freq)",
+  "expert_idx(t) = route_table[token_id]",
   "MLP(x) = Shared(x) + Expert_e(x)",
   "load(e) = Σ freq(t), t → e",
   "P_active = P_shared + k·P_expert",

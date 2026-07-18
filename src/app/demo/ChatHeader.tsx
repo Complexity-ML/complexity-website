@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Settings2, Activity, Trash2 } from "lucide-react";
+import { Settings2, Activity, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -11,6 +11,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import type { Mode } from "./config";
 import { MODEL_NAMES, MAINTENANCE } from "./config";
+import LogoMark from "@/components/LogoMark";
 
 interface ChatHeaderProps {
   mode: Mode;
@@ -38,27 +39,25 @@ export function ChatHeader({
   const modelLabel = MODEL_NAMES[mode];
 
   return (
-    <header className="z-50 shrink-0 border-b border-border/50 bg-background/90 backdrop-blur-xl">
-      <div className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
-        {/* Logo — hide text on mobile */}
-        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+    <header className="z-50 shrink-0 border-b border-white/[0.07] bg-[#090b10]/94 backdrop-blur-xl">
+      <div className="flex min-h-16 flex-col gap-3 px-3 py-3 sm:px-5 lg:flex-row lg:items-center lg:justify-between lg:px-6">
+        <div className="flex min-w-0 items-center justify-between gap-2 lg:shrink-0 lg:justify-start lg:gap-4">
           <Link
             href="/"
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-2 text-white/45 transition-colors hover:text-white"
           >
-            <span className="text-primary font-mono text-lg">{"//"}</span>
-            <span className="font-bold text-lg hidden sm:inline">COMPLEXITY</span>
+            <LogoMark className="size-8 rounded-lg" />
+            <span className="hidden text-sm font-semibold tracking-[0.06em] sm:inline">COMPLEXITY</span>
           </Link>
-          <Separator orientation="vertical" className="h-5 hidden sm:block" />
-          <Link href="/dashboard" className="font-mono text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">
-            dashboard
+          <Separator orientation="vertical" className="hidden h-5 sm:block" />
+          <Link href="/dashboard" className="hidden font-mono text-[10px] text-white/30 transition-colors hover:text-white sm:inline">
+            workspace
           </Link>
-          <Separator orientation="vertical" className="h-5 hidden sm:block" />
-          <span className="font-mono text-sm text-primary hidden sm:inline">demo</span>
+          <span className="rounded-full border border-violet-400/15 bg-violet-400/[0.06] px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-violet-200/70">model demo</span>
+          <Link href="/" aria-label="Back to website" className="text-white/35 hover:text-white sm:hidden"><ArrowLeft className="size-4" /></Link>
         </div>
 
-        {/* Controls */}
-        <div className="flex items-center gap-1.5 sm:gap-3">
+        <div className="scrollbar-none flex min-w-0 items-center gap-1.5 overflow-x-auto pb-0.5 lg:justify-end lg:overflow-visible lg:pb-0">
           <ToggleGroup
             type="single"
             value={mode}
@@ -71,14 +70,13 @@ export function ChatHeader({
                 key={m}
                 value={m}
                 disabled={!!MAINTENANCE[m]}
-                className="font-mono text-xs px-2 sm:px-3"
+                className="shrink-0 px-2 font-mono text-[10px] sm:px-3"
               >
                 {m}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
 
-          {/* Health + model name — hidden on small screens */}
           <div className="hidden md:flex items-center gap-2">
             <Badge variant="outline" className="gap-1.5 font-mono text-xs">
               <span
@@ -104,7 +102,6 @@ export function ChatHeader({
             )}
           </div>
 
-          {/* Health dot only on small screens */}
           <span
             className={cn(
               "size-2 rounded-full md:hidden shrink-0",
@@ -120,7 +117,6 @@ export function ChatHeader({
             }}
           />
 
-          {/* Text labels on md+, icons on mobile */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle

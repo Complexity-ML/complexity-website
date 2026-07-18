@@ -149,7 +149,7 @@ export default function KeysPage() {
 
       {/* Key card */}
       <div className="rounded-lg border border-border overflow-hidden">
-        <div className="px-5 py-4 flex items-center justify-between bg-card/50">
+        <div className="flex flex-col gap-3 bg-card/50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div className="flex items-center gap-3">
             <Key className="size-4 text-primary" />
             <div>
@@ -167,8 +167,8 @@ export default function KeysPage() {
           {hasKey ? (
             <>
               {/* Key display */}
-              <div className="flex items-center gap-2">
-                <code className="flex-1 bg-muted px-3 py-2.5 rounded-md text-xs font-mono break-all select-all">
+              <div className="flex min-w-0 flex-wrap items-center gap-2 sm:flex-nowrap">
+                <code className="w-full min-w-0 flex-1 select-all break-all rounded-md bg-muted px-3 py-2.5 font-mono text-xs sm:w-auto">
                   {showKey && fullKey ? fullKey : `${prefix}${"•".repeat(40)}`}
                 </code>
                 <Button
@@ -188,7 +188,7 @@ export default function KeysPage() {
               </div>
 
               {/* Regenerate */}
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs text-muted-foreground">
                   Regenerating invalidates the old key and changes your partition.
                 </p>
@@ -209,7 +209,7 @@ export default function KeysPage() {
 
       {/* External API Keys */}
       <div className="rounded-lg border border-border overflow-hidden">
-        <div className="px-5 py-4 flex items-center justify-between bg-card/50">
+        <div className="flex flex-col gap-3 bg-card/50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div className="flex items-center gap-3">
             <ExternalLink className="size-4 text-primary" />
             <div>
@@ -226,9 +226,9 @@ export default function KeysPage() {
         <div className="px-5 py-4 space-y-3">
           {/* Existing external keys */}
           {extKeys.map((k) => (
-            <div key={k.provider} className="flex items-center gap-2">
-              <span className="text-sm font-medium w-24">{PROVIDERS[k.provider]?.label || k.provider}</span>
-              <code className="flex-1 bg-muted px-3 py-2 rounded-md text-xs font-mono">
+            <div key={k.provider} className="flex min-w-0 flex-wrap items-center gap-2 sm:flex-nowrap">
+              <span className="w-full text-sm font-medium sm:w-24">{PROVIDERS[k.provider]?.label || k.provider}</span>
+              <code className="min-w-0 flex-1 overflow-x-auto rounded-md bg-muted px-3 py-2 font-mono text-xs">
                 {k.api_key || `${k.prefix}${"•".repeat(30)}`}
               </code>
               <Button
@@ -253,11 +253,11 @@ export default function KeysPage() {
 
           {/* Add new key form */}
           {addingProvider ? (
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium w-24">{PROVIDERS[addingProvider]?.label}</span>
+            <div className="flex min-w-0 flex-wrap items-center gap-2 sm:flex-nowrap">
+              <span className="w-full text-sm font-medium sm:w-24">{PROVIDERS[addingProvider]?.label}</span>
               <input
                 type="password"
-                className="flex-1 bg-muted px-3 py-2 rounded-md text-xs font-mono border border-border focus:outline-none focus:ring-1 focus:ring-primary"
+                className="min-w-0 flex-1 rounded-md border border-border bg-muted px-3 py-2 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder={PROVIDERS[addingProvider]?.placeholder}
                 value={newExtKey}
                 onChange={(e) => setNewExtKey(e.target.value)}

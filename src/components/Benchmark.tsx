@@ -2,81 +2,98 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
+import { Activity, Cpu, Gauge, Timer } from "lucide-react";
+import SectionHeading from "@/components/SectionHeading";
+
+const stats = [
+  { icon: Gauge, value: "8,078", unit: "tok/s", label: "sustained throughput" },
+  { icon: Activity, value: "10,179", unit: "tok/s", label: "observed peak" },
+  { icon: Timer, value: "29.3", unit: "ms", label: "median TTFT" },
+  { icon: Cpu, value: "100", unit: "req", label: "concurrent clients" },
+];
 
 export default function Benchmark() {
   return (
-    <section id="benchmark" className="py-16 sm:py-24 px-4 sm:px-6">
-      <div className="container mx-auto max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-10 sm:mb-16"
-        >
-          <p className="text-primary font-mono text-sm mb-2">{"// INFERENCE"}</p>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">
-            Inference + corrected scaling
-          </h2>
-        </motion.div>
+    <section id="benchmark" className="site-section scroll-mt-24 border-b border-white/[0.055]">
+      <div className="site-shell">
+        <SectionHeading
+          eyebrow="Inference / evidence"
+          title="Numbers with their context attached."
+          description="Serving performance and quality-at-matched-tokens are separate measurements. The interface keeps the hardware, model scale and experimental limits visible."
+        />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {stats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <motion.div
+                key={stat.label}
+                initial={false}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.04 }}
+                className="rounded-2xl border border-white/[0.075] bg-white/[0.025] p-5 sm:p-6"
+              >
+                <div className="flex items-center justify-between text-white/30">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.18em]">{stat.label}</span>
+                  <Icon className="size-4" />
+                </div>
+                <p className="mt-9 font-mono text-3xl tracking-[-0.05em] text-white sm:text-4xl">
+                  {stat.value}<span className="ml-2 text-sm text-primary/70">{stat.unit}</span>
+                </p>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        <motion.figure
+          initial={false}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="rounded-xl border border-border/50 bg-card/50 backdrop-blur overflow-hidden"
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.5 }}
+          className="lab-surface mt-4 overflow-hidden rounded-2xl"
         >
-          <div className="p-4 sm:p-6 border-b border-border/50 flex flex-wrap items-center gap-3">
-            <Badge className="bg-primary/20 text-primary border-primary/30">
-              8,078 tok/s sustained
-            </Badge>
-            <Badge variant="outline">RTX PRO 6000 96 GB</Badge>
-            <Badge variant="outline">100 concurrent requests</Badge>
-            <Badge variant="outline">TTFT 29.3 ms</Badge>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] bg-black/15 px-4 py-3 sm:px-6">
+            <div>
+              <p className="font-mono text-[10px] text-emerald-300/75">benchmark_throughput.png</p>
+              <p className="mt-1 text-xs text-white/35">vLLM 0.18 · RTX PRO 6000 96 GB · 187M routed model</p>
+            </div>
+            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/[0.07] px-3 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-emerald-200">verified artifact</span>
           </div>
-          <Image
-            src="/benchmark_throughput.png"
-            alt="vLLM inference benchmark — 8,078 tokens/s sustained, 10,179 tokens/s peak on a single NVIDIA RTX PRO 6000"
-            width={2780}
-            height={1968}
-            sizes="(min-width: 1152px) 1152px, 100vw"
-            className="w-full h-auto"
+          <div className="bg-[#090b10] p-2 sm:p-4 lg:p-6">
+            <Image
+              src="/benchmark_throughput.png"
+              alt="vLLM inference benchmark — 8,078 tokens/s sustained, 10,179 tokens/s peak on a single NVIDIA RTX PRO 6000"
+              width={2780}
+              height={1968}
+              sizes="(min-width: 1600px) 1440px, (min-width: 768px) calc(100vw - 64px), 100vw"
+              className="h-auto w-full rounded-xl"
+            />
+          </div>
+          <figcaption className="border-t border-white/[0.07] px-4 py-4 text-xs leading-6 text-white/42 sm:px-6">
+            The separate 300M training comparison uses an 8B-token FineWeb-Edu budget. Token-Routed first wins at logged train step 740 and validation step 750, ending with a −0.0163 smoothed training-loss gap.
+          </figcaption>
+        </motion.figure>
+
+        <div className="mt-16 sm:mt-24">
+          <SectionHeading
+            eyebrow="Expert analysis"
+            title="Inspect the geometry. Don’t overclaim it."
+            description="The interactive projection is exploratory evidence. Functional specialization is evaluated separately through per-expert perplexity on assigned token subsets."
           />
-          <div className="p-4 sm:p-6">
-            <p className="text-sm text-muted-foreground">
-              187M Token-Routed model served via vLLM 0.18 with PagedAttention and CUDA graphs. The updated paper also reports a corrected 300M iso-parameter comparison over 8B FineWeb-Edu tokens: Token-Routed first wins at step 740 on train loss, step 750 on validation loss, and ends with a −0.0163 smoothed train-loss gap.
-            </p>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-10 sm:mt-16"
-        >
-          <p className="text-primary font-mono text-sm mb-2">{"// EXPERT ANALYSIS"}</p>
-          <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6">
-            Expert analysis
-          </h3>
-          <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur overflow-hidden">
+          <div className="lab-surface overflow-hidden rounded-2xl">
+            <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3 sm:px-6">
+              <span className="font-mono text-[10px] text-violet-300/70">expert_tsne_3d.html</span>
+              <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/25">interactive</span>
+            </div>
             <iframe
               src="/expert_tsne_3d.html"
               title="Interactive 3D t-SNE visualization of expert activations"
-              className="w-full border-0"
-              style={{ height: "700px" }}
+              className="h-[460px] w-full border-0 sm:h-[620px] xl:h-[760px]"
               loading="lazy"
             />
-            <div className="p-4 sm:p-6 border-t border-border/50">
-              <p className="text-sm text-muted-foreground">
-                The updated paper emphasizes functional specialization measured by per-expert perplexity on assigned token subsets; geometric separation alone is not treated as proof of specialization.
-              </p>
-            </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

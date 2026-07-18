@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import {
   Apple,
-  ArrowLeft,
   Blocks,
   Bot,
   Braces,
@@ -14,10 +12,10 @@ import {
   Play,
   Save,
   ShieldCheck,
-  Sparkles,
   Workflow,
 } from "lucide-react";
 import Footer from "@/components/Footer";
+import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -91,7 +89,7 @@ const toneClasses: Record<string, string> = {
 
 function ProductPreview() {
   return (
-    <div className="relative mx-auto w-full max-w-6xl overflow-hidden rounded-2xl border border-white/10 bg-[#0b0d12] shadow-[0_40px_120px_rgba(0,0,0,0.6)]">
+    <div className="relative mx-auto w-full max-w-[112rem] overflow-hidden rounded-2xl border border-white/10 bg-[#0b0d12] shadow-[0_40px_120px_rgba(0,0,0,0.6)]">
       <div className="flex h-12 items-center justify-between border-b border-white/10 px-4">
         <div className="flex items-center gap-2">
           <span className="size-2.5 rounded-full bg-red-400/70" />
@@ -204,30 +202,11 @@ function ProductPreview() {
 export default function LaboAIPage() {
   return (
     <main className="min-h-screen overflow-hidden bg-background">
-      <header className="relative z-20 border-b border-white/5">
-        <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-3 text-sm text-white/65 transition-colors hover:text-white">
-            <ArrowLeft className="size-4" />
-            <span className="hidden sm:inline">Complexity-ML</span>
-          </Link>
-          <div className="flex items-center gap-2 font-semibold">
-            <span className="grid size-8 place-items-center rounded-lg border border-violet-400/35 bg-violet-400/10 text-violet-300">
-              <Sparkles className="size-4" />
-            </span>
-            LABO AI
-          </div>
-          <Button variant="ghost" size="sm" asChild>
-            <a href="https://github.com/Complexity-ML/labo-ai" target="_blank" rel="noopener noreferrer">
-              <Github className="size-4" />
-              <span className="hidden sm:inline">Source</span>
-            </a>
-          </Button>
-        </div>
-      </header>
+      <Navigation />
 
-      <section className="relative px-4 pb-20 pt-20 sm:px-6 sm:pb-28 sm:pt-28">
+      <section className="relative px-4 pb-20 pt-32 sm:px-6 sm:pb-28 sm:pt-40">
         <div className="pointer-events-none absolute left-1/2 top-12 -z-10 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-violet-600/15 blur-[130px]" />
-        <div className="container mx-auto max-w-6xl text-center">
+        <div className="site-shell text-center">
           <div className="mb-6 flex justify-center gap-2">
             <Badge className="border-violet-400/30 bg-violet-400/10 text-violet-200">OpenAI Build Week</Badge>
             <Badge variant="outline" className="border-white/15 text-white/55">Desktop alpha</Badge>
@@ -261,12 +240,12 @@ export default function LaboAIPage() {
         </div>
       </section>
 
-      <section className="px-4 pb-20 sm:px-6 sm:pb-28">
+      <section className="site-shell pb-14 sm:pb-28">
         <ProductPreview />
       </section>
 
-      <section className="border-y border-white/5 bg-white/[0.015] px-4 py-20 sm:px-6 sm:py-28">
-        <div className="container mx-auto max-w-6xl">
+      <section className="border-y border-white/5 bg-white/[0.015] px-4 py-14 sm:px-6 sm:py-28">
+        <div className="site-shell">
           <div className="max-w-2xl">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-violet-300">One graph, four views</p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">Understand what the model does.</h2>
@@ -286,8 +265,8 @@ export default function LaboAIPage() {
         </div>
       </section>
 
-      <section className="px-4 py-20 sm:px-6 sm:py-28">
-        <div className="container mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[0.72fr_1.28fr]">
+      <section className="px-4 py-14 sm:px-6 sm:py-28">
+        <div className="site-shell grid items-center gap-10 lg:grid-cols-[0.72fr_1.28fr]">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-violet-300">Demo</p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">From a prompt to a running graph.</h2>
@@ -315,9 +294,9 @@ export default function LaboAIPage() {
         </div>
       </section>
 
-      <section id="download" className="relative border-y border-white/5 bg-white/[0.015] px-4 py-20 sm:px-6 sm:py-28">
+      <section id="download" className="relative border-y border-white/5 bg-white/[0.015] px-4 py-14 sm:px-6 sm:py-28">
         <div className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto h-72 max-w-3xl bg-violet-600/10 blur-[110px]" />
-        <div className="container relative mx-auto max-w-5xl">
+        <div className="site-shell relative">
           <div className="text-center">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-violet-300">Download v0.1.0</p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">Your local neural architecture lab.</h2>

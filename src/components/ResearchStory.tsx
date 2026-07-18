@@ -2,129 +2,98 @@
 
 import { motion } from "framer-motion";
 import { ArrowUpRight, Boxes, GitBranch, Scale, ShieldCheck, TrendingDown } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import SectionHeading from "@/components/SectionHeading";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const claims = [
   {
     icon: GitBranch,
-    title: "Lexical, deterministic routing",
-    text: "Every token is assigned from a fixed routing table. No learned gating network, no router collapse, no auxiliary balancing loss.",
+    code: "01 / signal",
+    title: "Token identity is enough to route a residual path.",
+    text: "A fixed vocabulary table replaces the learned gate. Routing is deterministic, auditable and has no collapse mode.",
+    accent: "text-emerald-300 border-emerald-400/20 bg-emerald-400/[0.055]",
   },
   {
     icon: Boxes,
-    title: "Shared lexical expert",
-    text: "A dense shared MLP path preserves common syntax and language structure while routed experts specialize on lexical partitions.",
+    code: "02 / capacity",
+    title: "A shared expert keeps the contextual backbone.",
+    text: "Common syntax and language structure remain dense while narrow residual experts partition lexical capacity.",
+    accent: "text-sky-300 border-sky-400/20 bg-sky-400/[0.055]",
   },
   {
     icon: Scale,
-    title: "Corrected scaling evidence",
-    text: "The headline quality result is a 306.5M iso-parameter, iso-batch comparison over 8B FineWeb-Edu tokens.",
+    code: "03 / control",
+    title: "Evidence is matched before it is compared.",
+    text: "The headline run compares 306.5M-parameter models over the same 8B-token FineWeb-Edu budget.",
+    accent: "text-violet-300 border-violet-400/20 bg-violet-400/[0.055]",
   },
   {
     icon: TrendingDown,
-    title: "Late-run advantage",
-    text: "Token-Routed first wins at logged train step 740 and finishes with a −0.0163 smoothed final train-loss gap.",
+    code: "04 / result",
+    title: "The advantage appears late, then remains.",
+    text: "Token-Routed first wins at logged step 740 and ends with a −0.0163 smoothed training-loss gap.",
+    accent: "text-amber-300 border-amber-400/20 bg-amber-400/[0.055]",
   },
-];
-
-const caveats = [
-  "300M result is quality-at-matched-tokens, not a pure speed benchmark.",
-  "187M vLLM benchmark reaches 8,078 tok/s sustained on RTX PRO 6000.",
-  "Expert utilization remains near-balanced at the end of the corrected 300M run.",
 ];
 
 export default function ResearchStory() {
   return (
-    <section className="px-4 py-16 sm:px-6 sm:py-24">
-      <div className="container mx-auto max-w-6xl">
-        <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="lg:sticky lg:top-28"
-          >
-            <Badge variant="outline" className="mb-5 border-primary/30 bg-primary/10 text-primary">
-              Current paper story
-            </Badge>
-            <p className="font-mono text-sm text-primary">{"// SOURCE OF TRUTH"}</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">
-              Deterministic routing, shared experts, corrected scaling.
-            </h2>
-            <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-              The site hosts the latest manuscript directly. The message is simple: fixed token-identity routing can allocate useful residual capacity without a learned contextual router.
-            </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
-              <Button asChild>
-                <a href="/papers/token-identity-routing-residual-experts.pdf" target="_blank" rel="noopener noreferrer">
-                  Read PDF
-                  <ArrowUpRight className="size-4" />
-                </a>
-              </Button>
-              <Button variant="outline" asChild>
-                <a href="#benchmark">See evidence</a>
-              </Button>
+    <section id="research" className="site-section scroll-mt-24 border-b border-white/[0.055]">
+      <div className="site-shell">
+        <SectionHeading
+          eyebrow="Research / source of truth"
+          title={<>Deterministic routing.<br className="hidden sm:block" /> Claims kept precise.</>}
+          description="The current manuscript tests one focused idea: whether stable token identity can allocate useful residual capacity while a shared path preserves contextual computation."
+          action={
+            <Button variant="outline" className="border-white/12 bg-white/[0.03]" asChild>
+              <a href="/papers/token-identity-routing-residual-experts.pdf" target="_blank" rel="noopener noreferrer">
+                Read hosted PDF
+                <ArrowUpRight className="size-4" />
+              </a>
+            </Button>
+          }
+        />
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {claims.map((claim, index) => {
+            const Icon = claim.icon;
+            return (
+              <motion.article
+                key={claim.code}
+                initial={false}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.45, delay: index * 0.05 }}
+                className={`group min-h-[300px] rounded-2xl border p-5 transition-transform duration-300 hover:-translate-y-1 sm:p-6 xl:min-h-[350px] ${claim.accent}`}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="font-mono text-[9px] uppercase tracking-[0.22em] opacity-60">{claim.code}</p>
+                  <Icon className="size-4 opacity-70" />
+                </div>
+                <h3 className="mt-16 text-xl font-medium leading-tight tracking-[-0.025em] text-white sm:text-2xl xl:mt-24">
+                  {claim.title}
+                </h3>
+                <p className="mt-4 text-sm leading-6 text-white/48">{claim.text}</p>
+              </motion.article>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 grid gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5 sm:p-6 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-8">
+          <div className="flex items-center gap-3">
+            <span className="grid size-10 place-items-center rounded-xl border border-emerald-400/20 bg-emerald-400/[0.07] text-emerald-300">
+              <ShieldCheck className="size-4" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold">Scope guardrails</p>
+              <p className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.16em] text-white/30">what the result does not claim</p>
             </div>
-          </motion.div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            {claims.map((claim, index) => {
-              const Icon = claim.icon;
-              return (
-                <motion.div
-                  key={claim.title}
-                  initial={{ opacity: 0, y: 18 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.45, delay: index * 0.05 }}
-                >
-                  <Card className="h-full border-border/60 bg-card/45 backdrop-blur transition-colors hover:border-primary/50 hover:bg-card/70">
-                    <CardHeader>
-                      <div className="mb-4 flex size-11 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">
-                        <Icon className="size-5" />
-                      </div>
-                      <CardTitle className="text-lg leading-tight">{claim.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm leading-relaxed text-muted-foreground">{claim.text}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.45, delay: 0.2 }}
-              className="sm:col-span-2"
-            >
-              <Card className="border-border/60 bg-background/45 backdrop-blur">
-                <CardContent className="p-5 sm:p-6">
-                  <div className="mb-4 flex items-center gap-3">
-                    <div className="rounded-2xl border border-primary/25 bg-primary/10 p-3 text-primary">
-                      <ShieldCheck className="size-5" />
-                    </div>
-                    <div>
-                      <p className="font-semibold">Claims kept precise</p>
-                      <p className="text-sm text-muted-foreground">The homepage separates benchmark, scaling, and caveats.</p>
-                    </div>
-                  </div>
-                  <ul className="grid gap-2 text-sm text-muted-foreground md:grid-cols-3">
-                    {caveats.map((item) => (
-                      <li key={item} className="rounded-xl border border-border/40 bg-card/35 p-3">
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </motion.div>
           </div>
+          <ul className="grid gap-2 text-xs leading-5 text-white/48 md:grid-cols-3">
+            <li className="rounded-xl border border-white/[0.055] bg-black/15 p-3">Quality at matched tokens is not a pure speed benchmark.</li>
+            <li className="rounded-xl border border-white/[0.055] bg-black/15 p-3">The vLLM throughput result uses the separate 187M serving model.</li>
+            <li className="rounded-xl border border-white/[0.055] bg-black/15 p-3">Single-seed limits and learned-router controls remain explicit.</li>
+          </ul>
         </div>
       </div>
     </section>

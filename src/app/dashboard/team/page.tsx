@@ -71,7 +71,7 @@ export default function TeamPage() {
 
       {/* Team info */}
       <div className="rounded-lg border border-border overflow-hidden">
-        <div className="px-5 py-4 flex items-center justify-between bg-card/50">
+        <div className="flex flex-col gap-3 bg-card/50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div className="flex items-center gap-3">
             <Users className="size-4 text-primary" />
             <div>
@@ -81,7 +81,7 @@ export default function TeamPage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <Badge variant="outline" className="font-mono text-xs">
               {teamId}
             </Badge>
@@ -135,7 +135,7 @@ export default function TeamPage() {
           <p className="text-xs text-muted-foreground">
             Invite up to 10 members to your team. They&apos;ll share access to the team API key and usage dashboard.
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="flex-1 flex items-center gap-2 border border-border rounded-md px-3 py-2">
               <Mail className="size-4 text-muted-foreground shrink-0" />
               <input

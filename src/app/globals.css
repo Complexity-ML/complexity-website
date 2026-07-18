@@ -59,19 +59,19 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(0.08 0 0);
+  --radius: 0.75rem;
+  --background: oklch(0.075 0.008 265);
   --foreground: oklch(0.98 0 0);
-  --card: oklch(0.12 0 0);
+  --card: oklch(0.115 0.012 265);
   --card-foreground: oklch(0.98 0 0);
   --popover: oklch(0.12 0 0);
   --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.75 0.18 142);
+  --primary: oklch(0.78 0.16 151);
   --primary-foreground: oklch(0.08 0 0);
   --secondary: oklch(0.18 0 0);
   --secondary-foreground: oklch(0.98 0 0);
   --muted: oklch(0.18 0 0);
-  --muted-foreground: oklch(0.65 0 0);
+  --muted-foreground: oklch(0.68 0.018 265);
   --accent: oklch(0.18 0 0);
   --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.65 0.25 25);
@@ -119,6 +119,11 @@
   }
   body {
     @apply bg-background text-foreground;
+    min-width: 320px;
+    background-image:
+      radial-gradient(circle at 14% -8%, color-mix(in oklch, var(--primary) 8%, transparent), transparent 30rem),
+      radial-gradient(circle at 88% 4%, color-mix(in oklch, var(--accent-purple) 8%, transparent), transparent 34rem);
+    background-attachment: fixed;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -132,6 +137,60 @@
   a,
   button {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+}
+
+@layer components {
+  .site-shell {
+    width: min(100% - 2rem, 112rem);
+    margin-inline: auto;
+  }
+
+  .site-section {
+    padding-block: clamp(3rem, 7vw, 8rem);
+  }
+
+  .code-label {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: color-mix(in oklch, var(--muted-foreground) 82%, transparent);
+  }
+
+  .lab-surface {
+    border: 1px solid color-mix(in oklch, var(--foreground) 10%, transparent);
+    background: color-mix(in oklch, var(--card) 76%, transparent);
+    box-shadow: 0 30px 90px rgb(0 0 0 / 0.2);
+    backdrop-filter: blur(18px);
+  }
+
+  .dot-grid {
+    background-image: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.1) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+
+  .hairline-grid {
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+}
+
+@media (min-width: 96rem) {
+  .site-shell {
+    width: min(100% - 5rem, 132rem);
+  }
+}
+
+@media (max-width: 40rem) {
+  .site-shell {
+    width: min(100% - 1.25rem, 90rem);
+  }
+
+  .site-section {
+    padding-block: 2rem;
   }
 }
 

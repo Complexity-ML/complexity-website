@@ -1,247 +1,175 @@
 "use client";
 
 import { motion } from "framer-motion";
-import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Github, BookOpen, ArrowRight, Zap, Cpu, GitBranch } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import Navigation from "@/components/Navigation";
+import { ArrowRight, BookOpen, Boxes, Cpu, Github, GitMerge, Route, Scale } from "lucide-react";
 import Footer from "@/components/Footer";
+import Navigation from "@/components/Navigation";
+import SectionHeading from "@/components/SectionHeading";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
-const GridBackground = dynamic(() => import("@/components/GridBackground"), {
-  ssr: false,
-  loading: () => <div className="absolute inset-0 -z-10 bg-background" />,
-});
+const stats = [
+  { value: "306.5M", label: "matched parameters" },
+  { value: "8B", label: "FineWeb-Edu tokens" },
+  { value: "−0.0163", label: "final smoothed gap" },
+  { value: "4", label: "balanced experts" },
+];
 
-const INNOVATIONS = [
+const comparisons = [
   {
-    icon: GitBranch,
-    title: "Token-Routed MLP",
-    dense: "Every token passes through the full MLP — wasted compute on irrelevant activations.",
-    i64: "Deterministic routing selects only the relevant MLP paths per token. Less compute, same expressivity.",
+    icon: Route,
+    title: "Routing signal",
+    dense: "Every token activates the same dense MLP capacity.",
+    routed: "Token identity indexes a stable lexical expert from a fixed table.",
+  },
+  {
+    icon: Scale,
+    title: "Load balance",
+    dense: "There is no conditional load to distribute.",
+    routed: "A fixed deterministic assignment distributes token identities across experts without a learned gate.",
+  },
+  {
+    icon: GitMerge,
+    title: "Shared context",
+    dense: "One monolithic path carries common and token-specific functions.",
+    routed: "A shared dense path remains contextual; routing adds narrow residual capacity.",
   },
   {
     icon: Cpu,
-    title: "Zipf-Balanced Routing",
-    dense: "Modulo or learned routing can create imbalance, collapse, or extra auxiliary-loss tuning.",
-    i64: "Greedy bin-packing over token frequencies gives deterministic, near-balanced expert utilization.",
+    title: "Serving behavior",
+    dense: "Uniform kernels are simple but activate every parameter in the block.",
+    routed: "Expert dispatch trades implementation complexity for conditional execution.",
   },
-  {
-    icon: Zap,
-    title: "Shared Lexical Expert",
-    dense: "Dense MLPs spend the same function on universal syntax and token-specific lexical patterns.",
-    i64: "A shared dense path carries common language structure while routed experts specialize on lexical partitions.",
-  },
-];
-
-const STATS = [
-  { value: "306.5M", label: "Corrected scaling run" },
-  { value: "8B", label: "FineWeb-Edu tokens" },
-  { value: "−0.0163", label: "Final smoothed loss gap" },
-  { value: "0.248–0.264", label: "Final expert utilization" },
 ];
 
 export default function I64Page() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen overflow-hidden">
       <Navigation />
 
-      {/* Hero */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <GridBackground />
-
-        <div className="container mx-auto px-4 sm:px-6 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-center"
-          >
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              transition={{ duration: 1, delay: 0.5 }}
-              className="font-mono text-xs sm:text-sm text-muted-foreground mb-6"
-            >
-              ARCHITECTURE COMPARISON
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="mb-6 sm:mb-8"
-            >
-              <Badge className="gap-2 px-4 py-2 text-sm bg-primary/10 text-primary border-primary/30">
-                <span className="size-2 rounded-full bg-primary animate-pulse" />
-                EFFICIENCY RESEARCH
-              </Badge>
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6"
-            >
-              <span className="text-muted-foreground">DENSE</span>
-              <span className="text-primary mx-4 sm:mx-6">{"//"}</span>
-              <span className="text-foreground">i64</span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-base sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-10"
-            >
-              Why brute-forcing compute is no longer the answer — and how{" "}
-              <span className="text-primary">deterministic lexical, token-routed</span> architectures
-              change the equation.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-              className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4"
-            >
-              <Button size="lg" asChild>
-                <a href="https://github.com/Complexity-ML" target="_blank" rel="noopener noreferrer">
-                  <Github className="size-5" />
-                  Explore on GitHub
-                </a>
-              </Button>
-              <Button variant="outline" size="lg" asChild>
-                <a href="/papers/token-identity-routing-residual-experts.pdf" target="_blank" rel="noopener noreferrer">
-                  <BookOpen className="size-5" />
-                  Read the Paper
-                </a>
-              </Button>
-            </motion.div>
-          </motion.div>
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1.2 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden sm:block"
-        >
-          <div className="flex flex-col items-center gap-2 text-muted-foreground">
-            <span className="text-xs font-mono">SCROLL</span>
-            <motion.div
-              animate={{ y: [0, 8, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="w-px h-8 bg-gradient-to-b from-muted-foreground to-transparent"
-            />
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Stats */}
-      <section className="border-y border-border/50 bg-background/60 backdrop-blur-sm">
-        <div className="container mx-auto px-4 sm:px-6 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {STATS.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="text-center"
-              >
-                <p className="text-3xl sm:text-4xl font-bold text-primary mb-1">{stat.value}</p>
-                <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider">{stat.label}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Comparison */}
-      <section className="container mx-auto px-4 sm:px-6 py-24">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <p className="font-mono text-xs text-muted-foreground mb-4">{"// THE CASE FOR i64"}</p>
-          <h2 className="text-2xl sm:text-4xl font-bold tracking-tight">
-            Updated architecture. Corrected evidence.
-          </h2>
-        </motion.div>
-
-        <div className="space-y-6">
-          {INNOVATIONS.map((item, i) => {
-            const Icon = item.icon;
-            return (
-              <motion.div
-                key={item.title}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="grid md:grid-cols-[1fr_auto_1fr] gap-0 border border-border/50 rounded-lg overflow-hidden"
-              >
-                {/* Dense */}
-                <div className="p-6 bg-muted/20">
-                  <p className="font-mono text-xs text-muted-foreground mb-2">DENSE</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{item.dense}</p>
-                </div>
-
-                {/* Label */}
-                <div className="flex flex-col items-center justify-center px-6 py-4 bg-primary/5 border-x border-border/50 gap-2 min-w-[160px]">
-                  <Icon className="size-5 text-primary" />
-                  <p className="font-mono text-xs font-bold text-primary text-center">{item.title}</p>
-                </div>
-
-                {/* i64 */}
-                <div className="p-6 bg-primary/5">
-                  <p className="font-mono text-xs text-primary mb-2">i64</p>
-                  <p className="text-sm leading-relaxed">{item.i64}</p>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="border-t border-border/50">
-        <div className="container mx-auto px-4 sm:px-6 py-24 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <p className="font-mono text-xs text-muted-foreground mb-4">{"// GET STARTED"}</p>
-            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight mb-4">
-              Try it on the <span className="text-primary">demo</span>
-            </h2>
-            <p className="text-muted-foreground mb-10 max-w-xl mx-auto">
-              Explore the current Complexity demo and compare token-routed outputs against dense baselines.
+      <section className="relative border-b border-white/[0.06] pb-20 pt-36 sm:pb-28 sm:pt-44 lg:pb-36 lg:pt-52">
+        <div className="hairline-grid pointer-events-none absolute inset-0 opacity-30 [mask-image:linear-gradient(to_bottom,black,transparent)]" />
+        <div className="pointer-events-none absolute left-1/2 top-20 size-[45rem] -translate-x-1/2 rounded-full bg-sky-500/[0.07] blur-[150px]" />
+        <div className="site-shell relative z-10">
+          <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mx-auto max-w-5xl text-center">
+            <Badge className="border-sky-400/20 bg-sky-400/[0.07] px-3 py-1.5 text-sky-200">Architecture field guide</Badge>
+            <p className="mt-7 font-mono text-[10px] uppercase tracking-[0.24em] text-white/30">dense.compute // token.routed</p>
+            <h1 className="mt-5 text-balance text-[clamp(3.4rem,8vw,8.5rem)] font-semibold leading-[0.86] tracking-[-0.075em]">
+              Same budget.
+              <span className="mt-3 block bg-gradient-to-r from-white via-sky-200 to-emerald-200 bg-clip-text text-transparent">Different path.</span>
+            </h1>
+            <p className="mx-auto mt-8 max-w-3xl text-pretty text-base leading-8 text-white/50 sm:text-lg">
+              A visual comparison of dense residual computation and deterministic token-routed capacity—what changes, what stays shared and what the evidence actually supports.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-3">
-              <Button size="lg" asChild>
-                <Link href="/demo">
-                  Open Demo
-                  <ArrowRight className="size-4" />
-                </Link>
+            <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
+              <Button size="lg" className="h-12 bg-white px-6 text-black hover:bg-white/85" asChild>
+                <a href="/papers/token-identity-routing-residual-experts.pdf" target="_blank" rel="noopener noreferrer">
+                  <BookOpen className="size-4" /> Read the paper
+                </a>
               </Button>
-              <Button variant="outline" size="lg" asChild>
-                <a href="https://huggingface.co/Pacific-i64" target="_blank" rel="noopener noreferrer">
-                  <span className="text-base">🤗</span>
-                  HuggingFace
+              <Button size="lg" variant="outline" className="h-12 border-white/12 bg-white/[0.03] px-6" asChild>
+                <a href="https://github.com/Complexity-ML" target="_blank" rel="noopener noreferrer">
+                  <Github className="size-4" /> Source artifacts
                 </a>
               </Button>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      <section className="border-b border-white/[0.06] bg-black/[0.12]">
+        <div className="site-shell grid grid-cols-2 divide-x divide-y divide-white/[0.07] border-x border-white/[0.07] md:grid-cols-4 md:divide-y-0">
+          {stats.map((stat) => (
+            <div key={stat.label} className="p-5 text-center sm:p-8 lg:p-10">
+              <p className="font-mono text-2xl tracking-[-0.04em] text-sky-200 sm:text-3xl lg:text-4xl">{stat.value}</p>
+              <p className="mt-2 text-[9px] uppercase tracking-[0.16em] text-white/28">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="site-section border-b border-white/[0.06]">
+        <div className="site-shell">
+          <SectionHeading
+            eyebrow="Architecture / comparison"
+            title="Dense is the control. Routing is the experiment."
+            description="The shared path keeps contextual processing intact. The experimental variable is how additional residual capacity is selected."
+          />
+
+          <div className="overflow-hidden rounded-2xl border border-white/[0.075]">
+            <div className="hidden grid-cols-[240px_1fr_1fr] border-b border-white/[0.07] bg-white/[0.025] lg:grid">
+              <div className="p-5 font-mono text-[9px] uppercase tracking-[0.2em] text-white/25">axis</div>
+              <div className="border-l border-white/[0.07] p-5 font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">dense residual</div>
+              <div className="border-l border-emerald-400/15 bg-emerald-400/[0.03] p-5 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-200/70">token-routed residual</div>
+            </div>
+            {comparisons.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <motion.div
+                  key={item.title}
+                  initial={false}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.45, delay: index * 0.04 }}
+                  className="grid border-b border-white/[0.07] last:border-0 lg:grid-cols-[240px_1fr_1fr]"
+                >
+                  <div className="flex items-center gap-3 bg-white/[0.018] p-5 sm:p-6">
+                    <span className="grid size-9 place-items-center rounded-lg border border-white/[0.07] bg-black/15 text-white/45"><Icon className="size-4" /></span>
+                    <h3 className="text-sm font-medium">{item.title}</h3>
+                  </div>
+                  <div className="border-t border-white/[0.07] p-5 lg:border-l lg:border-t-0 lg:p-6">
+                    <p className="mb-2 font-mono text-[9px] uppercase tracking-[0.18em] text-white/25 lg:hidden">dense</p>
+                    <p className="text-sm leading-7 text-white/44">{item.dense}</p>
+                  </div>
+                  <div className="border-t border-emerald-400/10 bg-emerald-400/[0.025] p-5 lg:border-l lg:border-t-0 lg:p-6">
+                    <p className="mb-2 font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-300/55 lg:hidden">token-routed</p>
+                    <p className="text-sm leading-7 text-white/58">{item.routed}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="site-section border-b border-white/[0.06] bg-black/[0.12]">
+        <div className="site-shell grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center xl:gap-20">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary/75">forward.py</p>
+            <h2 className="mt-4 text-balance text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">The idea fits in one residual equation.</h2>
+            <p className="mt-5 max-w-xl text-sm leading-7 text-white/46 sm:text-base">Token identity chooses a narrow expert, but it never replaces the shared contextual computation.</p>
+          </div>
+          <div className="lab-surface overflow-hidden rounded-2xl">
+            <div className="flex items-center justify-between border-b border-white/[0.07] px-5 py-3">
+              <span className="font-mono text-[10px] text-white/35">residual_mlp.py</span>
+              <span className="font-mono text-[9px] text-emerald-300/65">valid</span>
+            </div>
+            <div className="overflow-x-auto p-5 font-mono text-xs leading-7 text-white/58 sm:p-7 sm:text-sm lg:p-9">
+              <p><span className="text-violet-300">class</span> <span className="text-sky-300">TokenRoutedMLP</span>(nn.Module):</p>
+              <p className="pl-4"><span className="text-violet-300">def</span> <span className="text-sky-300">forward</span>(self, x, token_ids):</p>
+              <p className="pl-8">expert_id = self.routing_table[token_ids]</p>
+              <p className="pl-8">shared = self.shared_expert(x)</p>
+              <p className="pl-8">routed = self.experts[expert_id](x)</p>
+              <p className="pl-8"><span className="text-violet-300">return</span> x <span className="text-amber-300">+</span> shared <span className="text-amber-300">+</span> routed</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="site-section">
+        <div className="site-shell">
+          <div className="relative overflow-hidden rounded-3xl border border-violet-400/15 bg-violet-400/[0.045] p-6 sm:p-10 lg:flex lg:items-center lg:justify-between lg:gap-12 xl:p-14">
+            <div className="pointer-events-none absolute right-0 top-0 size-72 rounded-full bg-violet-500/10 blur-[90px]" />
+            <div className="relative max-w-3xl">
+              <Badge className="border-violet-400/20 bg-violet-400/[0.08] text-violet-200"><Boxes className="mr-2 size-3.5" /> Visual tooling</Badge>
+              <h2 className="mt-5 text-balance text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">Build the architecture instead of only reading about it.</h2>
+              <p className="mt-4 text-sm leading-7 text-white/46 sm:text-base">LABO AI turns these primitives into typed cards, visible tensor flows and synchronized PyTorch.</p>
+            </div>
+            <Button size="lg" className="relative mt-8 h-12 bg-white px-6 text-black hover:bg-white/85 lg:mt-0" asChild>
+              <Link href="/labo-ai">Open LABO AI <ArrowRight className="size-4" /></Link>
+            </Button>
+          </div>
         </div>
       </section>
 

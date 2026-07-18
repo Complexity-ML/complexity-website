@@ -55,7 +55,7 @@ export default function SettingsPage() {
           <p className="text-sm font-medium">Security</p>
         </div>
         <div className="px-5 py-4 space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-sm">User ID</span>
             <Badge variant="outline" className="font-mono text-xs">
               {maskedId}
@@ -70,7 +70,7 @@ export default function SettingsPage() {
 
       {/* Sign out */}
       <div className="rounded-lg border border-destructive/30 overflow-hidden">
-        <div className="px-5 py-4 flex items-center justify-between">
+        <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-medium">Sign out</p>
             <p className="text-xs text-muted-foreground">End your current session</p>
