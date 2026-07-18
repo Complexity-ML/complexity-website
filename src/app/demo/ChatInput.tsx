@@ -51,9 +51,13 @@ export function ChatInput({
   };
 
   return (
-    <div className="relative border-t border-border/50 bg-background/85 backdrop-blur-xl">
-      <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6">
-        <div className="rounded-2xl border border-border/60 bg-card/45 p-2 shadow-2xl shadow-black/20 transition-colors focus-within:border-primary/40">
+    <div className="relative bg-gradient-to-t from-[#07090d] via-[#07090d]/96 to-transparent px-3 pb-3 pt-5 sm:px-6 sm:pb-5">
+      <div className="mx-auto max-w-5xl">
+        <div className="rounded-2xl border border-white/[0.1] bg-[#0d1016]/95 p-2 shadow-[0_24px_80px_rgba(0,0,0,.42)] backdrop-blur-2xl transition-colors focus-within:border-emerald-300/30">
+          <div className="flex items-center justify-between gap-3 px-2 pb-1.5">
+            <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/25">{mode === "compare" ? "dual inference" : "model input"}</span>
+            <span className="flex items-center gap-1.5 font-mono text-[8px] text-emerald-300/55"><span className="size-1.5 rounded-full bg-emerald-300" /> ready</span>
+          </div>
           <div className="flex items-end gap-2">
           <Textarea
             ref={inputRef}
@@ -62,7 +66,7 @@ export function ChatInput({
             onKeyDown={handleKeyDown}
             placeholder={mode === "compare" ? "Send one prompt to both models…" : "Ask the demo model for a continuation…"}
             rows={1}
-            className="min-h-[48px] max-h-[140px] resize-none border-0 bg-transparent text-sm shadow-none focus-visible:ring-0"
+            className="min-h-[48px] max-h-[140px] resize-none border-0 bg-transparent px-2 text-sm shadow-none placeholder:text-white/22 focus-visible:ring-0"
             onInput={(e) => {
               const target = e.target as HTMLTextAreaElement;
               target.style.height = "auto";
@@ -82,7 +86,7 @@ export function ChatInput({
               onClick={onSend}
               disabled={!input.trim() || loading}
               size="icon"
-              className="size-11 shrink-0 rounded-xl"
+              className="size-11 shrink-0 rounded-xl bg-emerald-300 text-black hover:bg-emerald-200"
             >
               <SendHorizonal className="size-4" />
             </Button>
@@ -90,8 +94,8 @@ export function ChatInput({
         </div>
         </div>
         <div className="mt-2 flex items-center justify-between gap-3 px-1">
-          <p className="truncate font-mono text-[10px] text-muted-foreground/45">{FOOTERS[mode]}</p>
-          <p className="hidden items-center gap-1 font-mono text-[10px] text-muted-foreground/35 sm:flex">
+          <p className="hidden truncate font-mono text-[9px] text-white/22 lg:block">{FOOTERS[mode]}</p>
+          <p className="flex items-center gap-1 font-mono text-[9px] text-white/22">
             <CornerDownLeft className="size-3" /> send · shift enter newline
           </p>
           {tokenStats && tokenStats.tokens > 0 && (

@@ -5,17 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
-import { KeyRound, LayoutDashboard, Menu, Settings, Users } from "lucide-react";
+import { FlaskConical, Menu, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import LogoMark from "@/components/LogoMark";
 
 const NAV = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/keys", label: "API keys", icon: KeyRound },
-  { href: "/dashboard/team", label: "Team", icon: Users },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard/settings", label: "My account", icon: Settings },
+  { href: "/labo-ai/live", label: "Open LABO AI", icon: FlaskConical },
 ];
 
 function WorkspaceNav({ pathname, close = false }: { pathname: string; close?: boolean }) {
@@ -70,12 +68,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <LogoMark className="size-9 rounded-lg" />
             <div>
               <p className="text-sm font-semibold tracking-[0.06em]">COMPLEXITY</p>
-              <p className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/24">workspace</p>
+              <p className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/24">account</p>
             </div>
           </Link>
         </div>
         <div className="flex-1 p-3">
-          <p className="mb-3 px-3 pt-2 font-mono text-[9px] uppercase tracking-[0.2em] text-white/22">Navigation</p>
+          <p className="mb-3 px-3 pt-2 font-mono text-[9px] uppercase tracking-[0.2em] text-white/22">Account</p>
           <WorkspaceNav pathname={pathname} />
         </div>
         <div className="border-t border-white/[0.07] p-4">
@@ -95,7 +93,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Sheet>
             <SheetTrigger asChild><Button variant="ghost" size="icon"><Menu className="size-5" /></Button></SheetTrigger>
             <SheetContent side="right" className="w-[min(21rem,90vw)] border-white/10 bg-[#0a0c11] p-0">
-              <SheetHeader className="border-b border-white/[0.07] p-5"><SheetTitle>Workspace</SheetTitle></SheetHeader>
+              <SheetHeader className="border-b border-white/[0.07] p-5"><SheetTitle>My account</SheetTitle></SheetHeader>
               <div className="p-4"><WorkspaceNav pathname={pathname} close /></div>
             </SheetContent>
           </Sheet>

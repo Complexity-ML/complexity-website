@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { encrypt, decrypt } from "@/lib/crypto";
+import { encrypt } from "@/lib/crypto";
 import crypto from "crypto";
 
 function generateRawKey(): string {
@@ -13,8 +13,8 @@ function hashKey(raw: string): string {
   return crypto.createHash("sha256").update(raw).digest("hex");
 }
 
-// GET /api/keys — get key info (prefix only, or full key with ?reveal=true)
-export async function GET(req: Request) {
+// GET /api/keys — legacy metadata only. Secret material is never returned.
+export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -29,25 +29,6 @@ export async function GET(req: Request) {
 
   if (!existing) {
     return NextResponse.json({ has_key: false });
-  }
-
-  const url = new URL(req.url);
-  if (url.searchParams.get("reveal") === "true") {
-    if (!existing.encryptedKey) {
-      return NextResponse.json({
-        has_key: true,
-        error: "Legacy key — please regenerate to enable reveal.",
-        prefix: existing.prefix,
-        created_at: existing.createdAt,
-      });
-    }
-    const apiKey = decrypt(existing.encryptedKey);
-    return NextResponse.json({
-      has_key: true,
-      api_key: apiKey,
-      prefix: existing.prefix,
-      created_at: existing.createdAt,
-    });
   }
 
   return NextResponse.json({

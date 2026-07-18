@@ -43,7 +43,7 @@ function ModelColumn({
   streaming: boolean;
 }) {
   return (
-    <Card className="min-w-0 flex-1 border-border/60 bg-card/50 shadow-none">
+    <Card className="lab-surface min-w-0 flex-1 border-white/[0.08] bg-card/45 shadow-none">
       <CardHeader className="border-b border-border/45 pb-3">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className={cn("font-mono text-[10px]", labelColor)}>
@@ -132,7 +132,7 @@ export function CompareView({
 }: CompareViewProps) {
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-border/55 bg-card/40 p-4">
+      <div className="lab-surface rounded-2xl p-4">
         <div className="flex items-center gap-3">
           <div className="rounded-xl border border-primary/25 bg-primary/10 p-2 text-primary">
             <GitCompareArrows className="size-4" />

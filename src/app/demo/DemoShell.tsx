@@ -151,7 +151,8 @@ export function DemoShell() {
   const showChatWelcome = !isCompare && chat.messages.length === 0 && !chat.loading && !chat.streaming;
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background">
+    <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#07090d]">
+      <div className="hairline-grid pointer-events-none absolute inset-0 opacity-20" />
       <ChatHeader
         mode={activeMode}
         streaming={isCompare ? compare.streaming : chat.streaming}
@@ -172,7 +173,7 @@ export function DemoShell() {
         />
       )}
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="relative flex flex-1 overflow-hidden">
         {/* Sidebar — hidden on mobile, hidden in compare mode */}
         {!isCompare && (
           <div className="hidden md:flex">
@@ -180,6 +181,7 @@ export function DemoShell() {
               conversations={convos.conversations}
               activeId={convos.activeId}
               collapsed={sidebarCollapsed}
+              authenticated={!!userId}
               onSelect={handleSelectConvo}
               onNew={handleNewChat}
               onDelete={convos.deleteConversation}
@@ -208,7 +210,7 @@ export function DemoShell() {
                 }}
               />
             ) : (
-              <div className={`mx-auto px-4 sm:px-6 py-4 space-y-4 ${isCompare ? "max-w-6xl" : "max-w-4xl"}`}>
+              <div className={`mx-auto space-y-7 px-4 py-7 sm:px-6 sm:py-10 ${isCompare ? "max-w-7xl" : "max-w-5xl"}`}>
                 {isCompare ? (
                   <>
                     <CompareView

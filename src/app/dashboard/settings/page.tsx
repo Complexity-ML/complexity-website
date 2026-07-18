@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
-import { AlertTriangle, Download, ExternalLink, LogOut, Shield, Trash2 } from "lucide-react";
+import { AlertTriangle, Download, ExternalLink, KeyRound, LogOut, Shield, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -13,11 +13,28 @@ export default function SettingsPage() {
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [laboKey, setLaboKey] = useState<{ configured: boolean; prefix?: string } | null>(null);
+  const [removingKey, setRemovingKey] = useState(false);
   const user = session?.user;
   const rawId = (user as Record<string, unknown> | undefined)?.id as string | undefined;
   const maskedId = rawId
     ? rawId.replace(/^(.{8}).*(.{4})$/, "$1••••••$2")
     : undefined;
+
+  useEffect(() => {
+    void fetch("/api/labo/key")
+      .then((response) => response.ok ? response.json() : null)
+      .then((value) => setLaboKey(value))
+      .catch(() => setLaboKey(null));
+  }, []);
+
+  const removeLaboKey = async () => {
+    if (removingKey || !window.confirm("Remove the OpenAI key connected to LABO AI?")) return;
+    setRemovingKey(true);
+    const response = await fetch("/api/labo/key", { method: "DELETE" });
+    if (response.ok) setLaboKey({ configured: false });
+    setRemovingKey(false);
+  };
 
   const deleteAccount = async () => {
     if (deleteConfirmation !== "DELETE" || deleting) return;
@@ -40,7 +57,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
+        <h1 className="text-2xl font-bold">My account</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Manage your account and security settings.
         </p>
@@ -85,8 +102,35 @@ export default function SettingsPage() {
           </div>
           <Separator />
           <p className="text-xs text-muted-foreground">
-            Your account is secured via GitHub OAuth.
+            Your account is secured through your selected OAuth provider.
           </p>
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-lg border border-border">
+        <div className="flex items-center gap-2 border-b border-border bg-card/50 px-5 py-4">
+          <KeyRound className="size-4" />
+          <p className="text-sm font-medium">LABO AI agent key</p>
+        </div>
+        <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm">{laboKey?.configured ? "OpenAI key connected" : "No OpenAI key connected"}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {laboKey?.configured
+                ? `${laboKey.prefix || "Stored securely"} · the secret is never displayed.`
+                : "Connect a key from LABO AI only when you want to use the graph agent."}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <a href="/labo-ai/live">Open LABO AI</a>
+            </Button>
+            {laboKey?.configured && (
+              <Button variant="ghost" size="sm" disabled={removingKey} onClick={() => void removeLaboKey()}>
+                {removingKey ? "Removing…" : "Remove key"}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

@@ -6,7 +6,6 @@ import { Bot, Check, Copy, Loader2, User } from "lucide-react";
 import CodeBlock from "@/components/CodeBlock";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Mode, Message } from "./config";
 import { MODEL_NAMES } from "./config";
@@ -34,25 +33,24 @@ export function ChatMessage({ message, mode }: ChatMessageProps) {
       className={cn("group flex gap-3", isUser ? "justify-end" : "justify-start")}
     >
       {!isUser && (
-        <div className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary">
+        <div className="mt-1 flex size-9 shrink-0 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.055] text-emerald-300">
           <Bot className="size-4" />
         </div>
       )}
 
-      <Card
+      <div
         className={cn(
-          "gap-0 rounded-2xl py-0 shadow-none transition-colors",
+          "min-w-0 rounded-2xl transition-colors",
           isUser
-            ? "max-w-[85%] border-primary/25 bg-primary/15"
-            : "w-full border-border/55 bg-card/55 backdrop-blur",
+            ? "max-w-[82%] border border-violet-300/15 bg-violet-300/[0.065] px-4 py-3"
+            : "lab-surface w-full p-5",
         )}
       >
-        <CardContent className="p-4">
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <Badge variant="outline" className="gap-1.5 border-border/50 bg-background/30 font-mono text-[10px] text-muted-foreground">
+          <div className={cn("flex items-center justify-between gap-3", !isUser && "mb-4")}>
+            {!isUser && <Badge variant="outline" className="gap-1.5 border-white/[0.08] bg-black/20 font-mono text-[9px] text-white/38">
               {isUser ? <User className="size-3" /> : <Bot className="size-3" />}
               {isUser ? "you" : MODEL_NAMES[mode]}
-            </Badge>
+            </Badge>}
             <Button
               variant="ghost"
               size="icon"
@@ -64,7 +62,7 @@ export function ChatMessage({ message, mode }: ChatMessageProps) {
             </Button>
           </div>
           {isUser ? (
-            <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+            <p className="whitespace-pre-wrap text-sm leading-6 text-white/78">{message.content}</p>
           ) : message.content ? (
             <CodeBlock content={message.content} />
           ) : (
@@ -73,8 +71,7 @@ export function ChatMessage({ message, mode }: ChatMessageProps) {
               generating…
             </div>
           )}
-        </CardContent>
-      </Card>
+      </div>
     </motion.div>
   );
 }
@@ -82,11 +79,10 @@ export function ChatMessage({ message, mode }: ChatMessageProps) {
 export function LoadingBubble({ mode }: { mode: Mode }) {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start gap-3">
-      <div className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary">
+      <div className="mt-1 flex size-9 shrink-0 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.055] text-emerald-300">
         <Bot className="size-4" />
       </div>
-      <Card className="gap-0 rounded-2xl border-border/55 bg-card/55 py-0 shadow-none backdrop-blur">
-        <CardContent className="p-4">
+      <div className="lab-surface rounded-2xl p-5">
           <Badge variant="outline" className="mb-3 border-border/50 bg-background/30 font-mono text-[10px] text-muted-foreground">
             {MODEL_NAMES[mode]}
           </Badge>
@@ -100,8 +96,7 @@ export function LoadingBubble({ mode }: { mode: Mode }) {
               />
             ))}
           </div>
-        </CardContent>
-      </Card>
+      </div>
     </motion.div>
   );
 }
