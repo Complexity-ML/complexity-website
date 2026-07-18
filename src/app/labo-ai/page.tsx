@@ -249,7 +249,7 @@ export default function LaboAIPage() {
               </a>
             </Button>
             <Button size="lg" variant="outline" className="h-12 border-white/15 bg-white/5 px-6" asChild>
-              <a href="https://youtu.be/Dj0q0RKSFng" target="_blank" rel="noopener noreferrer">
+              <a href="https://youtu.be/ZmLuFFJaXgc" target="_blank" rel="noopener noreferrer">
                 <Play className="size-4" />
                 Watch the demo
               </a>
@@ -295,7 +295,7 @@ export default function LaboAIPage() {
               Watch Ask LABO construct a compact GPT-like QA architecture, wire compatible ports, arrange it, generate PyTorch and execute it locally.
             </p>
             <Button variant="link" className="mt-4 h-auto p-0 text-violet-300" asChild>
-              <a href="https://youtu.be/Dj0q0RKSFng" target="_blank" rel="noopener noreferrer">
+              <a href="https://youtu.be/ZmLuFFJaXgc" target="_blank" rel="noopener noreferrer">
                 Open on YouTube <ExternalLink className="size-3.5" />
               </a>
             </Button>
@@ -304,7 +304,7 @@ export default function LaboAIPage() {
             <div className="aspect-video">
               <iframe
                 className="size-full"
-                src="https://www.youtube-nocookie.com/embed/Dj0q0RKSFng?rel=0"
+                src="https://www.youtube-nocookie.com/embed/ZmLuFFJaXgc?rel=0"
                 title="LABO AI agent demo"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerPolicy="strict-origin-when-cross-origin"
