@@ -114,7 +114,7 @@ export default function I64Page() {
                 </a>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <a href="https://openreview.net/forum?id=Jd9jhTnkUy" target="_blank" rel="noopener noreferrer">
+                <a href="/papers/token-identity-routing-residual-experts.pdf" target="_blank" rel="noopener noreferrer">
                   <BookOpen className="size-5" />
                   Read the Paper
                 </a>

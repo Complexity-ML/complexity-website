@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 
 const publications = [
   {
-    title: "COMPLEXITY-DEEP: Deterministic Lexical Routing with Token-Routed MLP",
+    title: "Token identity provides a fixed routing signal for residual experts in language models",
     authors: "Anonymous",
-    venue: "Submitted to Transactions on Machine Learning Research",
+    venue: "Research manuscript",
     year: "2026",
     doi: null,
-    url: "https://openreview.net/forum?id=Jd9jhTnkUy",
-    abstract: "We present COMPLEXITY-DEEP: Token-Routed MLP with deterministic lexical routing, Zipf-balanced greedy bin-packing, and a Shared Lexical Expert. The updated paper reports 187M ablations and a corrected 300M iso-parameter 8B-token scaling comparison.",
+    url: "/papers/token-identity-routing-residual-experts.pdf",
+    abstract: "We test whether token identity alone can allocate narrow residual expert capacity while a shared dense MLP preserves contextual processing. The manuscript reports a matched 306.5M-parameter, 8B-token comparison, standard task evaluations, and learned-router controls.",
   },
 ];
 
@@ -72,7 +72,7 @@ export default function Publications() {
                       )}
                       {!pub.doi && (
                         <span className="text-[10px] sm:text-xs text-muted-foreground font-mono">
-                          Under review
+                          Hosted PDF
                         </span>
                       )}
                     </div>
@@ -95,13 +95,13 @@ export default function Publications() {
             <CardContent className="p-3 sm:p-4">
               <pre className="text-xs sm:text-sm font-mono text-muted-foreground overflow-x-auto">
 {`@article{
-anonymous2026complexitydeep,
-title={'{COMPLEXITY}-{DEEP}: Deterministic Lexical Routing with Token-Routed {MLP}'},
+anonymous2026tokenidentity,
+title={Token identity provides a fixed routing signal for residual experts in language models},
 author={Anonymous},
-journal={Submitted to Transactions on Machine Learning Research},
+journal={Research manuscript},
 year={2026},
-url={https://openreview.net/forum?id=Jd9jhTnkUy},
-note={Under review}
+url={https://www.complexity-ai.fr/papers/token-identity-routing-residual-experts.pdf},
+note={Double-anonymized manuscript}
 }`}
               </pre>
             </CardContent>

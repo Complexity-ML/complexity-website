@@ -55,12 +55,12 @@ export default function ResearchStory() {
               Deterministic routing, shared experts, corrected scaling.
             </h2>
             <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-              The site now tracks the new OpenReview submission instead of the older architecture story. The message is simple: fixed lexical routing can produce useful specialization without learned MoE routing machinery.
+              The site hosts the latest manuscript directly. The message is simple: fixed token-identity routing can allocate useful residual capacity without a learned contextual router.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
               <Button asChild>
-                <a href="https://openreview.net/forum?id=Jd9jhTnkUy" target="_blank" rel="noopener noreferrer">
-                  OpenReview
+                <a href="/papers/token-identity-routing-residual-experts.pdf" target="_blank" rel="noopener noreferrer">
+                  Read PDF
                   <ArrowUpRight className="size-4" />
                 </a>
               </Button>

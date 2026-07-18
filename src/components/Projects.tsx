@@ -63,13 +63,13 @@ const projects = [
     },
   },
   {
-    title: "OpenReview — Submission",
+    title: "Token identity routing — Manuscript",
     description:
-      "Our latest OpenReview submission on deterministic lexical routing, shared experts, and corrected Token-Routed scaling.",
-    tags: ["Paper", "OpenReview", "Peer Review"],
+      "Our latest manuscript on fixed token-identity routing, residual experts, and matched Token-Routed scaling.",
+    tags: ["Paper", "Token Routing", "MoE"],
     status: "Active",
     links: {
-      paper: "https://openreview.net/forum?id=Jd9jhTnkUy",
+      paper: "/papers/token-identity-routing-residual-experts.pdf",
     },
   },
 ];
@@ -175,7 +175,7 @@ export default function Projects() {
                       <Button variant="ghost" size="sm" asChild>
                         <a href={project.links.paper} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="size-4" />
-                          OpenReview
+                          Read PDF
                         </a>
                       </Button>
                     )}

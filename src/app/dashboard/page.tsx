@@ -75,7 +75,7 @@ export default function DashboardPage() {
         </Link>
 
         <a
-          href="https://openreview.net/forum?id=Jd9jhTnkUy"
+          href="/papers/token-identity-routing-residual-experts.pdf"
           target="_blank"
           rel="noopener noreferrer"
           className="group p-5 rounded-lg border border-border hover:border-primary/50 transition-colors space-y-3"
@@ -87,7 +87,7 @@ export default function DashboardPage() {
           <div>
             <p className="font-medium">Paper</p>
             <p className="text-xs text-muted-foreground">
-              Under review at Transactions on ML Research
+              Latest double-anonymized research manuscript
             </p>
           </div>
         </a>
@@ -132,7 +132,7 @@ export default function DashboardPage() {
         </div>
         <div className="px-5 py-3 bg-muted/20 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            Decoder-only transformer family with Token-Routed MLP, Zipf bin-packing, Shared Lexical Expert, GQA, RoPE, and SwiGLU. Updated from the current OpenReview submission.
+            Decoder-only transformer family with Token-Routed MLP, Zipf bin-packing, Shared Lexical Expert, GQA, RoPE, and SwiGLU. Updated from the latest research manuscript.
           </p>
         </div>
       </div>

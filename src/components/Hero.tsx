@@ -44,7 +44,7 @@ export default function Hero() {
         >
           <Badge className="mb-6 gap-2 border-primary/30 bg-primary/10 px-4 py-2 text-primary shadow-[0_0_30px_rgba(74,222,128,0.16)]">
             <span className="size-2 rounded-full bg-primary" />
-            Updated OpenReview paper
+            Latest research manuscript
           </Badge>
 
           <h1 className="max-w-4xl text-5xl font-bold leading-[0.95] tracking-[-0.06em] sm:text-6xl lg:text-7xl">
@@ -57,7 +57,7 @@ export default function Hero() {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button size="lg" className="shadow-[0_0_40px_rgba(74,222,128,0.22)]" asChild>
-              <a href="https://openreview.net/forum?id=Jd9jhTnkUy" target="_blank" rel="noopener noreferrer">
+              <a href="/papers/token-identity-routing-residual-experts.pdf" target="_blank" rel="noopener noreferrer">
                 <BookOpen className="size-5" />
                 Read the paper
                 <ArrowRight className="size-4" />
