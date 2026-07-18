@@ -5,7 +5,7 @@ import { Copy, Check, Key, RefreshCw, Eye, EyeOff, Plus, Trash2, ExternalLink } 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-type ExtKey = { provider: string; prefix: string; api_key?: string; created_at: string };
+type ExtKey = { provider: string; prefix: string; created_at: string };
 
 const PROVIDERS: Record<string, { label: string; placeholder: string }> = {
   openai: { label: "OpenAI", placeholder: "sk-..." },
@@ -25,7 +25,6 @@ export default function KeysPage() {
 
   // External keys state
   const [extKeys, setExtKeys] = useState<ExtKey[]>([]);
-  const [extRevealing, setExtRevealing] = useState<string | null>(null);
   const [addingProvider, setAddingProvider] = useState<string | null>(null);
   const [newExtKey, setNewExtKey] = useState("");
   const [extLoading, setExtLoading] = useState(false);
@@ -91,23 +90,6 @@ export default function KeysPage() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [fullKey]);
-
-  const revealExtKey = useCallback(async (provider: string) => {
-    // If already revealed, toggle off
-    const existing = extKeys.find((k) => k.provider === provider);
-    if (existing?.api_key) {
-      setExtKeys((prev) => prev.map((k) => k.provider === provider ? { ...k, api_key: undefined } : k));
-      return;
-    }
-    setExtRevealing(provider);
-    try {
-      const res = await fetch(`/api/keys/external?reveal=${provider}`);
-      const data = await res.json();
-      if (data.keys) setExtKeys(data.keys);
-    } finally {
-      setExtRevealing(null);
-    }
-  }, [extKeys]);
 
   const saveExtKey = useCallback(async (provider: string) => {
     if (!newExtKey.trim()) return;
@@ -229,17 +211,8 @@ export default function KeysPage() {
             <div key={k.provider} className="flex min-w-0 flex-wrap items-center gap-2 sm:flex-nowrap">
               <span className="w-full text-sm font-medium sm:w-24">{PROVIDERS[k.provider]?.label || k.provider}</span>
               <code className="min-w-0 flex-1 overflow-x-auto rounded-md bg-muted px-3 py-2 font-mono text-xs">
-                {k.api_key || `${k.prefix}${"•".repeat(30)}`}
+                {`${k.prefix}${"•".repeat(30)}`}
               </code>
-              <Button
-                variant="outline"
-                size="icon"
-                className="shrink-0"
-                onClick={() => revealExtKey(k.provider)}
-                disabled={extRevealing === k.provider}
-              >
-                {k.api_key ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-              </Button>
               <Button
                 variant="outline"
                 size="icon"

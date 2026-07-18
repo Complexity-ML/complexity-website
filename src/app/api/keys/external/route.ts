@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { encrypt, decrypt } from "@/lib/crypto";
+import { encrypt } from "@/lib/crypto";
 
 const ALLOWED_PROVIDERS = ["openai", "anthropic", "google", "mistral"] as const;
 type Provider = (typeof ALLOWED_PROVIDERS)[number];
@@ -11,34 +11,21 @@ function makePrefix(key: string): string {
   return key.slice(0, 8) + "...";
 }
 
-// GET /api/keys/external — list external keys (prefixes only, or reveal one)
-export async function GET(req: Request) {
+// GET /api/keys/external — list prefixes only; raw provider keys never leave the server.
+export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const dbId = (session.user as Record<string, unknown>).dbId as string;
-  const url = new URL(req.url);
-  const revealProvider = url.searchParams.get("reveal");
-
   const keys = await prisma.externalKey.findMany({
     where: { userId: dbId },
-    select: { provider: true, prefix: true, encryptedKey: true, createdAt: true },
+    select: { provider: true, prefix: true, createdAt: true },
     orderBy: { createdAt: "asc" },
   });
 
-  const result = keys.map((k) => {
-    const base: Record<string, unknown> = {
-      provider: k.provider,
-      prefix: k.prefix,
-      created_at: k.createdAt,
-    };
-    if (revealProvider === k.provider) {
-      base.api_key = decrypt(k.encryptedKey);
-    }
-    return base;
-  });
+  const result = keys.map((k) => ({ provider: k.provider, prefix: k.prefix, created_at: k.createdAt }));
 
   return NextResponse.json({ keys: result });
 }

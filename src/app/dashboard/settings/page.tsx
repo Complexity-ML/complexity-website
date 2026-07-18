@@ -1,19 +1,41 @@
 "use client";
 
+import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
-import { LogOut, Shield } from "lucide-react";
+import { AlertTriangle, LogOut, Shield, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 export default function SettingsPage() {
   const { data: session } = useSession();
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const user = session?.user;
   const rawId = (user as Record<string, unknown> | undefined)?.id as string | undefined;
   const maskedId = rawId
     ? rawId.replace(/^(.{8}).*(.{4})$/, "$1••••••$2")
     : undefined;
+
+  const deleteAccount = async () => {
+    if (deleteConfirmation !== "DELETE" || deleting) return;
+    setDeleting(true);
+    setDeleteError("");
+    const response = await fetch("/api/account", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirmation: deleteConfirmation }),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({})) as { error?: string };
+      setDeleteError(body.error || "Account deletion failed.");
+      setDeleting(false);
+      return;
+    }
+    await signOut({ callbackUrl: "/" });
+  };
 
   return (
     <div className="space-y-8">
@@ -84,6 +106,23 @@ export default function SettingsPage() {
             <LogOut className="size-4 mr-1.5" />
             Sign out
           </Button>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-destructive/30 overflow-hidden">
+        <div className="border-b border-destructive/20 bg-destructive/5 px-5 py-4">
+          <div className="flex items-center gap-2 text-destructive"><AlertTriangle className="size-4" /><p className="text-sm font-medium">Delete account</p></div>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">Permanently removes your encrypted provider keys, API keys, sessions and cloud workspace data. Local LABO presets remain in this browser until you clear them.</p>
+        </div>
+        <div className="space-y-3 px-5 py-4">
+          <label className="text-xs text-muted-foreground" htmlFor="delete-account-confirmation">Type <span className="font-mono text-foreground">DELETE</span> to confirm</label>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input id="delete-account-confirmation" value={deleteConfirmation} onChange={(event) => setDeleteConfirmation(event.target.value)} className="h-9 flex-1 rounded-md border border-border bg-background px-3 font-mono text-xs outline-none focus:border-destructive/60" />
+            <Button variant="destructive" size="sm" disabled={deleteConfirmation !== "DELETE" || deleting} onClick={() => void deleteAccount()}>
+              <Trash2 className="mr-1.5 size-4" />{deleting ? "Deleting…" : "Delete account"}
+            </Button>
+          </div>
+          {deleteError && <p className="text-xs text-destructive">{deleteError}</p>}
         </div>
       </div>
     </div>
