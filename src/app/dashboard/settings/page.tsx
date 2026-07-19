@@ -131,7 +131,7 @@ export default function SettingsPage() {
       <div className="rounded-lg border border-destructive/30 overflow-hidden">
         <div className="border-b border-destructive/20 bg-destructive/5 px-5 py-4">
           <div className="flex items-center gap-2 text-destructive"><AlertTriangle className="size-4" /><p className="text-sm font-medium">Delete account</p></div>
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">Permanently removes your encrypted provider keys, API keys, sessions and cloud workspace data. Local LABO presets remain in this browser until you clear them.</p>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">Permanently removes your encrypted provider keys, API keys, sessions and private LABO workspace data stored for this account.</p>
         </div>
         <div className="space-y-3 px-5 py-4">
           <label className="text-xs text-muted-foreground" htmlFor="delete-account-confirmation">Type <span className="font-mono text-foreground">DELETE</span> to confirm</label>

@@ -23,7 +23,7 @@ const sections = [
   },
   {
     icon: HardDrive,
-    title: "Local LABO workspaces",
+    title: "Private LABO workspaces",
     body: "Graphs, custom cards and presets are stored locally in your browser by default. They are not account cloud storage. Deleting your account does not clear browser storage; use your browser controls to remove it from that device.",
   },
   {
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
             </section>
             <section>
               <h2 className="text-base font-medium text-white">Cookies and local storage</h2>
-              <p className="mt-2">The service uses an authentication cookie required to keep you signed in and browser storage required for local LABO workspaces. No advertising cookies are set by Complexity. Third-party links and embedded services may apply their own policies.</p>
+              <p className="mt-2">The service uses an authentication cookie required to keep you signed in. Authenticated LABO workspaces are stored in the account-scoped server database; guest workspaces are temporary and are not persisted in browser storage. No advertising cookies are set by Complexity. Third-party links and embedded services may apply their own policies.</p>
             </section>
             <section>
               <h2 className="text-base font-medium text-white">Changes</h2>
