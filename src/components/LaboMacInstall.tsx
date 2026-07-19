@@ -20,13 +20,19 @@ export default function LaboMacInstall() {
       <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/35 p-2 pl-3">
         <Terminal className="size-4 shrink-0 text-emerald-300" />
         <code className="min-w-0 flex-1 truncate font-mono text-[11px] text-white/65">{INSTALL_COMMAND}</code>
-        <Button type="button" size="sm" className="shrink-0 bg-white text-black hover:bg-white/85" onClick={copyCommand}>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="size-8 shrink-0 text-white/55 hover:bg-white/10 hover:text-white"
+          onClick={copyCommand}
+          aria-label={copied ? "Command copied" : "Copy install command"}
+          title={copied ? "Copied" : "Copy command"}
+        >
           {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-          {copied ? "Copied" : "Copy command"}
         </Button>
       </div>
       <p className="mt-3 text-center font-mono text-[10px] text-white/40">Paste in Terminal · SHA-256 verified · no Gatekeeper detour</p>
     </div>
   );
 }
-
