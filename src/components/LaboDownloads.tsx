@@ -1,10 +1,10 @@
 import { Apple, Check, Download, ExternalLink, MonitorDown, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import LaboMacInstall from "@/components/LaboMacInstall";
 
 const REPOSITORY = "Complexity-ML/labo-ai";
 const LATEST_RELEASE = `https://github.com/${REPOSITORY}/releases/latest`;
 const LATEST_DOWNLOADS = {
-  macDmg: "/download/labo-ai/mac-dmg",
   windowsExe: "/download/labo-ai/windows-installer",
 };
 
@@ -57,8 +57,7 @@ export default async function LaboDownloads() {
             <Apple className="size-8 text-white" />
             <h3 className="mt-5 text-xl font-semibold">macOS</h3>
             <p className="mt-2 text-sm text-muted-foreground">Apple silicon · macOS 12 or later</p>
-            <Button className="mt-7 w-full bg-white text-black hover:bg-white/85" asChild><a href={LATEST_DOWNLOADS.macDmg}><Download className="size-4" />Download LABO AI Setup</a></Button>
-            <p className="mt-3 text-center font-mono text-[10px] text-white/40">Small DMG · builds Electron locally</p>
+            <LaboMacInstall />
           </article>
           <article className="rounded-2xl border border-white/10 bg-card/80 p-7">
             <MonitorDown className="size-8 text-sky-300" />

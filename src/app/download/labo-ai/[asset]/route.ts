@@ -4,7 +4,7 @@ const REPOSITORY = "Complexity-ML/labo-ai";
 const LATEST_RELEASE = `https://github.com/${REPOSITORY}/releases/latest`;
 
 const ASSET_SUFFIXES = {
-  "mac-dmg": "LABO-AI-Setup-arm64.dmg",
+  "mac-installer": "install-labo-ai-macos.sh",
   "windows-installer": "LABO-AI-Setup-x64.exe",
 } as const;
 
