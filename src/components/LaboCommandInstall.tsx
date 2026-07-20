@@ -4,13 +4,16 @@ import { Check, Copy, Terminal } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-const INSTALL_COMMAND = "curl -fsSL https://github.com/Complexity-ML/labo-ai/releases/latest/download/install-labo-ai-macos.sh | bash";
+interface LaboCommandInstallProps {
+  command: string;
+  hint: string;
+}
 
-export default function LaboMacInstall() {
+export default function LaboCommandInstall({ command, hint }: LaboCommandInstallProps) {
   const [copied, setCopied] = useState(false);
 
   async function copyCommand() {
-    await navigator.clipboard.writeText(INSTALL_COMMAND);
+    await navigator.clipboard.writeText(command);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
   }
@@ -19,7 +22,7 @@ export default function LaboMacInstall() {
     <div className="mt-7">
       <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/35 p-2 pl-3">
         <Terminal className="size-4 shrink-0 text-emerald-300" />
-        <code className="min-w-0 flex-1 truncate font-mono text-[11px] text-white/65">{INSTALL_COMMAND}</code>
+        <code className="min-w-0 flex-1 truncate font-mono text-[11px] text-white/65">{command}</code>
         <Button
           type="button"
           size="icon"
@@ -32,7 +35,7 @@ export default function LaboMacInstall() {
           {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
         </Button>
       </div>
-      <p className="mt-3 text-center font-mono text-[10px] text-white/40">Paste in Terminal · SHA-256 verified · no Gatekeeper detour</p>
+      <p className="mt-3 text-center font-mono text-[10px] text-white/40">{hint}</p>
     </div>
   );
 }

@@ -1,12 +1,14 @@
-import { Apple, Check, Download, ExternalLink, MonitorDown, ShieldCheck } from "lucide-react";
+import { Apple, Check, Download, ExternalLink, MonitorDown, ShieldCheck, TerminalSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import LaboMacInstall from "@/components/LaboMacInstall";
+import LaboCommandInstall from "@/components/LaboCommandInstall";
 
 const REPOSITORY = "Complexity-ML/labo-ai";
 const LATEST_RELEASE = `https://github.com/${REPOSITORY}/releases/latest`;
 const LATEST_DOWNLOADS = {
   windowsExe: "/download/labo-ai/windows-installer",
 };
+const MAC_INSTALL_COMMAND = "curl -fsSL https://github.com/Complexity-ML/labo-ai/releases/latest/download/install-labo-ai-macos.sh | bash";
+const LINUX_INSTALL_COMMAND = "curl -fsSL https://github.com/Complexity-ML/labo-ai/releases/latest/download/install-labo-ai-linux.sh | bash";
 
 interface GitHubRelease {
   tag_name: string;
@@ -52,12 +54,15 @@ export default async function LaboDownloads() {
           <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">Build the latest desktop laboratory locally.</h2>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">The lightweight Setup fetches the latest tagged source, provisions a verified Node.js runtime, and installs the full Electron app without replacing your private workspace data.</p>
         </div>
-        <div className="mx-auto mt-10 grid max-w-5xl gap-5 md:grid-cols-2">
+        <div className="mx-auto mt-10 grid max-w-7xl gap-5 md:grid-cols-2 xl:grid-cols-3">
           <article className="rounded-2xl border border-white/10 bg-card/80 p-7">
             <Apple className="size-8 text-white" />
             <h3 className="mt-5 text-xl font-semibold">macOS</h3>
             <p className="mt-2 text-sm text-muted-foreground">Apple silicon · macOS 12 or later</p>
-            <LaboMacInstall />
+            <LaboCommandInstall
+              command={MAC_INSTALL_COMMAND}
+              hint="Paste in Terminal · SHA-256 verified · no Gatekeeper detour"
+            />
           </article>
           <article className="rounded-2xl border border-white/10 bg-card/80 p-7">
             <MonitorDown className="size-8 text-sky-300" />
@@ -66,8 +71,17 @@ export default async function LaboDownloads() {
             <Button className="mt-7 w-full bg-sky-500 text-white hover:bg-sky-400" asChild><a href={LATEST_DOWNLOADS.windowsExe}><Download className="size-4" />Download LABO AI Setup</a></Button>
             <p className="mt-3 text-center font-mono text-[10px] text-white/40">Small EXE · builds Electron locally</p>
           </article>
+          <article className="rounded-2xl border border-white/10 bg-card/80 p-7 md:col-span-2 xl:col-span-1">
+            <TerminalSquare className="size-8 text-emerald-300" />
+            <h3 className="mt-5 text-xl font-semibold">Linux</h3>
+            <p className="mt-2 text-sm text-muted-foreground">x64 · Ubuntu 22.04, Debian 12 or compatible</p>
+            <LaboCommandInstall
+              command={LINUX_INSTALL_COMMAND}
+              hint="Paste in Terminal · SHA-256 verified · AppImage Setup"
+            />
+          </article>
         </div>
-        <div className="mx-auto mt-5 flex max-w-5xl flex-col items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-6 py-5 text-sm sm:flex-row">
+        <div className="mx-auto mt-5 flex max-w-7xl flex-col items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-6 py-5 text-sm sm:flex-row">
           <div className="flex items-center gap-3 text-white/65"><ShieldCheck className="size-5 text-emerald-300" />Open source · source-first updates · OS-encrypted credentials</div>
           <Button variant="ghost" size="sm" asChild><a href={release.releaseUrl} target="_blank" rel="noopener noreferrer">All downloads <ExternalLink className="size-3.5" /></a></Button>
         </div>

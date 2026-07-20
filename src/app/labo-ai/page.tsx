@@ -229,7 +229,7 @@ export default function LaboAIPage() {
             </Button>
           </div>
           <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.18em] text-white/30">
-            Free · Open source · macOS and Windows
+            Free · Open source · macOS, Windows and Linux
           </p>
         </div>
       </section>

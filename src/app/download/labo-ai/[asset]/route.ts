@@ -6,6 +6,7 @@ const LATEST_RELEASE = `https://github.com/${REPOSITORY}/releases/latest`;
 const ASSET_SUFFIXES = {
   "mac-installer": "install-labo-ai-macos.sh",
   "windows-installer": "LABO-AI-Setup-x64.exe",
+  "linux-installer": "install-labo-ai-linux.sh",
 } as const;
 
 interface GitHubRelease {
