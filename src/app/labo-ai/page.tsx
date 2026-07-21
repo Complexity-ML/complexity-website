@@ -275,7 +275,7 @@ export default function LaboAIPage() {
               Watch Ask LABO construct a compact GPT-like QA architecture, wire compatible ports, arrange it, generate PyTorch and execute it locally.
             </p>
             <Button variant="link" className="mt-4 h-auto p-0 text-violet-300" asChild>
-              <a href="https://youtu.be/ZmLuFFJaXgc" target="_blank" rel="noopener noreferrer">
+              <a href="https://youtu.be/Fv_PP0xiTj0" target="_blank" rel="noopener noreferrer">
                 Open on YouTube <ExternalLink className="size-3.5" />
               </a>
             </Button>
@@ -284,7 +284,7 @@ export default function LaboAIPage() {
             <div className="aspect-video">
               <iframe
                 className="size-full"
-                src="https://www.youtube-nocookie.com/embed/ZmLuFFJaXgc?rel=0"
+                src="https://www.youtube-nocookie.com/embed/Fv_PP0xiTj0?rel=0"
                 title="LABO AI agent demo"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerPolicy="strict-origin-when-cross-origin"
