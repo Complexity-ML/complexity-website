@@ -6,6 +6,7 @@ import {
   Download,
   ExternalLink,
   Github,
+  MessagesSquare,
   Play,
   Save,
   Workflow,
@@ -225,6 +226,12 @@ export default function LaboAIPage() {
               <a href="#download">
                 <Download className="size-4" />
                 Download desktop
+              </a>
+            </Button>
+            <Button size="lg" variant="outline" className="h-12 border-violet-400/25 bg-violet-400/[0.06] px-6 text-violet-100 hover:bg-violet-400/[0.12]" asChild>
+              <a href="https://github.com/Complexity-ML/labo-ai/discussions" target="_blank" rel="noopener noreferrer">
+                <MessagesSquare className="size-4" />
+                Community
               </a>
             </Button>
           </div>
