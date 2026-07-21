@@ -24,9 +24,7 @@ export const authOptions: NextAuthOptions = {
         token.provider = account.provider;
         token.providerAccountId = account.providerAccountId;
       }
-      if (user) {
-        token.dbId = user.id; // Prisma user ID
-      }
+      token.dbId = user?.id ?? token.dbId ?? token.sub;
       if (profile) {
         token.name = profile.name;
         token.picture = (profile as Record<string, unknown>).avatar_url as string
@@ -38,8 +36,9 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         // Stable user_id: provider::providerAccountId
-        (session.user as Record<string, unknown>).id =
-          `${token.provider}::${token.providerAccountId}`;
+        (session.user as Record<string, unknown>).id = token.provider && token.providerAccountId
+          ? `${token.provider}::${token.providerAccountId}`
+          : token.dbId;
         // Prisma DB user ID
         (session.user as Record<string, unknown>).dbId = token.dbId;
         session.user.image = token.picture as string;

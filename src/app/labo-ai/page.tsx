@@ -218,7 +218,7 @@ export default function LaboAIPage() {
             <Button size="lg" className="h-12 bg-violet-500 px-6 text-white hover:bg-violet-400" asChild>
               <a href="/labo-ai/live">
                 <Play className="size-4" />
-                Try the web alpha
+                Try the web beta
               </a>
             </Button>
             <Button size="lg" variant="outline" className="h-12 border-white/15 bg-white/5 px-6" asChild>
