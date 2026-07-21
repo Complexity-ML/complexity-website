@@ -22,6 +22,7 @@ interface LaboWorkspacePayload {
   customCards?: unknown[];
   training?: Record<string, unknown>;
   tokenizer?: Record<string, unknown>;
+  settings?: Record<string, unknown>;
 }
 
 function safePayload(value: unknown): LaboWorkspacePayload | undefined {
@@ -44,13 +45,17 @@ function safePayload(value: unknown): LaboWorkspacePayload | undefined {
     if (!body.tokenizer || typeof body.tokenizer !== "object" || Array.isArray(body.tokenizer)) return undefined;
     payload.tokenizer = body.tokenizer as Record<string, unknown>;
   }
+  if ("settings" in body) {
+    if (!body.settings || typeof body.settings !== "object" || Array.isArray(body.settings)) return undefined;
+    payload.settings = body.settings as Record<string, unknown>;
+  }
   return Object.keys(payload).length > 0 ? payload : undefined;
 }
 
 export async function GET() {
   const session = await getServerSession(authOptions);
   const userId = currentUserId(session);
-  if (!userId) return NextResponse.json({ authenticated: false, workspace: null, customCards: [], training: null, tokenizer: null });
+  if (!userId) return NextResponse.json({ authenticated: false, workspace: null, customCards: [], training: null, tokenizer: null, settings: null });
 
   const record = await prisma.conversation.findFirst({
     where: { userId, mode: LABO_WORKSPACE_MODE },
@@ -65,7 +70,7 @@ export async function GET() {
       },
     },
   });
-  if (!record?.messages[0]) return NextResponse.json({ authenticated: true, workspace: null, customCards: [], training: null, tokenizer: null });
+  if (!record?.messages[0]) return NextResponse.json({ authenticated: true, workspace: null, customCards: [], training: null, tokenizer: null, settings: null });
 
   try {
     const payload = safePayload(JSON.parse(record.messages[0].content) as unknown);
@@ -76,10 +81,11 @@ export async function GET() {
       customCards: payload.customCards ?? [],
       training: payload.training ?? null,
       tokenizer: payload.tokenizer ?? null,
+      settings: payload.settings ?? null,
       updatedAt: record.updatedAt.getTime(),
     });
   } catch {
-    return NextResponse.json({ authenticated: true, workspace: null, customCards: [], training: null, tokenizer: null, warning: "The stored workspace could not be restored." });
+    return NextResponse.json({ authenticated: true, workspace: null, customCards: [], training: null, tokenizer: null, settings: null, warning: "The stored workspace could not be restored." });
   }
 }
 
