@@ -29,18 +29,41 @@ function fallbackRelease(): DesktopRelease {
 async function latestDesktopRelease(): Promise<DesktopRelease> {
   try {
     const response = await fetch(`https://api.github.com/repos/${REPOSITORY}/releases/latest`, {
-      headers: { Accept: "application/vnd.github+json" },
-      cache: "no-store",
+      headers: {
+        Accept: "application/vnd.github+json",
+        "User-Agent": "complexity-ai.fr",
+      },
+      next: { revalidate: 3600 },
     });
-    if (!response.ok) return fallbackRelease();
-    const release = await response.json() as GitHubRelease;
-    return {
-      version: release.tag_name.replace(/^v/, ""),
-      releaseUrl: LATEST_RELEASE,
-    };
+    if (response.ok) {
+      const release = await response.json() as GitHubRelease;
+      if (release.tag_name) {
+        return {
+          version: release.tag_name.replace(/^v/, ""),
+          releaseUrl: LATEST_RELEASE,
+        };
+      }
+    }
   } catch {
-    return fallbackRelease();
+    // The public redirect below does not consume the GitHub API quota.
   }
+
+  try {
+    const response = await fetch(LATEST_RELEASE, {
+      method: "HEAD",
+      redirect: "follow",
+      headers: { "User-Agent": "complexity-ai.fr" },
+      next: { revalidate: 3600 },
+    });
+    const tag = response.url.match(/\/releases\/tag\/v?([^/?#]+)/)?.[1];
+    if (response.ok && tag) {
+      return { version: decodeURIComponent(tag), releaseUrl: LATEST_RELEASE };
+    }
+  } catch {
+    // Keep the download link usable even when GitHub is temporarily unavailable.
+  }
+
+  return fallbackRelease();
 }
 
 export default async function LaboDownloads() {
