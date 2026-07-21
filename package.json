@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "postinstall": "prisma generate",
-    "build": "prisma migrate deploy && prisma generate && next build",
-    "db:migrate": "prisma migrate deploy",
+    "build": "prisma db execute --file prisma/migrations/20260721190000_add_labo_workspace_models/migration.sql && prisma generate && next build",
+    "db:migrate": "prisma db execute --file prisma/migrations/20260721190000_add_labo_workspace_models/migration.sql",
     "db:push": "prisma db push --accept-data-loss",
     "start": "next start",
     "lint": "eslint"
