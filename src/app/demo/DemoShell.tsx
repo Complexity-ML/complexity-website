@@ -25,6 +25,7 @@ import { MonitorPanel } from "./MonitorPanel";
 import { ChatSidebar } from "./ChatSidebar";
 import {
   ActivityLog,
+  AILabExitButton,
   AILabPanel,
   AILabRail,
   type ActivityLogEvent,
@@ -314,6 +315,7 @@ export function DemoShell() {
             activeId={null}
             onSelect={(id) => setRightPanel(id as RightPanel)}
           />
+          <AILabExitButton />
 
           <main ref={mainRef} className="relative z-[2] min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
             <div className="mx-auto min-h-full w-full max-w-[820px] min-w-0 px-5 pb-36 pt-20 max-md:px-[108px]">
