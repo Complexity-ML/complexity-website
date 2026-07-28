@@ -33,31 +33,28 @@ export function ChatMessage({ message, mode }: ChatMessageProps) {
     >
       <div
         className={cn(
-          "min-w-0 transition-colors",
+          "relative min-w-0 transition-colors",
           isUser
             ? "max-w-[86%] rounded-[14px] border border-[#394961] bg-[#222d3f]/92 px-[15px] py-3"
             : "w-full",
         )}
       >
-          <div className={cn("flex items-center justify-between gap-3", !isUser && "mb-2.5")}>
-            {!isUser && (
+          {!isUser && (
+            <div className="mb-2.5 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-[0.08em] text-[#9aa8bc]">
                 <span className="flex size-[22px] items-center justify-center rounded-[7px] border border-[#4f4982] bg-[#272442] text-[#b8adff]">
                   <Bot className="size-3" />
                 </span>
                 {MODEL_NAMES[mode]}
               </div>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 text-[#718096] opacity-0 transition-opacity hover:bg-[#222d3f] group-hover:opacity-100"
-              onClick={copyMessage}
-              aria-label="Copy message"
-            >
-              {copied ? <Check className="size-3.5 text-primary" /> : <Copy className="size-3.5" />}
-            </Button>
-          </div>
+              <CopyButton copied={copied} onClick={copyMessage} />
+            </div>
+          )}
+          {isUser && (
+            <div className="absolute right-full top-1/2 mr-1.5 -translate-y-1/2">
+              <CopyButton copied={copied} onClick={copyMessage} />
+            </div>
+          )}
           {isUser ? (
             <p className="whitespace-pre-wrap break-words text-xs leading-5 text-[#dce5f2] [overflow-wrap:anywhere]">{message.content}</p>
           ) : message.content ? (
@@ -70,6 +67,20 @@ export function ChatMessage({ message, mode }: ChatMessageProps) {
           )}
       </div>
     </motion.div>
+  );
+}
+
+function CopyButton({ copied, onClick }: { copied: boolean; onClick: () => void }) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="size-7 shrink-0 text-[#718096] opacity-0 transition-opacity hover:bg-[#222d3f] group-hover:opacity-100"
+      onClick={onClick}
+      aria-label="Copy message"
+    >
+      {copied ? <Check className="size-3.5 text-violet-300" /> : <Copy className="size-3.5" />}
+    </Button>
   );
 }
 
