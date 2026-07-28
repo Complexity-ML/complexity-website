@@ -92,9 +92,9 @@ export default function Navigation() {
             </a>
           </Button>
           <Button size="sm" className="hidden h-9 bg-white px-4 text-black hover:bg-white/85 md:inline-flex" asChild>
-            <Link href="/demo">
+            <Link href="/ai-lab">
               <MessageSquare className="size-3.5" />
-              Open demo
+              Open AI LAB
             </Link>
           </Button>
 
@@ -186,9 +186,9 @@ export default function Navigation() {
                 ) : null}
                 <SheetClose asChild>
                   <Button className="justify-center bg-white text-black hover:bg-white/85" asChild>
-                    <Link href="/demo">
+                    <Link href="/ai-lab">
                       <MessageSquare className="size-4" />
-                      Open demo
+                      Open AI LAB
                     </Link>
                   </Button>
                 </SheetClose>

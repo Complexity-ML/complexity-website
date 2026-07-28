@@ -115,10 +115,10 @@ function TextContent({ content }: { content: string }) {
   const blocks = parseTextBlocks(content);
 
   return (
-    <div className="space-y-3 text-[15px] leading-7 text-foreground/90">
+    <div className="min-w-0 space-y-3 break-words text-[15px] leading-7 text-foreground/90 [overflow-wrap:anywhere]">
       {blocks.map((block, index) => {
         if (block.type === "paragraph") {
-          return <p key={index}>{block.content}</p>;
+          return <p className="max-w-full" key={index}>{block.content}</p>;
         }
 
         const ListTag = block.ordered ? "ol" : "ul";

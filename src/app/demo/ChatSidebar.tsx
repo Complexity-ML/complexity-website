@@ -16,6 +16,7 @@ interface ChatSidebarProps {
   onNew: () => void;
   onDelete: (id: string) => void;
   onToggle: () => void;
+  embedded?: boolean;
 }
 
 function timeAgo(ts: number): string {
@@ -38,12 +39,14 @@ export const ChatSidebar = memo(function ChatSidebar({
   onNew,
   onDelete,
   onToggle,
+  embedded = false,
 }: ChatSidebarProps) {
   return (
     <aside
       className={cn(
-        "flex h-full flex-col border-r border-white/[0.07] bg-[#090b10]/78 backdrop-blur-xl transition-all duration-200",
-        collapsed ? "w-14" : "w-72",
+        "flex h-full flex-col transition-all duration-200",
+        embedded ? "w-full bg-transparent" : "border-r border-white/[0.07] bg-[#090b10]/78 backdrop-blur-xl",
+        collapsed && !embedded ? "w-14" : embedded ? "w-full" : "w-72",
       )}
     >
       {/* Header */}
@@ -56,7 +59,7 @@ export const ChatSidebar = memo(function ChatSidebar({
             onClick={onNew}
           >
             <Plus className="size-4" />
-            New chat
+            {embedded ? "New inference" : "New chat"}
           </Button>
         )}
         {collapsed && (
@@ -64,15 +67,17 @@ export const ChatSidebar = memo(function ChatSidebar({
             <Plus className="size-4" />
           </Button>
         )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8 shrink-0"
-          onClick={onToggle}
-          title={collapsed ? "Expand" : "Collapse"}
-        >
-          {collapsed ? <PanelLeft className="size-4" /> : <PanelLeftClose className="size-4" />}
-        </Button>
+        {!embedded && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 shrink-0"
+            onClick={onToggle}
+            title={collapsed ? "Expand" : "Collapse"}
+          >
+            {collapsed ? <PanelLeft className="size-4" /> : <PanelLeftClose className="size-4" />}
+          </Button>
+        )}
       </div>
 
       {/* Conversation list */}
@@ -84,7 +89,7 @@ export const ChatSidebar = memo(function ChatSidebar({
               <LockKeyhole className="size-4 text-violet-300/70" />
               <p className="mt-3 text-xs font-medium text-white/70">Keep your conversations</p>
               <p className="mt-1 text-[10px] leading-5 text-white/32">The model demo is public. Sign in only if you want saved history and account controls.</p>
-              <Link href="/auth/signin?callbackUrl=%2Fdemo" className="mt-3 inline-flex text-[10px] font-medium text-violet-200 hover:text-white">Sign in →</Link>
+              <Link href="/auth/signin?callbackUrl=%2Fai-lab" className="mt-3 inline-flex text-[10px] font-medium text-violet-200 hover:text-white">Sign in →</Link>
             </div>
           )}
           {authenticated && conversations.length === 0 && (

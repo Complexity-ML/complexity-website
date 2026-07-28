@@ -6,12 +6,13 @@ import type { SamplingParams } from "./useChat";
 interface ParamPanelProps {
   params: SamplingParams;
   onUpdate: <K extends keyof SamplingParams>(key: K, value: SamplingParams[K]) => void;
+  embedded?: boolean;
 }
 
-export function ParamPanel({ params, onUpdate }: ParamPanelProps) {
+export function ParamPanel({ params, onUpdate, embedded = false }: ParamPanelProps) {
   return (
-    <div className="border-b border-border/50 bg-card/50 backdrop-blur-lg px-6 py-4">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 max-w-5xl">
+    <div className={embedded ? "" : "border-b border-border/50 bg-card/50 px-6 py-4 backdrop-blur-lg"}>
+      <div className={embedded ? "grid gap-5" : "grid max-w-5xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6"}>
         <ParamControl label="temperature" value={params.temperature} min={0} max={1.5} step={0.05} onChange={(v) => onUpdate("temperature", v)} />
         <ParamControl label="max_tokens" value={params.maxTokens} min={16} max={4096} step={16} onChange={(v) => onUpdate("maxTokens", v)} />
         <ParamControl label="top_k" value={params.topK} min={0} max={200} step={1} onChange={(v) => onUpdate("topK", v)} />

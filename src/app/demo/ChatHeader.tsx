@@ -46,7 +46,7 @@ export function ChatHeader({
   const modelLabel = MODEL_NAMES[mode];
 
   return (
-    <header className="z-50 shrink-0 border-b border-white/[0.07] bg-[#080a0e]/94 backdrop-blur-2xl">
+    <header className="z-50 shrink-0 border-b border-white/[0.08] bg-[#09111d]/96 backdrop-blur-2xl">
       <div className="flex min-h-16 items-center gap-2 px-3 sm:px-4 lg:px-5">
         <div className="flex shrink-0 items-center gap-3">
           <Link
@@ -56,7 +56,7 @@ export function ChatHeader({
             <LogoMark className="size-8 rounded-lg" />
             <span className="hidden text-sm font-semibold tracking-[0.06em] sm:inline">COMPLEXITY</span>
           </Link>
-          <span className="hidden rounded-md border border-violet-400/15 bg-violet-400/[0.06] px-2 py-1 font-mono text-[8px] uppercase tracking-[0.16em] text-violet-200/65 md:inline">model console</span>
+          <span className="hidden rounded-md border border-violet-400/20 bg-violet-400/[0.08] px-2 py-1 font-mono text-[8px] uppercase tracking-[0.18em] text-violet-100/78 md:inline">AI LAB</span>
         </div>
 
         <div className="scrollbar-none mx-auto flex min-w-0 items-center gap-1 overflow-x-auto rounded-xl border border-white/[0.07] bg-black/20 p-1">
@@ -158,7 +158,7 @@ export function ChatHeader({
             </Button>
           ) : status === "unauthenticated" ? (
             <Button variant="outline" size="sm" className="ml-1 h-9 border-white/10 px-2.5 text-[11px]" asChild>
-              <Link href="/auth/signin?callbackUrl=%2Fdemo"><LogIn className="size-3.5" /><span className="hidden sm:inline">Sign in</span></Link>
+              <Link href="/auth/signin?callbackUrl=%2Fai-lab"><LogIn className="size-3.5" /><span className="hidden sm:inline">Sign in</span></Link>
             </Button>
           ) : <span className="ml-1 size-9 animate-pulse rounded-xl bg-white/[0.04]" />}
         </div>

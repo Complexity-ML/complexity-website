@@ -1,25 +1,58 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import {
+  Activity,
+  CheckCircle2,
+  MessageSquareText,
+  ScrollText,
+  SlidersHorizontal,
+  WandSparkles,
+} from "lucide-react";
 import type { Mode } from "./config";
+import { MODEL_NAMES, SUGGESTIONS } from "./config";
 import { useChat } from "./useChat";
 import { useCompare } from "./useCompare";
 import { useConversations } from "./useConversations";
-import { ChatHeader } from "./ChatHeader";
 import { ParamPanel } from "./ParamPanel";
-import { ChatMessage, LoadingBubble, ErrorBanner } from "./ChatMessage";
+import { ChatMessage, ErrorBanner } from "./ChatMessage";
 import { CompareView } from "./CompareView";
 import { ChatInput } from "./ChatInput";
 import { MonitorPanel } from "./MonitorPanel";
-import { WelcomeScreen } from "./WelcomeScreen";
 import { ChatSidebar } from "./ChatSidebar";
+import {
+  ActivityLog,
+  AILabPanel,
+  AILabRail,
+  type ActivityLogEvent,
+} from "@/components/ai-lab";
 
 const MODES: Mode[] = ["TR-MoE", "compare", "dense"];
+type LeftPanel = "chats" | "prompts" | "logs";
+type RightPanel = "model" | "metrics" | "results";
+
+const LEFT_RAIL = [
+  { id: "chats", label: "Chats", icon: MessageSquareText },
+  { id: "prompts", label: "Prompts", icon: WandSparkles },
+  { id: "logs", label: "Live logs", icon: ScrollText },
+];
+
+const RIGHT_RAIL = [
+  { id: "model", label: "Model", icon: SlidersHorizontal },
+  { id: "metrics", label: "Metrics", icon: Activity },
+  { id: "results", label: "Results", icon: CheckCircle2 },
+];
 
 function parseMode(mode: string | null): Mode {
   return MODES.includes(mode as Mode) ? (mode as Mode) : "TR-MoE";
+}
+
+function shortTitle(value: string) {
+  const compact = value.replace(/\s+/g, " ").trim();
+  if (!compact) return "New inference";
+  return compact.length > 64 ? `${compact.slice(0, 64)}…` : compact;
 }
 
 export function DemoShell() {
@@ -33,18 +66,46 @@ export function DemoShell() {
   const convos = useConversations(userId);
 
   const [activeMode, setActiveMode] = useState<Mode>(initialMode);
-
-  const [showParams, setShowParams] = useState(false);
-  const [showMonitor, setShowMonitor] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [leftPanel, setLeftPanel] = useState<LeftPanel | null>(null);
+  const [rightPanel, setRightPanel] = useState<RightPanel | null>(null);
   const mainRef = useRef<HTMLElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const userScrolledUp = useRef(false);
 
   const isCompare = activeMode === "compare";
+  const suggestions = useMemo(
+    () => SUGGESTIONS[activeMode]
+      .flatMap((group) => group.prompts.slice(0, 2).map((prompt) => ({ label: group.label, prompt })))
+      .slice(0, 6),
+    [activeMode],
+  );
 
-  // When active conversation changes, load its messages
+  const activityEvents = useMemo<ActivityLogEvent[]>(() => {
+    const events = chat.messages.map<ActivityLogEvent>((message, index) => ({
+      id: `activity-${index}`,
+      label: message.role === "user"
+        ? "Prompt accepted"
+        : message.content
+          ? "Inference completed"
+          : "Model is generating",
+      detail: message.content || "Waiting for the first streamed tokens…",
+      kind: message.role === "user" ? "prompt" as const : "model" as const,
+      active: message.role === "assistant" && !message.content,
+    })).reverse();
+
+    if (chat.streaming) {
+      events.unshift({
+        id: "activity-streaming",
+        label: "Live generation in progress",
+        detail: `${chat.tokenStats?.tokens ?? 0} tokens received from ${MODEL_NAMES[chat.mode]}`,
+        kind: "system",
+        active: true,
+      });
+    }
+    return events;
+  }, [chat.messages, chat.mode, chat.streaming, chat.tokenStats?.tokens]);
+
   useEffect(() => {
     if (convos.activeConversation) {
       chat.loadMessages(convos.activeConversation.messages);
@@ -57,7 +118,6 @@ export function DemoShell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [convos.activeId]);
 
-  // Save messages only when streaming/loading finishes (not on every token)
   const prevStreaming = useRef(false);
   useEffect(() => {
     const wasActive = prevStreaming.current;
@@ -70,16 +130,15 @@ export function DemoShell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chat.messages, chat.streaming, chat.loading]);
 
-  // Auto-scroll
   useEffect(() => {
-    const el = mainRef.current;
-    if (!el) return;
+    const element = mainRef.current;
+    if (!element) return;
     const onScroll = () => {
-      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+      const atBottom = element.scrollHeight - element.scrollTop - element.clientHeight < 150;
       userScrolledUp.current = !atBottom;
     };
-    el.addEventListener("scroll", onScroll);
-    return () => el.removeEventListener("scroll", onScroll);
+    element.addEventListener("scroll", onScroll);
+    return () => element.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
@@ -88,11 +147,10 @@ export function DemoShell() {
     }
   }, [chat.messages, chat.streaming]);
 
-  // Mode switching
-  const handleSwitchMode = useCallback((m: Mode) => {
-    if (m === activeMode) return;
-    chat.switchMode(m);
-    setActiveMode(m);
+  const handleSwitchMode = useCallback((mode: Mode) => {
+    if (mode === activeMode) return;
+    chat.switchMode(mode);
+    setActiveMode(mode);
     inputRef.current?.focus();
   }, [activeMode, chat]);
 
@@ -101,7 +159,6 @@ export function DemoShell() {
       compare.sendMessage();
       return;
     }
-
     if (!convos.activeId && chat.input.trim()) {
       if (convos.isFull) return;
       convos.createConversation(chat.mode);
@@ -129,120 +186,158 @@ export function DemoShell() {
   const handleClear = useCallback(() => {
     if (isCompare) {
       compare.clearResults();
-      inputRef.current?.focus();
-      return;
-    }
-    chat.clearChat();
-    if (convos.activeId) {
-      convos.deleteConversation(convos.activeId);
+    } else {
+      chat.clearChat();
+      if (convos.activeId) convos.deleteConversation(convos.activeId);
     }
     inputRef.current?.focus();
   }, [isCompare, compare, chat, convos]);
 
   const handleStop = useCallback(() => {
-    if (isCompare) {
-      compare.stopGeneration();
-    } else {
-      chat.stopGeneration();
-    }
+    if (isCompare) compare.stopGeneration();
+    else chat.stopGeneration();
   }, [isCompare, compare, chat]);
 
-  const showCompareWelcome = isCompare && compare.results.length === 0 && !compare.loading && !compare.streaming;
-  const showChatWelcome = !isCompare && chat.messages.length === 0 && !chat.loading && !chat.streaming;
+  const handlePromptSelection = useCallback((prompt: string) => {
+    setLeftPanel(null);
+    if (isCompare) {
+      compare.sendMessage(prompt);
+      return;
+    }
+    if (!convos.activeId) {
+      if (convos.isFull) return;
+      convos.createConversation(chat.mode);
+    }
+    chat.sendMessage(prompt);
+  }, [chat, compare, convos, isCompare]);
+
+  const inputValue = isCompare ? compare.input : chat.input;
+  const messageCount = isCompare ? compare.results.length * 3 : chat.messages.length;
+  const runCount = isCompare
+    ? compare.results.length
+    : chat.messages.filter((message) => message.role === "user").length;
+  const conversationTitle = isCompare
+    ? "Compare routed and dense output"
+    : convos.activeConversation?.title
+      ?? shortTitle(chat.messages.find((message) => message.role === "user")?.content ?? "");
+  const publicLabel = activeMode === "compare" ? "COMPARE MODE" : "PUBLIC INFERENCE";
+  const activeParams = isCompare ? compare.params : chat.params;
+  const updateParams = isCompare ? compare.updateParam : chat.updateParam;
+  const activeHealth = isCompare ? compare.healthStatus : chat.healthStatus;
 
   return (
-    <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#07090d]">
-      <div className="hairline-grid pointer-events-none absolute inset-0 opacity-20" />
-      <ChatHeader
-        mode={activeMode}
-        streaming={isCompare ? compare.streaming : chat.streaming}
-        showParams={showParams}
-        showMonitor={showMonitor}
-        health={isCompare ? compare.healthStatus : chat.healthStatus}
-        onSwitchMode={handleSwitchMode}
-        onToggleParams={() => setShowParams(!showParams)}
-        onToggleMonitor={() => setShowMonitor(!showMonitor)}
-        onClear={handleClear}
-      />
-
-      {showParams && <ParamPanel params={chat.params} onUpdate={chat.updateParam} />}
-      {showMonitor && (
-        <MonitorPanel
-          health={chat.healthStatus}
-          snapshot={chat.snapshot}
-        />
-      )}
-
-      <div className="relative flex flex-1 overflow-hidden">
-        {/* Sidebar — hidden on mobile, hidden in compare mode */}
-        {!isCompare && (
-          <div className="hidden md:flex">
+    <div className="flex h-[100dvh] overflow-hidden bg-[#111722] text-[#e8eef7]">
+      <section className="relative flex min-w-0 flex-1 overflow-hidden">
+        {leftPanel === "chats" && (
+          <AILabPanel eyebrow="workspace" title="Chats" onClose={() => setLeftPanel(null)}>
             <ChatSidebar
               conversations={convos.conversations}
               activeId={convos.activeId}
-              collapsed={sidebarCollapsed}
+              collapsed={false}
               authenticated={!!userId}
-              onSelect={handleSelectConvo}
+              onSelect={(id) => {
+                handleSelectConvo(id);
+                setLeftPanel(null);
+              }}
               onNew={handleNewChat}
               onDelete={convos.deleteConversation}
-              onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+              onToggle={() => {}}
+              embedded
             />
-          </div>
+          </AILabPanel>
         )}
 
-        {/* Main content area */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <main ref={mainRef} className="flex-1 overflow-y-auto">
-            {(showCompareWelcome || showChatWelcome) ? (
-              <WelcomeScreen
-                mode={activeMode}
-                totalRequests={isCompare ? null : chat.totalRequests}
-                onSelectPrompt={(prompt) => {
-                  if (isCompare) {
-                    compare.sendMessage(prompt);
-                  } else {
-                    if (!convos.activeId) {
-                      if (convos.isFull) return;
-                      convos.createConversation(chat.mode);
-                    }
-                    chat.sendMessage(prompt);
-                  }
-                }}
-              />
-            ) : (
-              <div className={`mx-auto space-y-7 px-4 py-7 sm:px-6 sm:py-10 ${isCompare ? "max-w-7xl" : "max-w-5xl"}`}>
-                {isCompare ? (
-                  <>
-                    <CompareView
-                      results={compare.results}
-                      denseContent={compare.denseContent}
-                      chatContent={compare.chatContent}
-                      denseTokens={compare.denseTokens}
-                      chatTokens={compare.chatTokens}
-                      streaming={compare.streaming}
-                    />
-                    {compare.error && <ErrorBanner message={compare.error} />}
-                  </>
-                ) : (
-                  <>
-                    {chat.messages.map((msg, i) => (
-                      <ChatMessage key={i} message={msg} mode={chat.mode} />
-                    ))}
-                    {chat.loading && <LoadingBubble mode={chat.mode} />}
-                    {chat.error && <ErrorBanner message={chat.error} />}
-                  </>
-                )}
-                <div ref={messagesEndRef} />
+        {leftPanel === "prompts" && (
+          <AILabPanel eyebrow="inference" title="Prompts" onClose={() => setLeftPanel(null)}>
+            <p className="mb-3 font-mono text-[8px] uppercase tracking-[0.16em] text-[#718096]">Suggested prompts</p>
+            <div className="space-y-2">
+              {suggestions.map((suggestion) => (
+                <button
+                  key={`${suggestion.label}-${suggestion.prompt}`}
+                  type="button"
+                  onClick={() => handlePromptSelection(suggestion.prompt)}
+                  className="w-full rounded-lg border border-[#2c3a50] bg-[#222d3f] p-3 text-left transition-colors hover:border-[#40516d] hover:bg-[#29364a]"
+                >
+                  <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-violet-300/65">{suggestion.label}</span>
+                  <span className="mt-1.5 line-clamp-3 block text-[10px] leading-4 text-[#cbd6e5]">{suggestion.prompt}</span>
+                </button>
+              ))}
+            </div>
+          </AILabPanel>
+        )}
+
+        {leftPanel === "logs" && (
+          <AILabPanel eyebrow="live" title="Activity log" onClose={() => setLeftPanel(null)}>
+            <ActivityLog events={activityEvents} />
+          </AILabPanel>
+        )}
+
+        <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-[#111722]">
+          <div className="ai-lab-grid pointer-events-none absolute inset-0 opacity-80" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(19,29,44,.08),rgba(10,15,24,.44)_72%)]" />
+
+          <div className="pointer-events-none absolute inset-x-0 top-3 z-20 flex items-center justify-between px-3.5">
+            <span className="inline-flex h-7 items-center gap-2 rounded-lg border border-[#40516d] bg-[#1b2433]/95 px-2.5 text-[9px] font-semibold text-[#c5d0df] shadow-[0_5px_18px_rgba(0,0,0,.12)] backdrop-blur-xl">
+              <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_3px_rgba(74,222,128,.08)]" />
+              Live inference
+            </span>
+            <span className="h-7 rounded-lg border border-[#40516d] bg-[#1b2433]/95 px-2.5 font-mono text-[9px] leading-[26px] text-[#9aa8bc] shadow-[0_5px_18px_rgba(0,0,0,.12)] backdrop-blur-xl">
+              {messageCount} messages <span className="text-[#53647c]">·</span> {runCount} runs
+            </span>
+          </div>
+
+          <AILabRail
+            side="left"
+            items={LEFT_RAIL.filter((item) => item.id !== leftPanel)}
+            activeId={null}
+            onSelect={(id) => setLeftPanel(id as LeftPanel)}
+          />
+          <AILabRail
+            side="right"
+            items={RIGHT_RAIL.filter((item) => item.id !== rightPanel)}
+            activeId={null}
+            onSelect={(id) => setRightPanel(id as RightPanel)}
+          />
+
+          <main ref={mainRef} className="relative z-[2] min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+            <div className="mx-auto min-h-full w-full max-w-[820px] min-w-0 px-5 pb-36 pt-20 max-md:px-[108px]">
+              <div className="mb-10 flex min-w-0 flex-nowrap items-center gap-2.5">
+                <h1 className="min-w-0 flex-1 truncate text-base font-semibold tracking-[-0.025em] text-[#e8eef7]">{conversationTitle}</h1>
+                <span className="shrink-0 rounded-full border border-[#494066] bg-[#27233d] px-2 py-1 font-mono text-[8px] font-bold tracking-[0.1em] text-[#b8a9ff]">
+                  {publicLabel}
+                </span>
               </div>
-            )}
+
+              {isCompare ? (
+                <>
+                  <CompareView
+                    results={compare.results}
+                    denseContent={compare.denseContent}
+                    chatContent={compare.chatContent}
+                    denseTokens={compare.denseTokens}
+                    chatTokens={compare.chatTokens}
+                    streaming={compare.streaming}
+                  />
+                  {compare.error && <ErrorBanner message={compare.error} />}
+                </>
+              ) : (
+                <div className="space-y-8">
+                  {chat.messages.map((message, index) => (
+                    <ChatMessage key={index} message={message} mode={chat.mode} />
+                  ))}
+                  {chat.error && <ErrorBanner message={chat.error} />}
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
           </main>
 
           <ChatInput
             mode={activeMode}
-            input={isCompare ? compare.input : chat.input}
+            input={inputValue}
             loading={isCompare ? compare.loading : chat.loading}
             streaming={isCompare ? compare.streaming : chat.streaming}
-            maxTokens={isCompare ? compare.params.maxTokens : chat.params.maxTokens}
+            maxTokens={activeParams.maxTokens}
             tokenStats={isCompare ? null : chat.tokenStats}
             onInputChange={isCompare ? compare.setInput : chat.setInput}
             onSend={handleSend}
@@ -250,7 +345,91 @@ export function DemoShell() {
             inputRef={inputRef}
           />
         </div>
-      </div>
+
+        {rightPanel === "model" && (
+          <AILabPanel eyebrow="inference" title="Model" side="right" onClose={() => setRightPanel(null)}>
+            <p className="mb-3 font-mono text-[8px] uppercase tracking-[0.16em] text-[#718096]">Active model</p>
+            <div className="mb-6 space-y-1.5">
+              {MODES.map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => handleSwitchMode(mode)}
+                  className={`flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-[10px] transition-colors ${
+                    activeMode === mode
+                      ? "border-violet-400/50 bg-violet-400/10 text-violet-100"
+                      : "border-[#2c3a50] bg-[#222d3f] text-[#9aa8bc] hover:border-[#40516d] hover:text-[#e8eef7]"
+                  }`}
+                >
+                  <span>{MODEL_NAMES[mode]}</span>
+                  {activeMode === mode && <span className="size-1.5 rounded-full bg-violet-300" />}
+                </button>
+              ))}
+            </div>
+            <p className="mb-4 font-mono text-[8px] uppercase tracking-[0.16em] text-[#718096]">Generation</p>
+            <ParamPanel params={activeParams} onUpdate={updateParams} embedded />
+          </AILabPanel>
+        )}
+
+        {rightPanel === "metrics" && (
+          <AILabPanel eyebrow="live" title="Metrics" side="right" onClose={() => setRightPanel(null)}>
+            <MonitorPanel health={activeHealth} snapshot={isCompare ? null : chat.snapshot} embedded />
+            <div className="mt-5 divide-y divide-[#2c3a50] border-y border-[#2c3a50]">
+              <MetricRow label="Output tokens" value={isCompare ? `${compare.denseTokens + compare.chatTokens}` : `${chat.tokenStats?.tokens ?? 0}`} />
+              <MetricRow label="Elapsed" value={chat.tokenStats ? `${chat.tokenStats.elapsed.toFixed(1)} s` : "—"} />
+              <MetricRow
+                label="Throughput"
+                value={chat.tokenStats?.elapsed
+                  ? `${(chat.tokenStats.tokens / chat.tokenStats.elapsed).toFixed(1)} tok/s`
+                  : "—"}
+              />
+              <MetricRow label="Requests" value={`${runCount}`} />
+            </div>
+          </AILabPanel>
+        )}
+
+        {rightPanel === "results" && (
+          <AILabPanel eyebrow="run" title="Results" side="right" onClose={() => setRightPanel(null)}>
+            <div className="divide-y divide-[#2c3a50] border-y border-[#2c3a50]">
+              <ResultRow
+                title={isCompare ? "Comparison state" : "Latest inference"}
+                detail={messageCount ? `${messageCount} messages across ${runCount} run${runCount === 1 ? "" : "s"}.` : "No inference has run yet."}
+              />
+              <ResultRow title="Model" detail={MODEL_NAMES[activeMode]} />
+              <ResultRow
+                title="Status"
+                detail={(isCompare ? compare.streaming : chat.streaming) ? "Generation in progress" : "Ready for another prompt"}
+                success={!(isCompare ? compare.streaming : chat.streaming)}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleClear}
+              className="mt-5 w-full rounded-lg border border-[#40516d] bg-[#222d3f] px-3 py-2.5 text-[10px] font-semibold text-[#cdd7e5] transition-colors hover:bg-[#29364a]"
+            >
+              Clear current run
+            </button>
+          </AILabPanel>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function MetricRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between py-3 text-[10px]">
+      <span className="text-[#9aa8bc]">{label}</span>
+      <strong className="font-mono font-semibold text-[#e8eef7]">{value}</strong>
+    </div>
+  );
+}
+
+function ResultRow({ title, detail, success = false }: { title: string; detail: string; success?: boolean }) {
+  return (
+    <div className="py-3">
+      <p className="text-[10px] font-semibold text-[#e8eef7]">{title}</p>
+      <p className={`mt-1 text-[9px] leading-4 ${success ? "text-emerald-300" : "text-[#718096]"}`}>{detail}</p>
     </div>
   );
 }

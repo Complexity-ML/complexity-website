@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import { CornerDownLeft, SendHorizonal, Square } from "lucide-react";
+import { SendHorizonal, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import type { Mode } from "./config";
-import { FOOTERS } from "./config";
 import type { TokenStats } from "./useChat";
 
 interface ChatInputProps {
@@ -39,6 +38,12 @@ export function ChatInput({
     inputRef.current?.focus();
   }, [inputRef]);
 
+  useEffect(() => {
+    if (!input && inputRef.current) {
+      inputRef.current.style.height = "38px";
+    }
+  }, [input, inputRef]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape" && streaming) {
       e.preventDefault();
@@ -51,33 +56,29 @@ export function ChatInput({
   };
 
   return (
-    <div className="relative bg-gradient-to-t from-[#07090d] via-[#07090d]/96 to-transparent px-3 pb-3 pt-5 sm:px-6 sm:pb-5">
-      <div className="mx-auto max-w-5xl">
-        <div className="rounded-2xl border border-white/[0.1] bg-[#0d1016]/95 p-2 shadow-[0_24px_80px_rgba(0,0,0,.42)] backdrop-blur-2xl transition-colors focus-within:border-emerald-300/30">
-          <div className="flex items-center justify-between gap-3 px-2 pb-1.5">
-            <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/25">{mode === "compare" ? "dual inference" : "model input"}</span>
-            <span className="flex items-center gap-1.5 font-mono text-[8px] text-emerald-300/55"><span className="size-1.5 rounded-full bg-emerald-300" /> ready</span>
-          </div>
+    <div className="relative z-10 bg-gradient-to-t from-[#111722] via-[#111722]/96 to-transparent px-3 pb-2 pt-10 sm:px-6">
+      <div className="mx-auto w-full max-w-[720px] min-w-0">
+        <div className="rounded-[15px] border border-[#40516d] bg-[#1b2433]/98 p-2 shadow-[0_18px_44px_rgba(0,0,0,.3)] backdrop-blur-2xl transition-colors focus-within:border-violet-300/50">
           <div className="flex items-end gap-2">
           <Textarea
             ref={inputRef}
             value={input}
             onChange={(e) => onInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={mode === "compare" ? "Send one prompt to both models…" : "Ask the demo model for a continuation…"}
+            placeholder={mode === "compare" ? "Send one prompt to both models…" : "Ask AI LAB…"}
             rows={1}
-            className="min-h-[48px] max-h-[140px] resize-none border-0 bg-transparent px-2 text-sm shadow-none placeholder:text-white/22 focus-visible:ring-0"
+            className="field-sizing-fixed h-[38px] min-h-[38px] max-h-[88px] resize-none overflow-x-hidden overflow-y-auto break-words border-0 bg-transparent px-2 py-2.5 text-[11px] text-[#e8eef7] shadow-none [overflow-wrap:anywhere] placeholder:text-[#738198] focus-visible:ring-0"
             onInput={(e) => {
               const target = e.target as HTMLTextAreaElement;
               target.style.height = "auto";
-              target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
+              target.style.height = `${Math.min(target.scrollHeight, 88)}px`;
             }}
           />
           {streaming || loading ? (
             <Button
               onClick={onStop}
               size="icon"
-              className="size-11 shrink-0 rounded-xl bg-accent-purple-deep text-white shadow-[0_0_20px_var(--accent-purple-deep),0_0_60px_var(--accent-purple-bg)] hover:bg-accent-purple"
+              className="size-[38px] shrink-0 rounded-[10px] bg-violet-500 text-white shadow-[0_7px_18px_rgba(124,108,242,.25)] hover:bg-violet-400"
             >
               <Square className="size-4" />
             </Button>
@@ -86,18 +87,14 @@ export function ChatInput({
               onClick={onSend}
               disabled={!input.trim() || loading}
               size="icon"
-              className="size-11 shrink-0 rounded-xl bg-emerald-300 text-black hover:bg-emerald-200"
+              className="size-[38px] shrink-0 rounded-[10px] bg-gradient-to-br from-[#7c6cf2] to-[#9a80ff] text-white shadow-[0_7px_18px_rgba(124,108,242,.25)] hover:brightness-110"
             >
               <SendHorizonal className="size-4" />
             </Button>
           )}
         </div>
         </div>
-        <div className="mt-2 flex items-center justify-between gap-3 px-1">
-          <p className="hidden truncate font-mono text-[9px] text-white/22 lg:block">{FOOTERS[mode]}</p>
-          <p className="flex items-center gap-1 font-mono text-[9px] text-white/22">
-            <CornerDownLeft className="size-3" /> send · shift enter newline
-          </p>
+        <div className="mt-2 flex items-center justify-end gap-3 px-1">
           {tokenStats && tokenStats.tokens > 0 && (
             <TokenStatsDisplay stats={tokenStats} maxTokens={maxTokens} />
           )}
@@ -117,7 +114,7 @@ function TokenStatsDisplay({ stats, maxTokens }: { stats: TokenStats; maxTokens:
         />
       )}
       <p className={cn(
-        "text-[10px] font-mono flex items-center gap-2",
+        "flex items-center gap-2 font-mono text-[9px]",
         stats.streaming ? "text-accent-purple" : "text-accent-green/60",
       )}>
         {stats.streaming && (

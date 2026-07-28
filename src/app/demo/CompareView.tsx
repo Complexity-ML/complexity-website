@@ -1,11 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { GitCompareArrows } from "lucide-react";
 import CodeBlock from "@/components/CodeBlock";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import type { CompareResult } from "./useCompare";
 
 interface CompareViewProps {
@@ -43,21 +39,21 @@ function ModelColumn({
   streaming: boolean;
 }) {
   return (
-    <Card className="lab-surface min-w-0 flex-1 border-white/[0.08] bg-card/45 shadow-none">
-      <CardHeader className="border-b border-border/45 pb-3">
+    <section className="min-w-0 flex-1 border-l border-[#40516d] pl-4">
+      <header className="mb-3 border-b border-[#2c3a50] pb-3">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline" className={cn("font-mono text-[10px]", labelColor)}>
+          <span className={`font-mono text-[9px] font-bold uppercase tracking-[0.08em] ${labelColor}`}>
             {label}
-          </Badge>
+          </span>
           {streaming && tokens > 0 && (
-            <Badge className="border-accent-purple/30 bg-accent-purple/15 font-mono text-[10px] text-accent-purple">
+            <span className="font-mono text-[8px] text-violet-300">
               streaming
-            </Badge>
+            </span>
           )}
           <StatBadge tokens={tokens} elapsed={elapsed} />
         </div>
-      </CardHeader>
-      <CardContent className="min-h-[120px] p-4">
+      </header>
+      <div className="min-h-[120px]">
         {content ? (
           <CodeBlock content={content} />
         ) : streaming ? (
@@ -74,8 +70,8 @@ function ModelColumn({
         ) : (
           <p className="text-sm italic text-muted-foreground">Waiting…</p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -96,7 +92,7 @@ function CompareRun({
       className="space-y-3"
     >
       {prompt && (
-        <div className="rounded-2xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm">
+        <div className="ml-auto max-w-[86%] rounded-[14px] border border-[#394961] bg-[#222d3f]/92 px-[15px] py-3 text-xs leading-5 text-[#dce5f2]">
           {prompt}
         </div>
       )}
@@ -132,20 +128,6 @@ export function CompareView({
 }: CompareViewProps) {
   return (
     <div className="space-y-6">
-      <div className="lab-surface rounded-2xl p-4">
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl border border-primary/25 bg-primary/10 p-2 text-primary">
-            <GitCompareArrows className="size-4" />
-          </div>
-          <div>
-            <CardTitle className="text-base">Qualitative model comparison</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Same prompt, two decoding paths. Use this to inspect behavior, not as a benchmark table.
-            </p>
-          </div>
-        </div>
-      </div>
-
       {results.map((r, i) => (
         <CompareRun key={i} prompt={r.prompt} dense={r.dense} routed={r.chat} />
       ))}

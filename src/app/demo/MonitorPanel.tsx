@@ -8,12 +8,13 @@ import type { MonitorData } from "./useChat";
 interface MonitorPanelProps {
   health: "ok" | "degraded" | "offline";
   snapshot: MonitorData | null;
+  embedded?: boolean;
 }
 
-export function MonitorPanel({ health, snapshot }: MonitorPanelProps) {
+export function MonitorPanel({ health, snapshot, embedded = false }: MonitorPanelProps) {
   return (
-    <div className="border-b border-border/50 bg-card/30 backdrop-blur-lg px-6 py-3">
-      <div className="flex flex-wrap items-center gap-6">
+    <div className={embedded ? "" : "border-b border-border/50 bg-card/30 px-6 py-3 backdrop-blur-lg"}>
+      <div className={embedded ? "grid gap-4" : "flex flex-wrap items-center gap-6"}>
         <Badge
           variant="outline"
           className="gap-1.5 font-mono text-[10px]"
