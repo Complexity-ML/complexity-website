@@ -9,6 +9,7 @@ const citation = `@article{anonymous2026tokenidentity,
   title={Token identity provides a fixed routing signal for residual experts in language models},
   author={Anonymous},
   journal={Research manuscript},
+  note={Nature Machine Intelligence Article edition},
   year={2026},
   url={https://www.complexity-ai.fr/papers/token-identity-routing-residual-experts.pdf}
 }`;
@@ -34,7 +35,7 @@ export default function Publications() {
         <article className="grid overflow-hidden rounded-2xl border border-white/[0.075] bg-white/[0.025] lg:grid-cols-[1.15fr_0.85fr]">
           <div className="flex min-h-[430px] flex-col p-6 sm:p-8 lg:p-10 xl:p-12">
             <div className="flex items-center justify-between">
-              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/[0.07] px-3 py-1 font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-200">2026 manuscript</span>
+              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/[0.07] px-3 py-1 font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-200">Nature Machine Intelligence edition · 2026</span>
               <BookOpen className="size-5 text-white/24" />
             </div>
             <div className="mt-auto pt-20">
@@ -42,11 +43,11 @@ export default function Publications() {
                 Token identity provides a fixed routing signal for residual experts in language models
               </h3>
               <p className="mt-5 max-w-3xl text-sm leading-7 text-white/48 sm:text-base">
-                A parameter- and token-matched study of fixed token routing, dense shared computation and narrow residual experts—with standard task evaluation and learned-router controls.
+                An eight-page Article edition of the parameter- and token-matched routing study, including standard task evaluation, short- and full-budget learned-router controls, explicit limitations and reproducibility artifacts.
               </p>
               <Button className="mt-8 bg-white text-black hover:bg-white/85" asChild>
                 <a href="/papers/token-identity-routing-residual-experts.pdf" target="_blank" rel="noopener noreferrer">
-                  Read hosted paper
+                  Read Nature edition
                   <ArrowUpRight className="size-4" />
                 </a>
               </Button>
@@ -67,6 +68,7 @@ export default function Publications() {
                 <span className="text-sky-300">  title</span>{`={Token identity provides a fixed routing signal for residual experts in language models},\n`}
                 <span className="text-sky-300">  author</span>{`={Anonymous},\n`}
                 <span className="text-sky-300">  journal</span>{`={Research manuscript},\n`}
+                <span className="text-sky-300">  note</span>{`={Nature Machine Intelligence Article edition},\n`}
                 <span className="text-sky-300">  year</span>{`={2026},\n`}
                 <span className="text-sky-300">  url</span>{`={https://www.complexity-ai.fr/papers/token-identity-routing-residual-experts.pdf}\n}`}
               </code>
