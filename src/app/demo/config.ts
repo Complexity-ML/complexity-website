@@ -1,5 +1,7 @@
 export type Mode = "TR-MoE" | "compare" | "dense";
 
+export const AGENT_MODE_ENABLED = process.env.NEXT_PUBLIC_AGENT_MODE_ENABLED === "true";
+
 export interface Message {
   role: "user" | "assistant";
   content: string;

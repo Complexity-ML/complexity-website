@@ -13,7 +13,7 @@ import {
   WandSparkles,
 } from "lucide-react";
 import type { Mode } from "./config";
-import { MAINTENANCE, SUGGESTIONS } from "./config";
+import { AGENT_MODE_ENABLED, MAINTENANCE, SUGGESTIONS } from "./config";
 import { useChat } from "./useChat";
 import { useCompare } from "./useCompare";
 import { useConversations } from "./useConversations";
@@ -41,7 +41,7 @@ type RightPanel = "model" | "metrics" | "results";
 const LEFT_RAIL = [
   { id: "chats", label: "Chats", icon: MessageSquareText },
   { id: "prompts", label: "Prompts", icon: WandSparkles },
-  { id: "agent", label: "Agent", icon: Bot },
+  ...(AGENT_MODE_ENABLED ? [{ id: "agent", label: "Agent", icon: Bot }] : []),
   { id: "logs", label: "Live logs", icon: ScrollText },
 ];
 
@@ -70,7 +70,7 @@ export function DemoShell() {
   const chat = useChat(initialMode === "dense" ? "dense" : initialMode === "compare" ? "TR-MoE" : initialMode);
   const compare = useCompare();
   const convos = useConversations(userId);
-  const sourceAgent = useSourceAgent();
+  const sourceAgent = useSourceAgent(AGENT_MODE_ENABLED);
   const { labels: modelLabels } = useModelMetadata();
 
   const [activeMode, setActiveMode] = useState<Mode>(initialMode);
@@ -118,7 +118,7 @@ export function DemoShell() {
         kind: "system" as const,
         active: event.active,
       })));
-    if (sourceAgent.subagentEnabled) {
+    if (AGENT_MODE_ENABLED && sourceAgent.subagentEnabled) {
       events.unshift({
         id: "activity-subagent-armed",
         label: "Research subagent armed",
@@ -195,7 +195,9 @@ export function DemoShell() {
       if (convos.isFull) return;
       convos.createConversation(chat.mode);
     }
-    chat.sendMessage(undefined, { research: sourceAgent.subagentEnabled });
+    chat.sendMessage(undefined, {
+      research: AGENT_MODE_ENABLED && sourceAgent.subagentEnabled,
+    });
   }, [isCompare, compare, convos, chat, sourceAgent.subagentEnabled]);
 
   const handleNewChat = useCallback(() => {
@@ -240,7 +242,9 @@ export function DemoShell() {
       if (convos.isFull) return;
       convos.createConversation(chat.mode);
     }
-    chat.sendMessage(prompt, { research: sourceAgent.subagentEnabled });
+    chat.sendMessage(prompt, {
+      research: AGENT_MODE_ENABLED && sourceAgent.subagentEnabled,
+    });
   }, [chat, compare, convos, isCompare, sourceAgent.subagentEnabled]);
 
   const inputValue = isCompare ? compare.input : chat.input;
@@ -314,7 +318,7 @@ export function DemoShell() {
           </AILabPanel>
         )}
 
-        {leftPanel === "agent" && (
+        {AGENT_MODE_ENABLED && leftPanel === "agent" && (
           <AILabPanel eyebrow="AI LAB" title="Research agent" onClose={() => setLeftPanel(null)}>
             <AgentPanel
               status={sourceAgent.status}
