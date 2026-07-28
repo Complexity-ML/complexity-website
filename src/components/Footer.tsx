@@ -25,9 +25,9 @@ const groups = [
     title: "Research",
     links: [
       { label: "Hosted paper", href: "/papers/token-identity-routing-residual-experts.pdf" },
-      { label: "Complexity-Deep", href: "https://github.com/Complexity-ML/complexity-deep" },
+      { label: "Paper artifacts", href: "https://github.com/Complexity-ML/tmlr-paper-pool" },
       { label: "vllm-i64", href: "https://github.com/Complexity-ML/vllm-i64" },
-      { label: "PyPI", href: "https://pypi.org/project/complexity-deep/" },
+      { label: "306M models", href: "https://huggingface.co/Pacific-i64" },
     ],
   },
   {
