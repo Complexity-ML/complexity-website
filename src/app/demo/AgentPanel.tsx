@@ -16,9 +16,9 @@ interface AgentPanelProps {
 }
 
 function statusCopy(status: ResearchAgentStatus) {
-  if (status === "online") return "Research agent ready";
-  if (status === "checking") return "Waking the research agent…";
-  return "Research agent unavailable";
+  if (status === "online") return "Fantasy research agent ready";
+  if (status === "checking") return "Opening the fantasy catalog…";
+  return "Fantasy catalog unavailable";
 }
 
 export function AgentPanel({
@@ -51,17 +51,17 @@ export function AgentPanel({
           </button>
         </div>
         <p className="mt-2 text-[9px] leading-4 text-[#7f8da1]">
-          A managed, read-only agent gives AI LAB access to verified source material when research is required.
+          A managed, read-only agent retrieves canonical characters, places, factions, creatures, artifacts, quests and events.
         </p>
       </div>
 
       <div className="rounded-xl border border-violet-400/25 bg-violet-400/[0.06] p-3">
         <div className="flex items-center gap-2 text-violet-100">
           <BrainCircuit className="size-4" />
-          <p className="text-[10px] font-semibold">Source-first research</p>
+          <p className="text-[10px] font-semibold">Catalog-first answers</p>
         </div>
         <p className="mt-2 text-[9px] leading-4 text-[#8e9bb0]">
-          The agent favors retrieved evidence over unsupported factual answers and retains provenance for the application.
+          The model waits for selected fantasy cards, then answers from their facts and relationships instead of improvising lore.
         </p>
       </div>
 
@@ -72,7 +72,7 @@ export function AgentPanel({
             <div>
               <p className="text-[10px] font-semibold text-[#dbe5f2]">Subagent delegation</p>
               <p className="mt-1 text-[9px] leading-4 text-[#7f8da1]">
-                Allow one bounded research worker before the main agent answers.
+                Allow one bounded catalog worker before the main model answers.
               </p>
             </div>
           </div>
@@ -116,7 +116,7 @@ export function AgentPanel({
 
       <div className="flex items-center gap-2 rounded-xl border border-dashed border-[#40516d] px-3 py-3 text-[#7f8da1]">
         <Bot className="size-4 shrink-0 text-violet-300/80" />
-        <p className="text-[9px] leading-4">Agent activity appears in Live logs when a research step runs.</p>
+        <p className="text-[9px] leading-4">Search, card selection and analysis appear in Live logs before token streaming starts.</p>
       </div>
     </div>
   );

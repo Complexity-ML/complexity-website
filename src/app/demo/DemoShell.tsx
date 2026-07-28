@@ -111,6 +111,13 @@ export function DemoShell() {
         active: true,
       });
     }
+    events.unshift(...chat.researchEvents.map((event) => ({
+        id: event.id,
+        label: event.label,
+        detail: event.detail,
+        kind: "system" as const,
+        active: event.active,
+      })));
     if (sourceAgent.subagentEnabled) {
       events.unshift({
         id: "activity-subagent-armed",
@@ -121,7 +128,15 @@ export function DemoShell() {
       });
     }
     return events;
-  }, [chat.messages, chat.mode, chat.streaming, chat.tokenStats?.tokens, modelLabels, sourceAgent.subagentEnabled]);
+  }, [
+    chat.messages,
+    chat.mode,
+    chat.researchEvents,
+    chat.streaming,
+    chat.tokenStats?.tokens,
+    modelLabels,
+    sourceAgent.subagentEnabled,
+  ]);
 
   useEffect(() => {
     if (convos.activeConversation) {
@@ -180,8 +195,8 @@ export function DemoShell() {
       if (convos.isFull) return;
       convos.createConversation(chat.mode);
     }
-    chat.sendMessage();
-  }, [isCompare, compare, convos, chat]);
+    chat.sendMessage(undefined, { research: sourceAgent.subagentEnabled });
+  }, [isCompare, compare, convos, chat, sourceAgent.subagentEnabled]);
 
   const handleNewChat = useCallback(() => {
     if (isCompare) {
@@ -225,8 +240,8 @@ export function DemoShell() {
       if (convos.isFull) return;
       convos.createConversation(chat.mode);
     }
-    chat.sendMessage(prompt);
-  }, [chat, compare, convos, isCompare]);
+    chat.sendMessage(prompt, { research: sourceAgent.subagentEnabled });
+  }, [chat, compare, convos, isCompare, sourceAgent.subagentEnabled]);
 
   const inputValue = isCompare ? compare.input : chat.input;
   const messageCount = isCompare ? compare.results.length * 3 : chat.messages.length;

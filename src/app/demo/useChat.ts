@@ -49,6 +49,24 @@ export interface ExpertActivityData {
   } | null;
 }
 
+export interface ResearchActivityEvent {
+  id: string;
+  label: string;
+  detail: string;
+  active: boolean;
+}
+
+interface ResearchResponse {
+  status: "ready" | "empty";
+  selected: Array<{
+    key: string;
+    kind: string;
+    name: string;
+  }>;
+  context: string;
+  error?: string;
+}
+
 const DEFAULT_PARAMS: SamplingParams = {
   temperature: 0.7,
   maxTokens: 512,
@@ -102,6 +120,7 @@ export function useChat(initialMode: Mode) {
   const [params, setParams] = useState<SamplingParams>(DEFAULT_PARAMS);
   const [tokenStats, setTokenStats] = useState<TokenStats | null>(null);
   const [expertActivity, setExpertActivity] = useState<ExpertActivityData | null>(null);
+  const [researchEvents, setResearchEvents] = useState<ResearchActivityEvent[]>([]);
   const [totalRequests] = useState<number | null>(null);
   const healthStatus = useEndpointHealth(ENDPOINTS[mode], MAINTENANCE[mode]);
   const [snapshot] = useState<MonitorData | null>(null);
@@ -167,6 +186,7 @@ export function useChat(initialMode: Mode) {
     }
     setStreaming(false);
     setLoading(false);
+    setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
     if (streamStartRef.current > 0) {
       const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
       setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
@@ -183,6 +203,7 @@ export function useChat(initialMode: Mode) {
     setInput("");
     setTokenStats(null);
     setExpertActivity(null);
+    setResearchEvents([]);
   }, [mode, streaming, loading, stopGeneration]);
 
   const clearChat = useCallback(() => {
@@ -191,6 +212,7 @@ export function useChat(initialMode: Mode) {
     setError(null);
     setTokenStats(null);
     setExpertActivity(null);
+    setResearchEvents([]);
   }, [streaming, loading, stopGeneration]);
 
   const loadMessages = useCallback((msgs: Message[]) => {
@@ -198,14 +220,19 @@ export function useChat(initialMode: Mode) {
     setError(null);
     setTokenStats(null);
     setExpertActivity(null);
+    setResearchEvents([]);
   }, []);
 
-  const sendMessage = useCallback(async (directText?: string) => {
+  const sendMessage = useCallback(async (
+    directText?: string,
+    options: { research?: boolean } = {},
+  ) => {
     const text = (directText ?? input).trim();
     if (!text || loading || streaming || MAINTENANCE[mode] || healthStatus === "offline") return;
 
     setError(null);
     setExpertActivity(null);
+    setResearchEvents([]);
     const userMessage: Message = { role: "user", content: text, createdAt: Date.now() };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
@@ -217,6 +244,71 @@ export function useChat(initialMode: Mode) {
     const base = getBaseUrl(mode);
 
     try {
+      let modelPrompt = text;
+      if (options.research) {
+        const searchEvent: ResearchActivityEvent = {
+          id: `research-search-${Date.now()}`,
+          label: "Searching the fantasy catalog…",
+          detail: "The research worker is matching the question against canonical entity cards.",
+          active: true,
+        };
+        setResearchEvents([searchEvent]);
+
+        const researchResponse = await fetch("/api/agent/research", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: text }),
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        const research = await researchResponse.json() as ResearchResponse;
+        if (!researchResponse.ok) {
+          throw new Error(research.error || "The fantasy research agent is unavailable.");
+        }
+        if (research.status !== "ready" || !research.selected.length || !research.context) {
+          setResearchEvents([
+            {
+              id: `research-empty-${Date.now()}`,
+              label: "No verified card selected",
+              detail: "The catalog does not contain enough evidence to answer this question.",
+              active: false,
+            },
+            { ...searchEvent, active: false },
+          ]);
+          throw new Error("No verified fantasy card matched this question.");
+        }
+
+        const selectionEvent: ResearchActivityEvent = {
+          id: `research-selected-${Date.now()}`,
+          label: `${research.selected.length} fantasy card${research.selected.length === 1 ? "" : "s"} selected`,
+          detail: research.selected.map((card) => `${card.name} · ${card.kind}`).join(" · "),
+          active: false,
+        };
+        const analysisEvent: ResearchActivityEvent = {
+          id: `research-analysis-${Date.now()}`,
+          label: "Analyzing the selected cards…",
+          detail: "The main model will answer from this bounded canonical context.",
+          active: true,
+        };
+        setResearchEvents([
+          analysisEvent,
+          selectionEvent,
+          { ...searchEvent, active: false },
+        ]);
+
+        modelPrompt = [
+          "Answer the question using only the canonical fantasy catalog records below.",
+          "Do not invent facts. If the records are insufficient, say so explicitly.",
+          "Answer in the same language as the question and name the records you use.",
+          "",
+          `QUESTION:\n${text}`,
+          "",
+          `CANONICAL RECORDS:\n${research.context}`,
+          "",
+          "ANSWER:",
+        ].join("\n");
+      }
+
       streamStartRef.current = performance.now();
       tokenCountRef.current = 0;
       setTokenStats({ tokens: 0, elapsed: 0, streaming: true });
@@ -232,7 +324,7 @@ export function useChat(initialMode: Mode) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: text,
+          prompt: modelPrompt,
           max_tokens: params.maxTokens,
           temperature: params.temperature,
           top_k: params.topK,
@@ -251,8 +343,13 @@ export function useChat(initialMode: Mode) {
         );
       }
 
+      let receivedFirstChunk = false;
       for await (const chunk of readSSE(response)) {
         if (controller.signal.aborted) break;
+        if (!receivedFirstChunk) {
+          receivedFirstChunk = true;
+          setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
+        }
         assistantContent += chunk;
         tokenCountRef.current++;
         const elapsed = (performance.now() - streamStartRef.current) / 1000;
@@ -264,16 +361,20 @@ export function useChat(initialMode: Mode) {
       setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
 
       setStreaming(false);
+      setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
       abortControllerRef.current = null;
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
+        setLoading(false);
         setStreaming(false);
+        setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
         abortControllerRef.current = null;
         return;
       }
       setError(err instanceof Error ? err.message : "Failed to reach the model.");
       setLoading(false);
       setStreaming(false);
+      setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
       abortControllerRef.current = null;
     }
   }, [input, loading, streaming, mode, messages, params, healthStatus]);
@@ -294,6 +395,7 @@ export function useChat(initialMode: Mode) {
     updateParam,
     tokenStats,
     expertActivity,
+    researchEvents,
     totalRequests,
     healthStatus,
     snapshot,
