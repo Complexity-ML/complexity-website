@@ -3,6 +3,7 @@ export type Mode = "TR-MoE" | "compare" | "dense";
 export interface Message {
   role: "user" | "assistant";
   content: string;
+  createdAt?: number;
 }
 
 export interface SuggestionGroup {

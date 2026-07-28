@@ -18,7 +18,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     include: {
       messages: {
         orderBy: { orderIndex: "asc" },
-        select: { role: true, content: true },
+        select: { role: true, content: true, createdAt: true },
       },
     },
   });
@@ -54,14 +54,15 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   // Replace all messages in a transaction
   await prisma.$transaction([
     prisma.chatMessage.deleteMany({ where: { conversationId: id } }),
-    ...(messages as { role: string; content: string }[]).map(
-      (msg: { role: string; content: string }, i: number) =>
+    ...(messages as { role: string; content: string; createdAt?: number | string }[]).map(
+      (msg: { role: string; content: string; createdAt?: number | string }, i: number) =>
         prisma.chatMessage.create({
           data: {
             conversationId: id,
             role: msg.role,
             content: msg.content,
             orderIndex: i,
+            ...(msg.createdAt ? { createdAt: new Date(msg.createdAt) } : {}),
           },
         }),
     ),

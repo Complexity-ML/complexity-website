@@ -220,7 +220,7 @@ export function DemoShell() {
     ? "Compare routed and dense output"
     : convos.activeConversation?.title
       ?? shortTitle(chat.messages.find((message) => message.role === "user")?.content ?? "");
-  const publicLabel = activeMode === "compare" ? "COMPARE MODE" : "PUBLIC INFERENCE";
+  const publicLabel = activeMode === "compare" ? "COMPARE MODE" : "PUBLIC DEMO";
   const activeParams = isCompare ? compare.params : chat.params;
   const updateParams = isCompare ? compare.updateParam : chat.updateParam;
   const activeHealth = isCompare ? compare.healthStatus : chat.healthStatus;

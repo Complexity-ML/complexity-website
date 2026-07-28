@@ -160,7 +160,15 @@ export function useConversations(userId?: string) {
               if (data.conversation?.messages) {
                 setConversations((prev) =>
                   prev.map((c) =>
-                    c.id === id ? { ...c, messages: data.conversation.messages } : c,
+                    c.id === id
+                      ? {
+                          ...c,
+                          messages: data.conversation.messages.map((message: Message & { createdAt?: string | number }) => ({
+                            ...message,
+                            createdAt: message.createdAt ? new Date(message.createdAt).getTime() : undefined,
+                          })),
+                        }
+                      : c,
                   ),
                 );
               }

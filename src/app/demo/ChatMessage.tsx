@@ -17,6 +17,9 @@ interface ChatMessageProps {
 export function ChatMessage({ message, mode }: ChatMessageProps) {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
+  const messageTime = message.createdAt
+    ? new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : null;
 
   const copyMessage = async () => {
     await navigator.clipboard.writeText(message.content);
@@ -51,7 +54,16 @@ export function ChatMessage({ message, mode }: ChatMessageProps) {
             </div>
           )}
           {isUser && (
-            <div className="absolute right-full top-1/2 mr-1.5 -translate-y-1/2">
+            <div className="absolute right-0 top-full mt-1 flex h-7 items-center gap-1.5">
+              {messageTime && (
+                <time
+                  dateTime={new Date(message.createdAt!).toISOString()}
+                  className="font-mono text-[8px] text-[#718096]"
+                  suppressHydrationWarning
+                >
+                  {messageTime}
+                </time>
+              )}
               <CopyButton copied={copied} onClick={copyMessage} />
             </div>
           )}

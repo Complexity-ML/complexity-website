@@ -143,7 +143,7 @@ export function useChat(initialMode: Mode) {
     if (!text || loading || streaming || MAINTENANCE[mode]) return;
 
     setError(null);
-    const userMessage: Message = { role: "user", content: text };
+    const userMessage: Message = { role: "user", content: text, createdAt: Date.now() };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput("");
@@ -161,7 +161,8 @@ export function useChat(initialMode: Mode) {
       setStreaming(true);
 
       let assistantContent = "";
-      setMessages([...newMessages, { role: "assistant", content: "" }]);
+      const assistantCreatedAt = Date.now();
+      setMessages([...newMessages, { role: "assistant", content: "", createdAt: assistantCreatedAt }]);
 
       // Stream via fetch (axios doesn't support ReadableStream)
       const response = await fetch(`${base}/v1/completions`, {
@@ -186,7 +187,7 @@ export function useChat(initialMode: Mode) {
         tokenCountRef.current++;
         const elapsed = (performance.now() - streamStartRef.current) / 1000;
         setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
-        setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
+        setMessages([...newMessages, { role: "assistant", content: assistantContent, createdAt: assistantCreatedAt }]);
       }
 
       const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
