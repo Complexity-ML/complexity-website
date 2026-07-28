@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { motion } from "framer-motion";
 import { Bot, Check, Copy, Loader2 } from "lucide-react";
 import CodeBlock from "@/components/CodeBlock";
@@ -19,7 +19,7 @@ interface ChatMessageProps {
   expertActivity?: ExpertActivityData | null;
 }
 
-export function ChatMessage({
+export const ChatMessage = memo(function ChatMessage({
   message,
   mode,
   modelLabel,
@@ -99,7 +99,7 @@ export function ChatMessage({
       </div>
     </motion.div>
   );
-}
+});
 
 function CopyButton({ copied, onClick }: { copied: boolean; onClick: () => void }) {
   return (

@@ -8,6 +8,7 @@ export interface Conversation {
   title: string;
   mode: Mode;
   messages: Message[];
+  messagesLoaded: boolean;
   createdAt: number;
   updatedAt: number;
 }
@@ -46,6 +47,7 @@ export function useConversations(userId?: string) {
               title: c.title,
               mode: c.mode as Mode,
               messages: [], // loaded on select
+              messagesLoaded: false,
               createdAt: new Date(c.createdAt as string).getTime(),
               updatedAt: new Date(c.updatedAt as string).getTime(),
             })),
@@ -76,6 +78,7 @@ export function useConversations(userId?: string) {
         title: "New chat",
         mode,
         messages: [],
+        messagesLoaded: true,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -110,16 +113,20 @@ export function useConversations(userId?: string) {
 
   const updateMessages = useCallback(
     (id: string, messages: Message[]) => {
-      if (!isAuthenticated || id.startsWith("temp_")) return;
+      if (!isAuthenticated) return;
 
       const title = generateTitle(messages);
       setConversations((prev) =>
         prev.map((c) => {
           if (c.id !== id) return c;
           const newTitle = c.title === "New chat" && messages.length > 0 ? title : c.title;
-          return { ...c, messages, title: newTitle, updatedAt: Date.now() };
+          return { ...c, messages, messagesLoaded: true, title: newTitle, updatedAt: Date.now() };
         }),
       );
+
+      // Keep the optimistic conversation synchronized locally. When the POST
+      // returns, replacing its temporary ID preserves these messages.
+      if (id.startsWith("temp_")) return;
 
       // Debounced save to DB
       clearTimeout(saveTimer.current);
@@ -167,6 +174,7 @@ export function useConversations(userId?: string) {
                             ...message,
                             createdAt: message.createdAt ? new Date(message.createdAt).getTime() : undefined,
                           })),
+                          messagesLoaded: true,
                         }
                       : c,
                   ),

@@ -140,22 +140,37 @@ export function DemoShell() {
 
   useEffect(() => {
     if (convos.activeConversation) {
-      chat.loadMessages(convos.activeConversation.messages);
+      // A newly-created conversation changes from a temporary ID to its server
+      // ID while generation is already running. Keep the live message state in
+      // place instead of reloading the still-empty conversation snapshot.
+      if ((chat.streaming || chat.loading) && chat.messages.length > 0) {
+        return;
+      }
+      if (!convos.activeConversation.messagesLoaded) {
+        return;
+      }
       if (convos.activeConversation.mode !== chat.mode) {
         chat.switchMode(convos.activeConversation.mode);
       }
+      chat.loadMessages(convos.activeConversation.messages);
     } else {
       chat.loadMessages([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [convos.activeId]);
+  }, [convos.activeId, convos.activeConversation?.messagesLoaded]);
 
   const prevStreaming = useRef(false);
+  const previousMessageCount = useRef(0);
   useEffect(() => {
     const wasActive = prevStreaming.current;
-    prevStreaming.current = chat.streaming || chat.loading;
+    const isActive = chat.streaming || chat.loading;
+    const messageCountChanged = previousMessageCount.current !== chat.messages.length;
+    prevStreaming.current = isActive;
+    previousMessageCount.current = chat.messages.length;
     if (convos.activeId && chat.messages.length > 0) {
-      if ((wasActive && !chat.streaming && !chat.loading) || chat.messages.length <= 2) {
+      // Stage new message shells immediately, then persist their final content
+      // once streaming stops. Do not rewrite conversation state on every token.
+      if (messageCountChanged || (wasActive && !isActive)) {
         convos.updateMessages(convos.activeId, chat.messages);
       }
     }
@@ -214,6 +229,7 @@ export function DemoShell() {
 
   const handleSelectConvo = useCallback((id: string | null) => {
     if (chat.streaming || chat.loading) chat.stopGeneration();
+    chat.loadMessages([]);
     convos.selectConversation(id);
   }, [chat, convos]);
 
@@ -396,7 +412,9 @@ export function DemoShell() {
                 <div className="space-y-8">
                   {chat.messages.map((message, index) => (
                     <ChatMessage
-                      key={index}
+                      key={message.createdAt
+                        ? `${message.role}-${message.createdAt}`
+                        : `${message.role}-${index}`}
                       message={message}
                       mode={chat.mode}
                       modelLabel={modelLabels[chat.mode]}
