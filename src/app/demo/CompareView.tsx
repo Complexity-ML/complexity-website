@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import CodeBlock from "@/components/CodeBlock";
 import type { CompareResult } from "./useCompare";
+import type { ExpertActivityData } from "./useExpertActivity";
+import { ExpertActivation } from "./ExpertActivation";
 
 interface CompareViewProps {
   results: CompareResult[];
@@ -13,6 +15,7 @@ interface CompareViewProps {
   streaming: boolean;
   denseLabel?: string;
   routedLabel?: string;
+  expertActivity?: ExpertActivityData | null;
 }
 
 function StatBadge({ tokens, elapsed }: { tokens: number; elapsed: number }) {
@@ -32,6 +35,7 @@ function ModelColumn({
   tokens,
   elapsed,
   streaming,
+  expertActivity,
 }: {
   label: string;
   labelColor: string;
@@ -39,6 +43,7 @@ function ModelColumn({
   tokens: number;
   elapsed: number;
   streaming: boolean;
+  expertActivity?: ExpertActivityData | null;
 }) {
   return (
     <section className="min-w-0 flex-1 border-l border-[#40516d] pl-4">
@@ -55,6 +60,9 @@ function ModelColumn({
           <StatBadge tokens={tokens} elapsed={elapsed} />
         </div>
       </header>
+      {expertActivity && (
+        <ExpertActivation activity={expertActivity} streaming={streaming} />
+      )}
       <div className="min-h-[120px]">
         {content ? (
           <CodeBlock content={content} />
@@ -133,6 +141,7 @@ export function CompareView({
   streaming,
   denseLabel = "Dense-306",
   routedLabel = "TR-MOE-306",
+  expertActivity,
 }: CompareViewProps) {
   return (
     <div className="space-y-6">
@@ -156,6 +165,7 @@ export function CompareView({
             tokens={denseTokens}
             elapsed={0}
             streaming
+            expertActivity={expertActivity}
           />
           <ModelColumn
             label={routedLabel}

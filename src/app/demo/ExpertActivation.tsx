@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ExpertActivityData } from "./useChat";
+import type { ExpertActivityData } from "./useExpertActivity";
 
 interface ExpertActivationProps {
   activity: ExpertActivityData;

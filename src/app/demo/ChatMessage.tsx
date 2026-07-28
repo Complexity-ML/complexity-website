@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Mode, Message } from "./config";
 import { MODEL_NAMES } from "./config";
-import type { ExpertActivityData } from "./useChat";
+import type { ExpertActivityData } from "./useExpertActivity";
 import { ExpertActivation } from "./ExpertActivation";
 
 interface ChatMessageProps {

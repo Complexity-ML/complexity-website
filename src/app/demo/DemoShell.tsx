@@ -403,6 +403,7 @@ export function DemoShell() {
                     denseTokens={compare.denseTokens}
                     chatTokens={compare.chatTokens}
                     streaming={compare.streaming}
+                    expertActivity={compare.expertActivity}
                     denseLabel={modelLabels.dense}
                     routedLabel={modelLabels["TR-MoE"]}
                   />

@@ -5,6 +5,7 @@ import type { SamplingParams } from "./useChat";
 import { ENDPOINTS, MAINTENANCE } from "./config";
 import { useEndpointHealth } from "./useEndpointHealth";
 import type { HealthStatus } from "./useEndpointHealth";
+import { useExpertActivity } from "./useExpertActivity";
 
 export interface CompareMessage {
   role: "user" | "assistant";
@@ -116,6 +117,7 @@ export function useCompare() {
   const [chatContent, setChatContent] = useState("");
   const [denseTokens, setDenseTokens] = useState(0);
   const [chatTokens, setChatTokens] = useState(0);
+  const expertActivity = useExpertActivity(streaming);
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -305,6 +307,7 @@ export function useCompare() {
     chatContent,
     denseTokens,
     chatTokens,
+    expertActivity,
     sendMessage,
     stopGeneration,
     clearResults,
