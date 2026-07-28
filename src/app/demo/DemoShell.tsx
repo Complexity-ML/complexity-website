@@ -353,6 +353,12 @@ export function DemoShell() {
                         && message.role === "assistant"
                         && index === chat.messages.length - 1
                       }
+                      expertActivity={
+                        message.role === "assistant"
+                        && index === chat.messages.length - 1
+                          ? chat.expertActivity
+                          : null
+                      }
                     />
                   ))}
                   {chat.error && <ErrorBanner message={chat.error} />}

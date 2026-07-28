@@ -8,15 +8,24 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Mode, Message } from "./config";
 import { MODEL_NAMES } from "./config";
+import type { ExpertActivityData } from "./useChat";
+import { ExpertActivation } from "./ExpertActivation";
 
 interface ChatMessageProps {
   message: Message;
   mode: Mode;
   modelLabel?: string;
   streaming?: boolean;
+  expertActivity?: ExpertActivityData | null;
 }
 
-export function ChatMessage({ message, mode, modelLabel, streaming = false }: ChatMessageProps) {
+export function ChatMessage({
+  message,
+  mode,
+  modelLabel,
+  streaming = false,
+  expertActivity,
+}: ChatMessageProps) {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
   const messageTime = message.createdAt
@@ -54,6 +63,9 @@ export function ChatMessage({ message, mode, modelLabel, streaming = false }: Ch
               </div>
               <CopyButton copied={copied} onClick={copyMessage} />
             </div>
+          )}
+          {!isUser && mode === "TR-MoE" && expertActivity && (
+            <ExpertActivation activity={expertActivity} streaming={streaming} />
           )}
           {isUser && (
             <div className="absolute right-0 top-full mt-1 flex h-7 items-center gap-1.5">

@@ -30,6 +30,25 @@ export interface MonitorData {
   totalTokens: number;
 }
 
+export interface ExpertActivityData {
+  num_experts: number;
+  num_layers: number;
+  top_k: number;
+  active: boolean;
+  total_tokens: number;
+  total_activations: number;
+  distribution: number[];
+  counts: number[];
+  imbalance?: number;
+  latest: {
+    token_id: number;
+    routes: Array<{
+      layer: number;
+      experts: number[];
+    }>;
+  } | null;
+}
+
 const DEFAULT_PARAMS: SamplingParams = {
   temperature: 0.7,
   maxTokens: 512,
@@ -82,6 +101,7 @@ export function useChat(initialMode: Mode) {
   const [error, setError] = useState<string | null>(null);
   const [params, setParams] = useState<SamplingParams>(DEFAULT_PARAMS);
   const [tokenStats, setTokenStats] = useState<TokenStats | null>(null);
+  const [expertActivity, setExpertActivity] = useState<ExpertActivityData | null>(null);
   const [totalRequests] = useState<number | null>(null);
   const healthStatus = useEndpointHealth(ENDPOINTS[mode], MAINTENANCE[mode]);
   const [snapshot] = useState<MonitorData | null>(null);
@@ -89,7 +109,45 @@ export function useChat(initialMode: Mode) {
   const streamStartRef = useRef(0);
   const tokenCountRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const hasTokenStats = tokenStats !== null;
 
+  useEffect(() => {
+    if (mode !== "TR-MoE" || (!streaming && !hasTokenStats)) {
+      if (mode !== "TR-MoE") setExpertActivity(null);
+      return;
+    }
+
+    let cancelled = false;
+    let requestInFlight = false;
+    const load = async () => {
+      if (requestInFlight) return;
+      requestInFlight = true;
+      try {
+        const response = await fetch(`${getBaseUrl("TR-MoE")}/v1/experts`, {
+          cache: "no-store",
+        });
+        if (response.ok && !cancelled) {
+          setExpertActivity(await response.json() as ExpertActivityData);
+        }
+      } catch {
+        // Expert telemetry is optional and must never interrupt generation.
+      } finally {
+        requestInFlight = false;
+      }
+    };
+
+    void load();
+    if (!streaming) {
+      return () => {
+        cancelled = true;
+      };
+    }
+    const interval = window.setInterval(() => void load(), 240);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [mode, streaming, hasTokenStats]);
 
   useEffect(() => {
     const onUnload = () => {
@@ -124,6 +182,7 @@ export function useChat(initialMode: Mode) {
     setError(null);
     setInput("");
     setTokenStats(null);
+    setExpertActivity(null);
   }, [mode, streaming, loading, stopGeneration]);
 
   const clearChat = useCallback(() => {
@@ -131,12 +190,14 @@ export function useChat(initialMode: Mode) {
     setMessages([]);
     setError(null);
     setTokenStats(null);
+    setExpertActivity(null);
   }, [streaming, loading, stopGeneration]);
 
   const loadMessages = useCallback((msgs: Message[]) => {
     setMessages(msgs);
     setError(null);
     setTokenStats(null);
+    setExpertActivity(null);
   }, []);
 
   const sendMessage = useCallback(async (directText?: string) => {
@@ -144,6 +205,7 @@ export function useChat(initialMode: Mode) {
     if (!text || loading || streaming || MAINTENANCE[mode] || healthStatus === "offline") return;
 
     setError(null);
+    setExpertActivity(null);
     const userMessage: Message = { role: "user", content: text, createdAt: Date.now() };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
@@ -231,6 +293,7 @@ export function useChat(initialMode: Mode) {
     params,
     updateParam,
     tokenStats,
+    expertActivity,
     totalRequests,
     healthStatus,
     snapshot,
