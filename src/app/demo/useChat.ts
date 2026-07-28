@@ -308,6 +308,9 @@ export function useChat(initialMode: Mode) {
           "ANSWER:",
         ].join("\n");
       }
+      const modelMessages = options.research
+        ? [{ role: "user" as const, content: modelPrompt }]
+        : newMessages.map(({ role, content }) => ({ role, content }));
 
       streamStartRef.current = performance.now();
       tokenCountRef.current = 0;
@@ -320,11 +323,12 @@ export function useChat(initialMode: Mode) {
       setMessages([...newMessages, { role: "assistant", content: "", createdAt: assistantCreatedAt }]);
 
       // Stream via fetch (axios doesn't support ReadableStream)
-      const response = await fetch(`${base}/v1/completions`, {
+      const response = await fetch(`${base}/v1/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: modelPrompt,
+          messages: modelMessages,
+          context_management: "auto",
           max_tokens: params.maxTokens,
           temperature: params.temperature,
           top_k: params.topK,
