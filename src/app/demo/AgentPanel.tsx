@@ -81,15 +81,15 @@ export function AgentPanel({
             role="switch"
             aria-checked={subagentEnabled}
             onClick={() => onSubagentChange(!subagentEnabled)}
-            className={`relative mt-0.5 h-5 w-9 shrink-0 rounded-full border transition-colors ${
+            className={`relative mt-0.5 h-5 w-9 shrink-0 overflow-hidden rounded-full border p-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300/50 ${
               subagentEnabled
                 ? "border-violet-300/60 bg-violet-500"
                 : "border-[#53647c] bg-[#151e2c]"
             }`}
             aria-label="Subagent delegation"
           >
-            <span className={`absolute top-0.5 size-3.5 rounded-full bg-white transition-transform ${
-              subagentEnabled ? "translate-x-[17px]" : "translate-x-0.5"
+            <span className={`pointer-events-none absolute left-0.5 top-0.5 size-3.5 rounded-full bg-white shadow-sm transition-transform ${
+              subagentEnabled ? "translate-x-4" : "translate-x-0"
             }`} />
           </button>
         </div>
