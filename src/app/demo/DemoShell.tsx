@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   Activity,
-  BookOpenCheck,
+  Bot,
   CheckCircle2,
   MessageSquareText,
   ScrollText,
@@ -18,14 +18,14 @@ import { useChat } from "./useChat";
 import { useCompare } from "./useCompare";
 import { useConversations } from "./useConversations";
 import { useModelMetadata } from "./useModelMetadata";
-import { useSources } from "./useSources";
+import { useSourceAgent } from "./useSourceAgent";
 import { ParamPanel } from "./ParamPanel";
 import { ChatMessage, ErrorBanner } from "./ChatMessage";
 import { CompareView } from "./CompareView";
 import { ChatInput } from "./ChatInput";
 import { MonitorPanel } from "./MonitorPanel";
 import { ChatSidebar } from "./ChatSidebar";
-import { SourcesPanel } from "./SourcesPanel";
+import { AgentPanel } from "./AgentPanel";
 import {
   ActivityLog,
   AILabExitButton,
@@ -35,13 +35,13 @@ import {
 } from "@/components/ai-lab";
 
 const MODES: Mode[] = ["TR-MoE", "compare", "dense"];
-type LeftPanel = "chats" | "prompts" | "sources" | "logs";
+type LeftPanel = "chats" | "prompts" | "agent" | "logs";
 type RightPanel = "model" | "metrics" | "results";
 
 const LEFT_RAIL = [
   { id: "chats", label: "Chats", icon: MessageSquareText },
   { id: "prompts", label: "Prompts", icon: WandSparkles },
-  { id: "sources", label: "Sources", icon: BookOpenCheck },
+  { id: "agent", label: "Agent", icon: Bot },
   { id: "logs", label: "Live logs", icon: ScrollText },
 ];
 
@@ -70,7 +70,7 @@ export function DemoShell() {
   const chat = useChat(initialMode === "dense" ? "dense" : initialMode === "compare" ? "TR-MoE" : initialMode);
   const compare = useCompare();
   const convos = useConversations(userId);
-  const sourceWorkspace = useSources();
+  const sourceAgent = useSourceAgent();
   const { labels: modelLabels } = useModelMetadata();
 
   const [activeMode, setActiveMode] = useState<Mode>(initialMode);
@@ -90,13 +90,6 @@ export function DemoShell() {
   );
 
   const activityEvents = useMemo<ActivityLogEvent[]>(() => {
-    const sourceEvents = sourceWorkspace.sources.map<ActivityLogEvent>((source) => ({
-      id: `source-${source.id}`,
-      label: source.enabled ? "Verified source attached" : "Source paused",
-      detail: `${source.title} · SHA-256 ${source.sha256.slice(0, 12)} · ${source.uri}`,
-      kind: "system",
-      active: false,
-    }));
     const events = chat.messages.map<ActivityLogEvent>((message, index) => ({
       id: `activity-${index}`,
       label: message.role === "user"
@@ -107,7 +100,7 @@ export function DemoShell() {
       detail: message.content || "Waiting for the first streamed tokens…",
       kind: message.role === "user" ? "prompt" as const : "model" as const,
       active: message.role === "assistant" && !message.content,
-    })).reverse().concat(sourceEvents);
+    })).reverse();
 
     if (chat.streaming) {
       events.unshift({
@@ -118,8 +111,17 @@ export function DemoShell() {
         active: true,
       });
     }
+    if (sourceAgent.subagentEnabled) {
+      events.unshift({
+        id: "activity-subagent-armed",
+        label: "Research subagent armed",
+        detail: "One bounded delegation is allowed before the main agent answers.",
+        kind: "system",
+        active: false,
+      });
+    }
     return events;
-  }, [chat.messages, chat.mode, chat.streaming, chat.tokenStats?.tokens, modelLabels, sourceWorkspace.sources]);
+  }, [chat.messages, chat.mode, chat.streaming, chat.tokenStats?.tokens, modelLabels, sourceAgent.subagentEnabled]);
 
   useEffect(() => {
     if (convos.activeConversation) {
@@ -170,18 +172,16 @@ export function DemoShell() {
   }, [activeMode, chat]);
 
   const handleSend = useCallback(() => {
-    const originalPrompt = isCompare ? compare.input : chat.input;
-    const groundedPrompt = sourceWorkspace.buildPrompt(originalPrompt);
     if (isCompare) {
-      compare.sendMessage(undefined, groundedPrompt);
+      compare.sendMessage();
       return;
     }
     if (!convos.activeId && chat.input.trim()) {
       if (convos.isFull) return;
       convos.createConversation(chat.mode);
     }
-    chat.sendMessage(undefined, groundedPrompt);
-  }, [isCompare, compare, convos, chat, sourceWorkspace]);
+    chat.sendMessage();
+  }, [isCompare, compare, convos, chat]);
 
   const handleNewChat = useCallback(() => {
     if (isCompare) {
@@ -218,15 +218,15 @@ export function DemoShell() {
   const handlePromptSelection = useCallback((prompt: string) => {
     setLeftPanel(null);
     if (isCompare) {
-      compare.sendMessage(prompt, sourceWorkspace.buildPrompt(prompt));
+      compare.sendMessage(prompt);
       return;
     }
     if (!convos.activeId) {
       if (convos.isFull) return;
       convos.createConversation(chat.mode);
     }
-    chat.sendMessage(prompt, sourceWorkspace.buildPrompt(prompt));
-  }, [chat, compare, convos, isCompare, sourceWorkspace]);
+    chat.sendMessage(prompt);
+  }, [chat, compare, convos, isCompare]);
 
   const inputValue = isCompare ? compare.input : chat.input;
   const messageCount = isCompare ? compare.results.length * 3 : chat.messages.length;
@@ -245,11 +245,11 @@ export function DemoShell() {
     ?? (activeHealth === "offline" ? `${modelLabels[activeMode]} is temporarily unavailable.` : undefined);
   const leftRail = useMemo(
     () => LEFT_RAIL.map((item) => (
-      item.id === "sources"
-        ? { ...item, badge: `${sourceWorkspace.activeSources.length}` }
+      item.id === "agent"
+        ? { ...item, badge: sourceAgent.status === "online" ? "ON" : "—" }
         : item
     )),
-    [sourceWorkspace.activeSources.length],
+    [sourceAgent.status],
   );
 
   return (
@@ -299,18 +299,13 @@ export function DemoShell() {
           </AILabPanel>
         )}
 
-        {leftPanel === "sources" && (
-          <AILabPanel eyebrow="source agent" title="Sources" onClose={() => setLeftPanel(null)}>
-            <SourcesPanel
-              sources={sourceWorkspace.sources}
-              status={sourceWorkspace.status}
-              loading={sourceWorkspace.loading}
-              error={sourceWorkspace.error}
-              onAdd={sourceWorkspace.addSource}
-              onToggle={sourceWorkspace.toggleSource}
-              onRemove={sourceWorkspace.removeSource}
-              onClear={sourceWorkspace.clearSources}
-              onRefreshStatus={sourceWorkspace.refreshStatus}
+        {leftPanel === "agent" && (
+          <AILabPanel eyebrow="AI LAB" title="Research agent" onClose={() => setLeftPanel(null)}>
+            <AgentPanel
+              status={sourceAgent.status}
+              subagentEnabled={sourceAgent.subagentEnabled}
+              onSubagentChange={sourceAgent.setSubagentEnabled}
+              onRefreshStatus={sourceAgent.refreshStatus}
             />
           </AILabPanel>
         )}

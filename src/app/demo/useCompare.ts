@@ -137,10 +137,9 @@ export function useCompare() {
     setChatTokens(0);
   }, [stopGeneration]);
 
-  const sendMessage = useCallback(async (directText?: string, inferenceText?: string) => {
+  const sendMessage = useCallback(async (directText?: string) => {
     const text = (directText ?? input).trim();
     if (!text || loading || streaming || MAINTENANCE.compare || healthStatus === "offline") return;
-    const prompt = (inferenceText ?? text).trim();
 
     setError(null);
     setInput("");
@@ -158,7 +157,7 @@ export function useCompare() {
       setStreaming(true);
 
       const body = {
-        prompt,
+        prompt: text,
         max_tokens: params.maxTokens,
         temperature: params.temperature,
         top_k: params.topK,

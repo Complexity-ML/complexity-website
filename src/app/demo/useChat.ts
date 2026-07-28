@@ -200,10 +200,9 @@ export function useChat(initialMode: Mode) {
     setExpertActivity(null);
   }, []);
 
-  const sendMessage = useCallback(async (directText?: string, inferenceText?: string) => {
+  const sendMessage = useCallback(async (directText?: string) => {
     const text = (directText ?? input).trim();
     if (!text || loading || streaming || MAINTENANCE[mode] || healthStatus === "offline") return;
-    const prompt = (inferenceText ?? text).trim();
 
     setError(null);
     setExpertActivity(null);
@@ -233,7 +232,7 @@ export function useChat(initialMode: Mode) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt,
+          prompt: text,
           max_tokens: params.maxTokens,
           temperature: params.temperature,
           top_k: params.topK,
