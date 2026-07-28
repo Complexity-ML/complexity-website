@@ -91,12 +91,14 @@ function CompareRun({
   routed,
   denseLabel,
   routedLabel,
+  expertActivity,
 }: {
   prompt?: string;
   dense: { content: string; tokens: number; elapsed: number };
   routed: { content: string; tokens: number; elapsed: number };
   denseLabel: string;
   routedLabel: string;
+  expertActivity?: ExpertActivityData | null;
 }) {
   return (
     <motion.div
@@ -126,6 +128,7 @@ function CompareRun({
           tokens={routed.tokens}
           elapsed={routed.elapsed}
           streaming={false}
+          expertActivity={expertActivity}
         />
       </div>
     </motion.div>
@@ -153,6 +156,7 @@ export function CompareView({
           routed={r.chat}
           denseLabel={denseLabel}
           routedLabel={routedLabel}
+          expertActivity={i === results.length - 1 ? expertActivity : null}
         />
       ))}
 
@@ -165,7 +169,6 @@ export function CompareView({
             tokens={denseTokens}
             elapsed={0}
             streaming
-            expertActivity={expertActivity}
           />
           <ModelColumn
             label={routedLabel}
@@ -174,6 +177,7 @@ export function CompareView({
             tokens={chatTokens}
             elapsed={0}
             streaming
+            expertActivity={expertActivity}
           />
         </div>
       )}
