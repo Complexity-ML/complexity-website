@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   Activity,
+  BookOpenCheck,
   CheckCircle2,
   MessageSquareText,
   ScrollText,
@@ -17,12 +18,14 @@ import { useChat } from "./useChat";
 import { useCompare } from "./useCompare";
 import { useConversations } from "./useConversations";
 import { useModelMetadata } from "./useModelMetadata";
+import { useSources } from "./useSources";
 import { ParamPanel } from "./ParamPanel";
 import { ChatMessage, ErrorBanner } from "./ChatMessage";
 import { CompareView } from "./CompareView";
 import { ChatInput } from "./ChatInput";
 import { MonitorPanel } from "./MonitorPanel";
 import { ChatSidebar } from "./ChatSidebar";
+import { SourcesPanel } from "./SourcesPanel";
 import {
   ActivityLog,
   AILabExitButton,
@@ -32,12 +35,13 @@ import {
 } from "@/components/ai-lab";
 
 const MODES: Mode[] = ["TR-MoE", "compare", "dense"];
-type LeftPanel = "chats" | "prompts" | "logs";
+type LeftPanel = "chats" | "prompts" | "sources" | "logs";
 type RightPanel = "model" | "metrics" | "results";
 
 const LEFT_RAIL = [
   { id: "chats", label: "Chats", icon: MessageSquareText },
   { id: "prompts", label: "Prompts", icon: WandSparkles },
+  { id: "sources", label: "Sources", icon: BookOpenCheck },
   { id: "logs", label: "Live logs", icon: ScrollText },
 ];
 
@@ -66,6 +70,7 @@ export function DemoShell() {
   const chat = useChat(initialMode === "dense" ? "dense" : initialMode === "compare" ? "TR-MoE" : initialMode);
   const compare = useCompare();
   const convos = useConversations(userId);
+  const sourceWorkspace = useSources();
   const { labels: modelLabels } = useModelMetadata();
 
   const [activeMode, setActiveMode] = useState<Mode>(initialMode);
@@ -85,6 +90,13 @@ export function DemoShell() {
   );
 
   const activityEvents = useMemo<ActivityLogEvent[]>(() => {
+    const sourceEvents = sourceWorkspace.sources.map<ActivityLogEvent>((source) => ({
+      id: `source-${source.id}`,
+      label: source.enabled ? "Verified source attached" : "Source paused",
+      detail: `${source.title} · SHA-256 ${source.sha256.slice(0, 12)} · ${source.uri}`,
+      kind: "system",
+      active: false,
+    }));
     const events = chat.messages.map<ActivityLogEvent>((message, index) => ({
       id: `activity-${index}`,
       label: message.role === "user"
@@ -95,7 +107,7 @@ export function DemoShell() {
       detail: message.content || "Waiting for the first streamed tokens…",
       kind: message.role === "user" ? "prompt" as const : "model" as const,
       active: message.role === "assistant" && !message.content,
-    })).reverse();
+    })).reverse().concat(sourceEvents);
 
     if (chat.streaming) {
       events.unshift({
@@ -107,7 +119,7 @@ export function DemoShell() {
       });
     }
     return events;
-  }, [chat.messages, chat.mode, chat.streaming, chat.tokenStats?.tokens, modelLabels]);
+  }, [chat.messages, chat.mode, chat.streaming, chat.tokenStats?.tokens, modelLabels, sourceWorkspace.sources]);
 
   useEffect(() => {
     if (convos.activeConversation) {
@@ -158,16 +170,18 @@ export function DemoShell() {
   }, [activeMode, chat]);
 
   const handleSend = useCallback(() => {
+    const originalPrompt = isCompare ? compare.input : chat.input;
+    const groundedPrompt = sourceWorkspace.buildPrompt(originalPrompt);
     if (isCompare) {
-      compare.sendMessage();
+      compare.sendMessage(undefined, groundedPrompt);
       return;
     }
     if (!convos.activeId && chat.input.trim()) {
       if (convos.isFull) return;
       convos.createConversation(chat.mode);
     }
-    chat.sendMessage();
-  }, [isCompare, compare, convos, chat]);
+    chat.sendMessage(undefined, groundedPrompt);
+  }, [isCompare, compare, convos, chat, sourceWorkspace]);
 
   const handleNewChat = useCallback(() => {
     if (isCompare) {
@@ -204,15 +218,15 @@ export function DemoShell() {
   const handlePromptSelection = useCallback((prompt: string) => {
     setLeftPanel(null);
     if (isCompare) {
-      compare.sendMessage(prompt);
+      compare.sendMessage(prompt, sourceWorkspace.buildPrompt(prompt));
       return;
     }
     if (!convos.activeId) {
       if (convos.isFull) return;
       convos.createConversation(chat.mode);
     }
-    chat.sendMessage(prompt);
-  }, [chat, compare, convos, isCompare]);
+    chat.sendMessage(prompt, sourceWorkspace.buildPrompt(prompt));
+  }, [chat, compare, convos, isCompare, sourceWorkspace]);
 
   const inputValue = isCompare ? compare.input : chat.input;
   const messageCount = isCompare ? compare.results.length * 3 : chat.messages.length;
@@ -229,6 +243,14 @@ export function DemoShell() {
   const activeHealth = isCompare ? compare.healthStatus : chat.healthStatus;
   const unavailableReason = MAINTENANCE[activeMode]
     ?? (activeHealth === "offline" ? `${modelLabels[activeMode]} is temporarily unavailable.` : undefined);
+  const leftRail = useMemo(
+    () => LEFT_RAIL.map((item) => (
+      item.id === "sources"
+        ? { ...item, badge: `${sourceWorkspace.activeSources.length}` }
+        : item
+    )),
+    [sourceWorkspace.activeSources.length],
+  );
 
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-[#111722] text-[#e8eef7]">
@@ -277,6 +299,22 @@ export function DemoShell() {
           </AILabPanel>
         )}
 
+        {leftPanel === "sources" && (
+          <AILabPanel eyebrow="source agent" title="Sources" onClose={() => setLeftPanel(null)}>
+            <SourcesPanel
+              sources={sourceWorkspace.sources}
+              status={sourceWorkspace.status}
+              loading={sourceWorkspace.loading}
+              error={sourceWorkspace.error}
+              onAdd={sourceWorkspace.addSource}
+              onToggle={sourceWorkspace.toggleSource}
+              onRemove={sourceWorkspace.removeSource}
+              onClear={sourceWorkspace.clearSources}
+              onRefreshStatus={sourceWorkspace.refreshStatus}
+            />
+          </AILabPanel>
+        )}
+
         <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-[#111722]">
           <div className="ai-lab-grid pointer-events-none absolute inset-0 opacity-80" />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(19,29,44,.08),rgba(10,15,24,.44)_72%)]" />
@@ -305,7 +343,7 @@ export function DemoShell() {
 
           <AILabRail
             side="left"
-            items={LEFT_RAIL.filter((item) => item.id !== leftPanel)}
+            items={leftRail.filter((item) => item.id !== leftPanel)}
             activeId={null}
             onSelect={(id) => setLeftPanel(id as LeftPanel)}
           />

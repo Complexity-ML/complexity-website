@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/adapter-neon": "^7.4.2",
     "@prisma/client": "^7.4.2",
@@ -36,7 +37,8 @@
     "react-dom": "19.2.3",
     "tailwind-merge": "^3.4.0",
     "three": "^0.182.0",
-    "vllm-i64": "^0.5.2"
+    "vllm-i64": "^0.5.2",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
