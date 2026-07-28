@@ -147,7 +147,7 @@ export function DemoShell() {
     if (!userScrolledUp.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: chat.streaming ? "instant" : "smooth" });
     }
-  }, [chat.messages, chat.streaming]);
+  }, [chat.messages.length, chat.streaming]);
 
   const handleSwitchMode = useCallback((mode: Mode) => {
     if (mode === activeMode || MAINTENANCE[mode]) return;
@@ -346,6 +346,11 @@ export function DemoShell() {
                       message={message}
                       mode={chat.mode}
                       modelLabel={modelLabels[chat.mode]}
+                      streaming={
+                        chat.streaming
+                        && message.role === "assistant"
+                        && index === chat.messages.length - 1
+                      }
                     />
                   ))}
                   {chat.error && <ErrorBanner message={chat.error} />}

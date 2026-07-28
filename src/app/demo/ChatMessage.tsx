@@ -13,9 +13,10 @@ interface ChatMessageProps {
   message: Message;
   mode: Mode;
   modelLabel?: string;
+  streaming?: boolean;
 }
 
-export function ChatMessage({ message, mode, modelLabel }: ChatMessageProps) {
+export function ChatMessage({ message, mode, modelLabel, streaming = false }: ChatMessageProps) {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
   const messageTime = message.createdAt
@@ -70,6 +71,11 @@ export function ChatMessage({ message, mode, modelLabel }: ChatMessageProps) {
           )}
           {isUser ? (
             <p className="whitespace-pre-wrap break-words text-xs leading-5 text-[#dce5f2] [overflow-wrap:anywhere]">{message.content}</p>
+          ) : message.content && streaming ? (
+            <p className="whitespace-pre-wrap break-words text-[15px] leading-7 text-[#d6dfec] [overflow-wrap:anywhere]">
+              {message.content}
+              <span className="ml-0.5 inline-block h-[1em] w-px animate-pulse bg-violet-300 align-[-0.12em]" />
+            </p>
           ) : message.content ? (
             <div className="text-[#d6dfec]"><CodeBlock content={message.content} /></div>
           ) : (
