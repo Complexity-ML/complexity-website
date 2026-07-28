@@ -12,10 +12,11 @@ import {
   WandSparkles,
 } from "lucide-react";
 import type { Mode } from "./config";
-import { MODEL_NAMES, SUGGESTIONS } from "./config";
+import { MAINTENANCE, SUGGESTIONS } from "./config";
 import { useChat } from "./useChat";
 import { useCompare } from "./useCompare";
 import { useConversations } from "./useConversations";
+import { useModelMetadata } from "./useModelMetadata";
 import { ParamPanel } from "./ParamPanel";
 import { ChatMessage, ErrorBanner } from "./ChatMessage";
 import { CompareView } from "./CompareView";
@@ -64,6 +65,7 @@ export function DemoShell() {
   const chat = useChat(initialMode === "dense" ? "dense" : initialMode === "compare" ? "TR-MoE" : initialMode);
   const compare = useCompare();
   const convos = useConversations(userId);
+  const { labels: modelLabels } = useModelMetadata();
 
   const [activeMode, setActiveMode] = useState<Mode>(initialMode);
   const [leftPanel, setLeftPanel] = useState<LeftPanel | null>(null);
@@ -98,13 +100,13 @@ export function DemoShell() {
       events.unshift({
         id: "activity-streaming",
         label: "Live generation in progress",
-        detail: `${chat.tokenStats?.tokens ?? 0} tokens received from ${MODEL_NAMES[chat.mode]}`,
+        detail: `${chat.tokenStats?.tokens ?? 0} tokens received from ${modelLabels[chat.mode]}`,
         kind: "system",
         active: true,
       });
     }
     return events;
-  }, [chat.messages, chat.mode, chat.streaming, chat.tokenStats?.tokens]);
+  }, [chat.messages, chat.mode, chat.streaming, chat.tokenStats?.tokens, modelLabels]);
 
   useEffect(() => {
     if (convos.activeConversation) {
@@ -148,7 +150,7 @@ export function DemoShell() {
   }, [chat.messages, chat.streaming]);
 
   const handleSwitchMode = useCallback((mode: Mode) => {
-    if (mode === activeMode) return;
+    if (mode === activeMode || MAINTENANCE[mode]) return;
     chat.switchMode(mode);
     setActiveMode(mode);
     inputRef.current?.focus();
@@ -224,6 +226,8 @@ export function DemoShell() {
   const activeParams = isCompare ? compare.params : chat.params;
   const updateParams = isCompare ? compare.updateParam : chat.updateParam;
   const activeHealth = isCompare ? compare.healthStatus : chat.healthStatus;
+  const unavailableReason = MAINTENANCE[activeMode]
+    ?? (activeHealth === "offline" ? `${modelLabels[activeMode]} is temporarily unavailable.` : undefined);
 
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-[#111722] text-[#e8eef7]">
@@ -278,8 +282,20 @@ export function DemoShell() {
 
           <div className="pointer-events-none absolute inset-x-0 top-3 z-20 flex items-center justify-between px-3.5">
             <span className="inline-flex h-7 items-center gap-2 rounded-lg border border-[#40516d] bg-[#1b2433]/95 px-2.5 text-[9px] font-semibold text-[#c5d0df] shadow-[0_5px_18px_rgba(0,0,0,.12)] backdrop-blur-xl">
-              <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_3px_rgba(74,222,128,.08)]" />
-              Live inference
+              <span className={`size-1.5 rounded-full ${
+                activeHealth === "ok"
+                  ? "bg-emerald-400 shadow-[0_0_0_3px_rgba(74,222,128,.08)]"
+                  : activeHealth === "degraded"
+                    ? "bg-amber-300"
+                    : "bg-rose-400"
+              }`} />
+              {MAINTENANCE[activeMode]
+                ? "Maintenance"
+                : activeHealth === "ok"
+                  ? "Live inference"
+                  : activeHealth === "degraded"
+                    ? "Starting inference"
+                    : "Inference unavailable"}
             </span>
             <span className="h-7 rounded-lg border border-[#40516d] bg-[#1b2433]/95 px-2.5 font-mono text-[9px] leading-[26px] text-[#9aa8bc] shadow-[0_5px_18px_rgba(0,0,0,.12)] backdrop-blur-xl">
               {messageCount} messages <span className="text-[#53647c]">·</span> {runCount} runs
@@ -317,13 +333,20 @@ export function DemoShell() {
                     denseTokens={compare.denseTokens}
                     chatTokens={compare.chatTokens}
                     streaming={compare.streaming}
+                    denseLabel={modelLabels.dense}
+                    routedLabel={modelLabels["TR-MoE"]}
                   />
                   {compare.error && <ErrorBanner message={compare.error} />}
                 </>
               ) : (
                 <div className="space-y-8">
                   {chat.messages.map((message, index) => (
-                    <ChatMessage key={index} message={message} mode={chat.mode} />
+                    <ChatMessage
+                      key={index}
+                      message={message}
+                      mode={chat.mode}
+                      modelLabel={modelLabels[chat.mode]}
+                    />
                   ))}
                   {chat.error && <ErrorBanner message={chat.error} />}
                 </div>
@@ -339,6 +362,7 @@ export function DemoShell() {
             streaming={isCompare ? compare.streaming : chat.streaming}
             maxTokens={activeParams.maxTokens}
             tokenStats={isCompare ? null : chat.tokenStats}
+            unavailableReason={unavailableReason}
             onInputChange={isCompare ? compare.setInput : chat.setInput}
             onSend={handleSend}
             onStop={handleStop}
@@ -355,13 +379,17 @@ export function DemoShell() {
                   key={mode}
                   type="button"
                   onClick={() => handleSwitchMode(mode)}
+                  disabled={!!MAINTENANCE[mode]}
                   className={`flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-[10px] transition-colors ${
                     activeMode === mode
                       ? "border-violet-400/50 bg-violet-400/10 text-violet-100"
                       : "border-[#2c3a50] bg-[#222d3f] text-[#9aa8bc] hover:border-[#40516d] hover:text-[#e8eef7]"
-                  }`}
+                  } disabled:cursor-not-allowed disabled:opacity-40`}
                 >
-                  <span>{MODEL_NAMES[mode]}</span>
+                  <span>
+                    {modelLabels[mode]}
+                    {MAINTENANCE[mode] && <small className="ml-2 text-amber-300">maintenance</small>}
+                  </span>
                   {activeMode === mode && <span className="size-1.5 rounded-full bg-violet-300" />}
                 </button>
               ))}
@@ -395,7 +423,7 @@ export function DemoShell() {
                 title={isCompare ? "Comparison state" : "Latest inference"}
                 detail={messageCount ? `${messageCount} messages across ${runCount} run${runCount === 1 ? "" : "s"}.` : "No inference has run yet."}
               />
-              <ResultRow title="Model" detail={MODEL_NAMES[activeMode]} />
+              <ResultRow title="Model" detail={modelLabels[activeMode]} />
               <ResultRow
                 title="Status"
                 detail={(isCompare ? compare.streaming : chat.streaming) ? "Generation in progress" : "Ready for another prompt"}

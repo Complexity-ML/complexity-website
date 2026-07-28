@@ -2,7 +2,9 @@
 
 import { useState, useRef, useCallback } from "react";
 import type { SamplingParams } from "./useChat";
-import { ENDPOINTS } from "./config";
+import { ENDPOINTS, MAINTENANCE } from "./config";
+import { useEndpointHealth } from "./useEndpointHealth";
+import type { HealthStatus } from "./useEndpointHealth";
 
 export interface CompareMessage {
   role: "user" | "assistant";
@@ -24,11 +26,48 @@ const DEFAULT_PARAMS: SamplingParams = {
   frequencyPenalty: 0.3,
 };
 
+const COMPARE_BASE = ENDPOINTS.compare.replace(/\/+$/, "");
 const DENSE_BASE = ENDPOINTS.dense.replace(/\/+$/, "");
-const MOE_BASE = ENDPOINTS["TR-MoE"].replace(/\/+$/, "");
+const ROUTED_BASE = ENDPOINTS["TR-MoE"].replace(/\/+$/, "");
+const PROXY_TIMEOUT_MS = 8_000;
 
-/** Parse an SSE stream and yield text chunks */
-async function* readSSE(response: Response): AsyncGenerator<string> {
+interface CompareChunk {
+  type: "tr_moe" | "dense";
+  text?: string;
+  error?: string;
+}
+
+/** Parse the comparison proxy SSE stream. */
+async function* readSSE(response: Response): AsyncGenerator<CompareChunk> {
+  if (!response.body) return;
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith("data: ")) continue;
+        const payload = trimmed.slice(6);
+        if (payload === "[DONE]") return;
+        try {
+          const data = JSON.parse(payload) as CompareChunk;
+          if (data.type === "tr_moe" || data.type === "dense") yield data;
+        } catch { /* skip malformed */ }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+/** Parse the OpenAI-compatible SSE stream exposed by each model Space. */
+async function* readModelSSE(response: Response): AsyncGenerator<string> {
   if (!response.body) return;
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
@@ -64,7 +103,14 @@ export function useCompare() {
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [params, setParams] = useState<SamplingParams>(DEFAULT_PARAMS);
-  const [healthStatus] = useState<"ok" | "degraded" | "offline">("ok");
+  const proxyHealth = useEndpointHealth(ENDPOINTS.compare, MAINTENANCE.compare);
+  const routedHealth = useEndpointHealth(ENDPOINTS["TR-MoE"], MAINTENANCE.compare);
+  const denseHealth = useEndpointHealth(ENDPOINTS.dense, MAINTENANCE.compare);
+  const healthStatus: HealthStatus = routedHealth === "offline" || denseHealth === "offline"
+    ? "offline"
+    : routedHealth === "ok" && denseHealth === "ok"
+      ? "ok"
+      : "degraded";
 
   const [denseContent, setDenseContent] = useState("");
   const [chatContent, setChatContent] = useState("");
@@ -93,7 +139,7 @@ export function useCompare() {
 
   const sendMessage = useCallback(async (directText?: string) => {
     const text = (directText ?? input).trim();
-    if (!text || loading || streaming) return;
+    if (!text || loading || streaming || MAINTENANCE.compare || healthStatus === "offline") return;
 
     setError(null);
     setInput("");
@@ -128,43 +174,94 @@ export function useCompare() {
       let denseElapsed = 0;
       let moeElapsed = 0;
 
-      // Stream both models in parallel
-      await Promise.all([
-        (async () => {
-          const t0 = performance.now();
-          const response = await fetch(`${DENSE_BASE}/v1/completions`, {
+      const t0 = performance.now();
+      let proxyCompleted = false;
+      let proxyProducedOutput = false;
+
+      if (proxyHealth !== "offline") {
+        const proxyController = new AbortController();
+        const cancelProxy = () => proxyController.abort();
+        controller.signal.addEventListener("abort", cancelProxy, { once: true });
+        const proxyTimeout = setTimeout(cancelProxy, PROXY_TIMEOUT_MS);
+        try {
+          const response = await fetch(`${COMPARE_BASE}/v1/compare`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+            signal: proxyController.signal,
+          });
+          if (response.ok) {
+            for await (const chunk of readSSE(response)) {
+              if (controller.signal.aborted) break;
+              // The timeout protects only the connection/first-token phase.
+              // Once either model starts streaming, allow the SSE generation
+              // to continue for as long as the user keeps it running.
+              if (!proxyProducedOutput) clearTimeout(proxyTimeout);
+              if (chunk.error) throw new Error(`${chunk.type}: ${chunk.error}`);
+              if (!chunk.text) continue;
+              proxyProducedOutput = true;
+              if (chunk.type === "dense") {
+                denseAccum += chunk.text;
+                finalDenseTokens++;
+                setDenseContent(denseAccum);
+                setDenseTokens(finalDenseTokens);
+                denseElapsed = (performance.now() - t0) / 1000;
+              } else {
+                moeAccum += chunk.text;
+                finalMoeTokens++;
+                setChatContent(moeAccum);
+                setChatTokens(finalMoeTokens);
+                moeElapsed = (performance.now() - t0) / 1000;
+              }
+            }
+            proxyCompleted = denseAccum.length > 0 && moeAccum.length > 0;
+          }
+        } catch (proxyError) {
+          if (controller.signal.aborted) throw proxyError;
+          if (proxyProducedOutput) throw proxyError;
+        } finally {
+          clearTimeout(proxyTimeout);
+          controller.signal.removeEventListener("abort", cancelProxy);
+        }
+      }
+
+      if (!proxyCompleted) {
+        const streamDirect = async (tag: "dense" | "tr_moe", base: string) => {
+          const response = await fetch(`${base}/v1/completions`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
             signal: controller.signal,
           });
-          for await (const chunk of readSSE(response)) {
-            if (controller.signal.aborted) break;
-            denseAccum += chunk;
-            finalDenseTokens++;
-            setDenseContent(denseAccum);
-            setDenseTokens(finalDenseTokens);
+          if (!response.ok) {
+            const detail = (await response.text()).slice(0, 300).trim();
+            throw new Error(
+              `${tag === "dense" ? "Dense-306" : "TR-MOE-306"} unavailable `
+              + `(HTTP ${response.status})${detail ? `: ${detail}` : ""}`,
+            );
           }
-          denseElapsed = (performance.now() - t0) / 1000;
-        })(),
-        (async () => {
-          const t0 = performance.now();
-          const response = await fetch(`${MOE_BASE}/v1/completions`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-            signal: controller.signal,
-          });
-          for await (const chunk of readSSE(response)) {
+          for await (const content of readModelSSE(response)) {
             if (controller.signal.aborted) break;
-            moeAccum += chunk;
-            finalMoeTokens++;
-            setChatContent(moeAccum);
-            setChatTokens(finalMoeTokens);
+            if (tag === "dense") {
+              denseAccum += content;
+              finalDenseTokens++;
+              setDenseContent(denseAccum);
+              setDenseTokens(finalDenseTokens);
+              denseElapsed = (performance.now() - t0) / 1000;
+            } else {
+              moeAccum += content;
+              finalMoeTokens++;
+              setChatContent(moeAccum);
+              setChatTokens(finalMoeTokens);
+              moeElapsed = (performance.now() - t0) / 1000;
+            }
           }
-          moeElapsed = (performance.now() - t0) / 1000;
-        })(),
-      ]);
+        };
+        await Promise.all([
+          denseAccum ? Promise.resolve() : streamDirect("dense", DENSE_BASE),
+          moeAccum ? Promise.resolve() : streamDirect("tr_moe", ROUTED_BASE),
+        ]);
+      }
 
       setResults((prev) => [
         ...prev,
@@ -188,7 +285,7 @@ export function useCompare() {
       setStreaming(false);
       abortRef.current = null;
     }
-  }, [input, loading, streaming, params]);
+  }, [input, loading, streaming, params, healthStatus, proxyHealth]);
 
   const updateParam = useCallback(<K extends keyof SamplingParams>(key: K, value: SamplingParams[K]) => {
     setParams((p) => ({ ...p, [key]: value }));

@@ -11,6 +11,8 @@ interface CompareViewProps {
   denseTokens: number;
   chatTokens: number;
   streaming: boolean;
+  denseLabel?: string;
+  routedLabel?: string;
 }
 
 function StatBadge({ tokens, elapsed }: { tokens: number; elapsed: number }) {
@@ -79,10 +81,14 @@ function CompareRun({
   prompt,
   dense,
   routed,
+  denseLabel,
+  routedLabel,
 }: {
   prompt?: string;
   dense: { content: string; tokens: number; elapsed: number };
   routed: { content: string; tokens: number; elapsed: number };
+  denseLabel: string;
+  routedLabel: string;
 }) {
   return (
     <motion.div
@@ -98,7 +104,7 @@ function CompareRun({
       )}
       <div className="grid gap-3 lg:grid-cols-2">
         <ModelColumn
-          label="dense baseline"
+          label={denseLabel}
           labelColor="border-orange-400/30 text-orange-400"
           content={dense.content}
           tokens={dense.tokens}
@@ -106,7 +112,7 @@ function CompareRun({
           streaming={false}
         />
         <ModelColumn
-          label="token-routed"
+          label={routedLabel}
           labelColor="border-green-400/30 text-green-400"
           content={routed.content}
           tokens={routed.tokens}
@@ -125,17 +131,26 @@ export function CompareView({
   denseTokens,
   chatTokens,
   streaming,
+  denseLabel = "Dense-306",
+  routedLabel = "TR-MOE-306",
 }: CompareViewProps) {
   return (
     <div className="space-y-6">
       {results.map((r, i) => (
-        <CompareRun key={i} prompt={r.prompt} dense={r.dense} routed={r.chat} />
+        <CompareRun
+          key={i}
+          prompt={r.prompt}
+          dense={r.dense}
+          routed={r.chat}
+          denseLabel={denseLabel}
+          routedLabel={routedLabel}
+        />
       ))}
 
       {streaming && (
         <div className="grid gap-3 lg:grid-cols-2">
           <ModelColumn
-            label="dense baseline"
+            label={denseLabel}
             labelColor="border-orange-400/30 text-orange-400"
             content={denseContent}
             tokens={denseTokens}
@@ -143,7 +158,7 @@ export function CompareView({
             streaming
           />
           <ModelColumn
-            label="token-routed"
+            label={routedLabel}
             labelColor="border-green-400/30 text-green-400"
             content={chatContent}
             tokens={chatTokens}

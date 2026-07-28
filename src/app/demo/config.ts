@@ -11,39 +11,37 @@ export interface SuggestionGroup {
   prompts: string[];
 }
 
-export const MAINTENANCE: Partial<Record<Mode, string>> = {};
-
-export const ENDPOINTS: Record<Mode, string> = {
-  "TR-MoE": process.env.NEXT_PUBLIC_API_URL || "https://Pacific-i64-TR-MOE-400M.hf.space",
-  compare: process.env.NEXT_PUBLIC_COMPARE_API_URL || "https://Pacific-i64-Compare.hf.space",
-  dense: process.env.NEXT_PUBLIC_DENSE_API_URL || "https://Pacific-i64-Dense-400M.hf.space",
+export const MAINTENANCE: Partial<Record<Mode, string>> = {
+  "TR-MoE": process.env.NEXT_PUBLIC_TR_MOE_MAINTENANCE || undefined,
+  compare: process.env.NEXT_PUBLIC_COMPARE_MAINTENANCE || undefined,
+  dense: process.env.NEXT_PUBLIC_DENSE_MAINTENANCE || undefined,
 };
 
-export const COMPARE_ENDPOINTS = {
-  dense: `${ENDPOINTS.compare}/dense`,
-  chat: `${ENDPOINTS.compare}/chat`,
-  compare: `${ENDPOINTS.compare}/v1/compare`,
+export const ENDPOINTS: Record<Mode, string> = {
+  "TR-MoE": process.env.NEXT_PUBLIC_API_URL || "https://pacific-i64-tr-moe-306.hf.space",
+  compare: process.env.NEXT_PUBLIC_COMPARE_API_URL || "https://pacific-i64-compare-306.hf.space",
+  dense: process.env.NEXT_PUBLIC_DENSE_API_URL || "https://pacific-i64-dense-306.hf.space",
 };
 
 export const MODEL_NAMES: Record<Mode, string> = {
-  "TR-MoE": "Token-Routed 187M",
-  compare: "Token-Routed vs Dense",
-  dense: "Dense baseline",
+  "TR-MoE": "TR-MOE-306",
+  compare: "TR-MOE-306 vs Dense-306",
+  dense: "Dense-306",
 };
 
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE":
-    "Deterministic lexical routing with a shared expert. The public demo highlights the 187M serving stack, separate from the corrected 306.5M scaling run.",
+    "The paper checkpoint: deterministic top-2 lexical routing with a shared dense path, trained at 306.5M parameters over 8B tokens.",
   compare:
-    "Side-by-side comparison for intuition: same prompt, dense baseline versus token-routed generation.",
+    "Matched 306.5M checkpoints, streamed side by side through the public comparison proxy.",
   dense:
-    "Dense transformer baseline for comparison against routed generation.",
+    "The matched 306.5M dense SwiGLU baseline for comparison against routed generation.",
 };
 
 export const FOOTERS: Record<Mode, string> = {
-  "TR-MoE": "Demo model: token-routed 187M serving stack — paper scaling result is 306.5M / 8B tokens",
-  compare: "Comparison mode — useful for qualitative inspection, not a paper benchmark",
-  dense: "Dense baseline — qualitative comparison only",
+  "TR-MoE": "TR-MOE-306 · 306.5M parameters · public Linux CPU inference with vllm-i64",
+  compare: "Matched 306.5M checkpoints · qualitative inspection, not a benchmark",
+  dense: "Dense-306 · 306.5M parameters · public Linux CPU inference with vllm-i64",
 };
 
 export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {

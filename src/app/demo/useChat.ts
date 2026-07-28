@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { Mode, Message } from "./config";
-import { ENDPOINTS, MAINTENANCE } from "./config";
+import { ENDPOINTS, MAINTENANCE, MODEL_NAMES } from "./config";
+import { useEndpointHealth } from "./useEndpointHealth";
 
 export interface SamplingParams {
   temperature: number;
@@ -82,7 +83,7 @@ export function useChat(initialMode: Mode) {
   const [params, setParams] = useState<SamplingParams>(DEFAULT_PARAMS);
   const [tokenStats, setTokenStats] = useState<TokenStats | null>(null);
   const [totalRequests] = useState<number | null>(null);
-  const [healthStatus] = useState<"ok" | "degraded" | "offline">("ok");
+  const healthStatus = useEndpointHealth(ENDPOINTS[mode], MAINTENANCE[mode]);
   const [snapshot] = useState<MonitorData | null>(null);
 
   const streamStartRef = useRef(0);
@@ -140,7 +141,7 @@ export function useChat(initialMode: Mode) {
 
   const sendMessage = useCallback(async (directText?: string) => {
     const text = (directText ?? input).trim();
-    if (!text || loading || streaming || MAINTENANCE[mode]) return;
+    if (!text || loading || streaming || MAINTENANCE[mode] || healthStatus === "offline") return;
 
     setError(null);
     const userMessage: Message = { role: "user", content: text, createdAt: Date.now() };
@@ -181,6 +182,13 @@ export function useChat(initialMode: Mode) {
         signal: controller.signal,
       });
 
+      if (!response.ok) {
+        const detail = (await response.text()).slice(0, 300).trim();
+        throw new Error(
+          `${MODEL_NAMES[mode]} unavailable (HTTP ${response.status})${detail ? `: ${detail}` : ""}`,
+        );
+      }
+
       for await (const chunk of readSSE(response)) {
         if (controller.signal.aborted) break;
         assistantContent += chunk;
@@ -206,7 +214,7 @@ export function useChat(initialMode: Mode) {
       setStreaming(false);
       abortControllerRef.current = null;
     }
-  }, [input, loading, streaming, mode, messages, params]);
+  }, [input, loading, streaming, mode, messages, params, healthStatus]);
 
   const updateParam = useCallback(<K extends keyof SamplingParams>(key: K, value: SamplingParams[K]) => {
     setParams((p) => ({ ...p, [key]: value }));

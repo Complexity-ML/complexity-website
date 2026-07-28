@@ -13,9 +13,9 @@ import { MODEL_NAMES, MAINTENANCE } from "./config";
 import LogoMark from "@/components/LogoMark";
 
 const MODE_META = {
-  "TR-MoE": { label: "Token-routed", detail: "187M · fixed routing", icon: Network },
-  compare: { label: "Compare", detail: "routed ↔ dense", icon: GitCompareArrows },
-  dense: { label: "Dense", detail: "baseline", icon: Rows3 },
+  "TR-MoE": { label: "Token-routed", detail: "306.5M · fixed top-2", icon: Network },
+  compare: { label: "Compare", detail: "matched 306.5M pair", icon: GitCompareArrows },
+  dense: { label: "Dense", detail: "306.5M · SwiGLU", icon: Rows3 },
 } satisfies Record<Mode, { label: string; detail: string; icon: typeof Network }>;
 
 interface ChatHeaderProps {

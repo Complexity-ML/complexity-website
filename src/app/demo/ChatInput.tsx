@@ -16,6 +16,7 @@ interface ChatInputProps {
   streaming: boolean;
   maxTokens: number;
   tokenStats: TokenStats | null;
+  unavailableReason?: string;
   onInputChange: (value: string) => void;
   onSend: () => void;
   onStop: () => void;
@@ -29,6 +30,7 @@ export function ChatInput({
   streaming,
   maxTokens,
   tokenStats,
+  unavailableReason,
   onInputChange,
   onSend,
   onStop,
@@ -65,7 +67,8 @@ export function ChatInput({
             value={input}
             onChange={(e) => onInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={mode === "compare" ? "Send one prompt to both models…" : "Ask AI LAB…"}
+            placeholder={unavailableReason || (mode === "compare" ? "Send one prompt to both models…" : "Ask AI LAB…")}
+            disabled={!!unavailableReason}
             rows={1}
             className="field-sizing-fixed h-[38px] min-h-[38px] max-h-[88px] resize-none overflow-x-hidden overflow-y-auto break-words border-0 bg-transparent px-2 py-2.5 text-[11px] text-[#e8eef7] shadow-none [overflow-wrap:anywhere] placeholder:text-[#738198] focus-visible:ring-0"
             onInput={(e) => {
@@ -85,7 +88,7 @@ export function ChatInput({
           ) : (
             <Button
               onClick={onSend}
-              disabled={!input.trim() || loading}
+              disabled={!input.trim() || loading || !!unavailableReason}
               size="icon"
               className="size-[38px] shrink-0 rounded-[10px] bg-gradient-to-br from-[#7c6cf2] to-[#9a80ff] text-white shadow-[0_7px_18px_rgba(124,108,242,.25)] hover:brightness-110"
             >
@@ -95,6 +98,11 @@ export function ChatInput({
         </div>
         </div>
         <div className="mt-2 flex items-center justify-end gap-3 px-1">
+          {unavailableReason && (
+            <p className="mr-auto font-mono text-[9px] text-amber-300/75">
+              {unavailableReason}
+            </p>
+          )}
           {tokenStats && tokenStats.tokens > 0 && (
             <TokenStatsDisplay stats={tokenStats} maxTokens={maxTokens} />
           )}

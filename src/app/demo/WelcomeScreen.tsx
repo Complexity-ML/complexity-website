@@ -12,15 +12,15 @@ const MODE_TITLES: Record<Mode, string> = {
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
-  "TR-MoE": "Public demo: 187M serving stack. Paper scaling claim: corrected 306.5M iso-parameter run over 8B tokens.",
-  compare: "Qualitative side-by-side demo. Treat it as inspection, not a benchmark table.",
-  dense: "Dense baseline for qualitative comparison with token-routed generation.",
+  "TR-MoE": "Public inference from the 306.5M token-routed paper checkpoint trained over 8B tokens.",
+  compare: "Matched 306.5M checkpoints. Treat the side-by-side output as qualitative inspection, not a benchmark table.",
+  dense: "Public inference from the matched 306.5M dense baseline.",
 };
 
 const proof = [
-  { icon: Route, label: "routing", value: "fixed lexical table" },
+  { icon: Route, label: "routing", value: "fixed lexical top-2" },
   { icon: Scale, label: "scaling", value: "306.5M / 8B tokens" },
-  { icon: Zap, label: "serving", value: "8,078 tok/s reported" },
+  { icon: Zap, label: "serving", value: "vllm-i64 · Linux CPU" },
 ];
 
 export function WelcomeScreen({

@@ -12,9 +12,10 @@ import { MODEL_NAMES } from "./config";
 interface ChatMessageProps {
   message: Message;
   mode: Mode;
+  modelLabel?: string;
 }
 
-export function ChatMessage({ message, mode }: ChatMessageProps) {
+export function ChatMessage({ message, mode, modelLabel }: ChatMessageProps) {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
   const messageTime = message.createdAt
@@ -48,7 +49,7 @@ export function ChatMessage({ message, mode }: ChatMessageProps) {
                 <span className="flex size-[22px] items-center justify-center rounded-[7px] border border-[#4f4982] bg-[#272442] text-[#b8adff]">
                   <Bot className="size-3" />
                 </span>
-                {MODEL_NAMES[mode]}
+                {modelLabel ?? MODEL_NAMES[mode]}
               </div>
               <CopyButton copied={copied} onClick={copyMessage} />
             </div>
