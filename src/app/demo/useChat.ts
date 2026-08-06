@@ -58,6 +58,10 @@ const DEFAULT_PARAMS: SamplingParams = {
   frequencyPenalty: 0.3,
 };
 
+function newConversationCacheId(): string {
+  return `conversation-${crypto.randomUUID()}`;
+}
+
 function getBaseUrl(mode: Mode): string {
   return ENDPOINTS[mode].replace(/\/+$/, "");
 }
@@ -113,6 +117,7 @@ export function useChat(initialMode: Mode) {
   // so a prompt sent immediately after "New chat" cannot capture messages
   // from the conversation that was just closed.
   const messagesRef = useRef<Message[]>([]);
+  const conversationCacheIdRef = useRef(newConversationCacheId());
   const hasTokenStats = tokenStats !== null;
   const expertActivity = useExpertActivity(
     mode === "TR-MoE" && (streaming || hasTokenStats),
@@ -149,6 +154,7 @@ export function useChat(initialMode: Mode) {
     if (streaming || loading) stopGeneration();
     setMode(newMode);
     messagesRef.current = [];
+    conversationCacheIdRef.current = newConversationCacheId();
     setMessages([]);
     setError(null);
     setInput("");
@@ -159,6 +165,7 @@ export function useChat(initialMode: Mode) {
   const clearChat = useCallback(() => {
     if (streaming || loading) stopGeneration();
     messagesRef.current = [];
+    conversationCacheIdRef.current = newConversationCacheId();
     setMessages([]);
     setError(null);
     setTokenStats(null);
@@ -167,6 +174,7 @@ export function useChat(initialMode: Mode) {
 
   const loadMessages = useCallback((msgs: Message[]) => {
     messagesRef.current = msgs;
+    conversationCacheIdRef.current = newConversationCacheId();
     setMessages(msgs);
     setError(null);
     setTokenStats(null);
@@ -308,6 +316,7 @@ export function useChat(initialMode: Mode) {
           top_p: params.topP,
           repetition_penalty: params.repetitionPenalty,
           frequency_penalty: params.frequencyPenalty,
+          user: conversationCacheIdRef.current,
           stream: true,
         }),
         signal: controller.signal,
