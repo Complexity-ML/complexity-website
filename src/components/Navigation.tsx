@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { CircleUserRound, Github, LogIn, LogOut, Menu, MessageSquare, Settings, Sparkles } from "lucide-react";
+import { CircleUserRound, Github, LogIn, LogOut, Menu, Settings, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -91,10 +91,16 @@ export default function Navigation() {
               <Github className="size-4" />
             </a>
           </Button>
-          <Button size="sm" className="hidden h-9 bg-white px-4 text-black hover:bg-white/85 md:inline-flex" asChild>
+          <Button
+            size="sm"
+            className="group hidden h-10 rounded-xl bg-white px-2.5 pr-4 text-black shadow-[0_8px_28px_rgba(139,92,246,.16)] hover:bg-violet-50 md:inline-flex"
+            asChild
+          >
             <Link href="/ai-lab">
-              <MessageSquare className="size-3.5" />
-              Open AI LAB
+              <span className="flex size-6 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-sm transition-transform group-hover:scale-105">
+                <Sparkles className="size-3.5" />
+              </span>
+              Try the chat
             </Link>
           </Button>
 
@@ -185,10 +191,12 @@ export default function Navigation() {
                   </SheetClose>
                 ) : null}
                 <SheetClose asChild>
-                  <Button className="justify-center bg-white text-black hover:bg-white/85" asChild>
+                  <Button className="group justify-center bg-white text-black hover:bg-violet-50" asChild>
                     <Link href="/ai-lab">
-                      <MessageSquare className="size-4" />
-                      Open AI LAB
+                      <span className="flex size-6 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-sm transition-transform group-hover:scale-105">
+                        <Sparkles className="size-3.5" />
+                      </span>
+                      Try the chat
                     </Link>
                   </Button>
                 </SheetClose>
