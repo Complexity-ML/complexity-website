@@ -109,6 +109,10 @@ export function useChat(initialMode: Mode) {
   const streamStartRef = useRef(0);
   const tokenCountRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  // React state updates are asynchronous. Keep an eagerly synchronized copy
+  // so a prompt sent immediately after "New chat" cannot capture messages
+  // from the conversation that was just closed.
+  const messagesRef = useRef<Message[]>([]);
   const hasTokenStats = tokenStats !== null;
   const expertActivity = useExpertActivity(
     mode === "TR-MoE" && (streaming || hasTokenStats),
@@ -144,6 +148,7 @@ export function useChat(initialMode: Mode) {
     if (MAINTENANCE[newMode]) return;
     if (streaming || loading) stopGeneration();
     setMode(newMode);
+    messagesRef.current = [];
     setMessages([]);
     setError(null);
     setInput("");
@@ -153,6 +158,7 @@ export function useChat(initialMode: Mode) {
 
   const clearChat = useCallback(() => {
     if (streaming || loading) stopGeneration();
+    messagesRef.current = [];
     setMessages([]);
     setError(null);
     setTokenStats(null);
@@ -160,6 +166,7 @@ export function useChat(initialMode: Mode) {
   }, [streaming, loading, stopGeneration]);
 
   const loadMessages = useCallback((msgs: Message[]) => {
+    messagesRef.current = msgs;
     setMessages(msgs);
     setError(null);
     setTokenStats(null);
@@ -176,7 +183,8 @@ export function useChat(initialMode: Mode) {
     setError(null);
     setResearchEvents([]);
     const userMessage: Message = { role: "user", content: text, createdAt: Date.now() };
-    const newMessages = [...messages, userMessage];
+    const newMessages = [...messagesRef.current, userMessage];
+    messagesRef.current = newMessages;
     setMessages(newMessages);
     setInput("");
     setLoading(true);
@@ -262,24 +270,29 @@ export function useChat(initialMode: Mode) {
 
       let assistantContent = "";
       const assistantCreatedAt = Date.now();
-      setMessages([...newMessages, { role: "assistant", content: "", createdAt: assistantCreatedAt }]);
+      const initialAssistantMessages: Message[] = [
+        ...newMessages,
+        { role: "assistant", content: "", createdAt: assistantCreatedAt },
+      ];
+      messagesRef.current = initialAssistantMessages;
+      setMessages(initialAssistantMessages);
 
       const publishAssistantContent = (content: string) => {
-        setMessages((current) => {
-          const previous = current[current.length - 1];
-          if (
-            previous?.role === "assistant"
-            && previous.createdAt === assistantCreatedAt
-            && previous.content.length > content.length
-          ) {
-            return current;
-          }
-          return [...newMessages, {
-            role: "assistant",
-            content,
-            createdAt: assistantCreatedAt,
-          }];
-        });
+        const previous = messagesRef.current[messagesRef.current.length - 1];
+        if (
+          previous?.role === "assistant"
+          && previous.createdAt === assistantCreatedAt
+          && previous.content.length > content.length
+        ) {
+          return;
+        }
+        const nextMessages: Message[] = [...newMessages, {
+          role: "assistant",
+          content,
+          createdAt: assistantCreatedAt,
+        }];
+        messagesRef.current = nextMessages;
+        setMessages(nextMessages);
       };
 
       // Stream via fetch (axios doesn't support ReadableStream)
@@ -346,7 +359,7 @@ export function useChat(initialMode: Mode) {
       setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
       abortControllerRef.current = null;
     }
-  }, [input, loading, streaming, mode, messages, params, healthStatus]);
+  }, [input, loading, streaming, mode, params, healthStatus]);
 
   const updateParam = useCallback(<K extends keyof SamplingParams>(key: K, value: SamplingParams[K]) => {
     setParams((p) => ({ ...p, [key]: value }));
