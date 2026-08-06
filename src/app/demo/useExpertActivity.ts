@@ -23,6 +23,7 @@ export interface ExpertActivityData {
 }
 
 const EXPERTS_ENDPOINT = `${ENDPOINTS["TR-MoE"].replace(/\/+$/, "")}/v1/experts`;
+const EXPERT_POLL_INTERVAL_MS = 1_000;
 
 /** Poll the routed model telemetry only while a visible generation needs it. */
 export function useExpertActivity(enabled: boolean): ExpertActivityData | null {
@@ -52,7 +53,7 @@ export function useExpertActivity(enabled: boolean): ExpertActivityData | null {
     };
 
     void load();
-    const interval = window.setInterval(() => void load(), 240);
+    const interval = window.setInterval(() => void load(), EXPERT_POLL_INTERVAL_MS);
     return () => {
       cancelled = true;
       window.clearInterval(interval);
