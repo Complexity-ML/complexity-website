@@ -20,14 +20,14 @@ export const MAINTENANCE: Partial<Record<Mode, string>> = {
 };
 
 export const ENDPOINTS: Record<Mode, string> = {
-  "TR-MoE": process.env.NEXT_PUBLIC_TR_MOE_API_URL || "https://pacific-i64-tr-moe-306.hf.space",
+  "TR-MoE": process.env.NEXT_PUBLIC_TR_MOE_API_URL || "https://pacific-i64-tr-hash-0-5b.hf.space",
   compare: process.env.NEXT_PUBLIC_COMPARE_API_URL || "https://pacific-i64-compare-306.hf.space",
   dense: process.env.NEXT_PUBLIC_DENSE_API_URL || "https://pacific-i64-dense-306.hf.space",
 };
 
 export const MODEL_NAMES: Record<Mode, string> = {
-  "TR-MoE": "TR-HASH-MOE-500M",
-  compare: "TR-HASH-MOE-500M vs Dense-306",
+  "TR-MoE": "TR-HASH-0.5B",
+  compare: "TR-HASH-0.5B vs Dense-306",
   dense: "Dense-306",
 };
 
@@ -41,7 +41,7 @@ export const DESCRIPTIONS: Record<Mode, string> = {
 };
 
 export const FOOTERS: Record<Mode, string> = {
-  "TR-MoE": "TR-HASH-MOE-500M · 492.1M parameters · 20B pretraining tokens · vllm-i64",
+  "TR-MoE": "TR-HASH-0.5B · 492.1M parameters · 20B pretraining tokens · vllm-i64",
   compare: "TR-Hash 492.1M vs Dense 306.5M · qualitative, non-iso-parameter comparison",
   dense: "Dense-306 · 306.5M parameters · public Linux CPU inference with vllm-i64",
 };

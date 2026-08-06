@@ -28,7 +28,7 @@ const groups = [
       { label: "Interactive paper", href: "https://huggingface.co/spaces/Pacific-i64/Token-Routing-Interactive-Paper" },
       { label: "Paper artifacts", href: "https://github.com/Complexity-ML/tmlr-paper-pool" },
       { label: "vllm-i64", href: "https://github.com/Complexity-ML/vllm-i64" },
-      { label: "TR-Hash 500M", href: "https://huggingface.co/Pacific-i64/TR-HASH-MOE-500M-HF" },
+      { label: "TR-Hash 0.5B", href: "https://huggingface.co/Pacific-i64/TR-HASH-MOE-500M-HF" },
     ],
   },
   {
