@@ -264,6 +264,24 @@ export function useChat(initialMode: Mode) {
       const assistantCreatedAt = Date.now();
       setMessages([...newMessages, { role: "assistant", content: "", createdAt: assistantCreatedAt }]);
 
+      const publishAssistantContent = (content: string) => {
+        setMessages((current) => {
+          const previous = current[current.length - 1];
+          if (
+            previous?.role === "assistant"
+            && previous.createdAt === assistantCreatedAt
+            && previous.content.length > content.length
+          ) {
+            return current;
+          }
+          return [...newMessages, {
+            role: "assistant",
+            content,
+            createdAt: assistantCreatedAt,
+          }];
+        });
+      };
+
       // Stream via fetch (axios doesn't support ReadableStream)
       const response = await fetch(`${base}/v1/chat/completions`, {
         method: "POST",
@@ -300,8 +318,13 @@ export function useChat(initialMode: Mode) {
         tokenCountRef.current++;
         const elapsed = (performance.now() - streamStartRef.current) / 1000;
         setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
-        setMessages([...newMessages, { role: "assistant", content: assistantContent, createdAt: assistantCreatedAt }]);
+        publishAssistantContent(assistantContent);
       }
+
+      // Publish the exact accumulated buffer once more before changing the
+      // rendering state. A late React render can never replace it with a
+      // shorter conversation snapshot.
+      publishAssistantContent(assistantContent);
 
       const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
       setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });

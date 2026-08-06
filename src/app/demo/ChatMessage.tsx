@@ -83,13 +83,13 @@ export const ChatMessage = memo(function ChatMessage({
           )}
           {isUser ? (
             <p className="whitespace-pre-wrap break-words text-xs leading-5 text-[#dce5f2] [overflow-wrap:anywhere]">{message.content}</p>
-          ) : message.content && streaming ? (
-            <p className="whitespace-pre-wrap break-words text-[15px] leading-7 text-[#d6dfec] [overflow-wrap:anywhere]">
-              {message.content}
-              <span className="ml-0.5 inline-block h-[1em] w-px animate-pulse bg-violet-300 align-[-0.12em]" />
-            </p>
           ) : message.content ? (
-            <div className="text-[#d6dfec]"><CodeBlock content={message.content} /></div>
+            <div className="text-[#d6dfec]">
+              <CodeBlock content={message.content} />
+              {streaming && (
+                <span className="ml-0.5 inline-block h-[1em] w-px animate-pulse bg-violet-300 align-[-0.12em]" />
+              )}
+            </div>
           ) : (
             <div className="flex items-center gap-2 text-xs text-[#9aa8bc]">
               <Loader2 className="size-4 animate-spin text-violet-300" />

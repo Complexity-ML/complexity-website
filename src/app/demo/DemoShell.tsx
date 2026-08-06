@@ -161,6 +161,7 @@ export function DemoShell() {
 
   const prevStreaming = useRef(false);
   const previousMessageCount = useRef(0);
+  const streamedContentLength = chat.messages.at(-1)?.content.length ?? 0;
   useEffect(() => {
     const wasActive = prevStreaming.current;
     const isActive = chat.streaming || chat.loading;
@@ -192,7 +193,7 @@ export function DemoShell() {
     if (!userScrolledUp.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: chat.streaming ? "instant" : "smooth" });
     }
-  }, [chat.messages.length, chat.streaming]);
+  }, [chat.messages.length, chat.streaming, streamedContentLength]);
 
   const handleSwitchMode = useCallback((mode: Mode) => {
     if (mode === activeMode || MAINTENANCE[mode]) return;
