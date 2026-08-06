@@ -13,8 +13,8 @@ import { MODEL_NAMES, MAINTENANCE } from "./config";
 import LogoMark from "@/components/LogoMark";
 
 const MODE_META = {
-  "TR-MoE": { label: "Token-routed", detail: "306.5M · fixed top-2", icon: Network },
-  compare: { label: "Compare", detail: "matched 306.5M pair", icon: GitCompareArrows },
+  "TR-MoE": { label: "TR-Hash", detail: "492.1M · hash top-2", icon: Network },
+  compare: { label: "Compare", detail: "492.1M vs 306.5M", icon: GitCompareArrows },
   dense: { label: "Dense", detail: "306.5M · SwiGLU", icon: Rows3 },
 } satisfies Record<Mode, { label: string; detail: string; icon: typeof Network }>;
 

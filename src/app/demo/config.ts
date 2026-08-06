@@ -26,23 +26,23 @@ export const ENDPOINTS: Record<Mode, string> = {
 };
 
 export const MODEL_NAMES: Record<Mode, string> = {
-  "TR-MoE": "TR-MOE-306",
-  compare: "TR-MOE-306 vs Dense-306",
+  "TR-MoE": "TR-HASH-MOE-500M",
+  compare: "TR-HASH-MOE-500M vs Dense-306",
   dense: "Dense-306",
 };
 
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE":
-    "The paper checkpoint: deterministic top-2 lexical routing with a shared dense path, trained at 306.5M parameters over 8B tokens.",
+    "A 492.1M-parameter TR-Hash MoE with deterministic token-ID top-2 routing and a shared dense path, pretrained over 20B tokens.",
   compare:
-    "Matched 306.5M checkpoints, streamed side by side through the public comparison proxy.",
+    "TR-Hash 492.1M and the historical Dense-306 control streamed side by side for qualitative inspection; this is not an iso-parameter benchmark.",
   dense:
     "The matched 306.5M dense SwiGLU baseline for comparison against routed generation.",
 };
 
 export const FOOTERS: Record<Mode, string> = {
-  "TR-MoE": "TR-MOE-306 · 306.5M parameters · public Linux CPU inference with vllm-i64",
-  compare: "Matched 306.5M checkpoints · qualitative inspection, not a benchmark",
+  "TR-MoE": "TR-HASH-MOE-500M · 492.1M parameters · 20B pretraining tokens · vllm-i64",
+  compare: "TR-Hash 492.1M vs Dense 306.5M · qualitative, non-iso-parameter comparison",
   dense: "Dense-306 · 306.5M parameters · public Linux CPU inference with vllm-i64",
 };
 

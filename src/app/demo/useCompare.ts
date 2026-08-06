@@ -238,7 +238,7 @@ export function useCompare() {
           if (!response.ok) {
             const detail = (await response.text()).slice(0, 300).trim();
             throw new Error(
-              `${tag === "dense" ? "Dense-306" : "TR-MOE-306"} unavailable `
+              `${tag === "dense" ? "Dense-306" : "TR-HASH-MOE-500M"} unavailable `
               + `(HTTP ${response.status})${detail ? `: ${detail}` : ""}`,
             );
           }

@@ -37,9 +37,9 @@ const projects = [
   },
   {
     title: "Pacific-i64",
-    kicker: "Matched open checkpoints",
-    description: "Hosts the public TR-MOE-306 and Dense-306 checkpoints used by the paper companion and Linux CPU inference demo.",
-    tags: ["TR-MOE-306", "Dense-306", "Hugging Face"],
+    kicker: "Open model releases",
+    description: "Hosts the current 492.1M-parameter TR-Hash MoE release trained over 20B tokens, alongside the historical matched checkpoints.",
+    tags: ["TR-Hash MoE", "492.1M", "20B tokens"],
     href: "https://huggingface.co/Pacific-i64",
     icon: Box,
     tone: "amber",

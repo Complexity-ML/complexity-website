@@ -6,10 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const metrics = [
-  { value: "306.5M", label: "parameters", color: "text-sky-300" },
-  { value: "8B", label: "train tokens", color: "text-violet-300" },
-  { value: "−0.0163", label: "final loss gap", color: "text-emerald-300" },
-  { value: "8,078", label: "tok/s served", color: "text-amber-300" },
+  { value: "492.1M", label: "parameters", color: "text-sky-300" },
+  { value: "20B", label: "train tokens", color: "text-violet-300" },
+  { value: "32K", label: "vocabulary", color: "text-emerald-300" },
+  { value: "top-2", label: "hash routing", color: "text-amber-300" },
 ];
 
 const flow = [

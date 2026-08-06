@@ -143,7 +143,7 @@ export function CompareView({
   chatTokens,
   streaming,
   denseLabel = "Dense-306",
-  routedLabel = "TR-MOE-306",
+  routedLabel = "TR-HASH-MOE-500M",
   expertActivity,
 }: CompareViewProps) {
   return (

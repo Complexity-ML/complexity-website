@@ -6,22 +6,34 @@ import type { Mode } from "./config";
 import { DESCRIPTIONS, SUGGESTIONS } from "./config";
 
 const MODE_TITLES: Record<Mode, string> = {
-  "TR-MoE": "Try deterministic lexical routing",
+  "TR-MoE": "Try deterministic TR-Hash routing",
   compare: "Compare routed vs dense generation",
   dense: "Probe the dense baseline",
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
-  "TR-MoE": "Public inference from the 306.5M token-routed paper checkpoint trained over 8B tokens.",
-  compare: "Matched 306.5M checkpoints. Treat the side-by-side output as qualitative inspection, not a benchmark table.",
+  "TR-MoE": "Public inference from the 492.1M TR-Hash MoE checkpoint pretrained over 20B tokens.",
+  compare: "TR-Hash 492.1M versus Dense 306.5M. This non-iso-parameter view is qualitative inspection, not a controlled benchmark.",
   dense: "Public inference from the matched 306.5M dense baseline.",
 };
 
-const proof = [
-  { icon: Route, label: "routing", value: "fixed lexical top-2" },
-  { icon: Scale, label: "scaling", value: "306.5M / 8B tokens" },
-  { icon: Zap, label: "serving", value: "vllm-i64 · Linux CPU" },
-];
+const proof: Record<Mode, Array<{ icon: typeof Route; label: string; value: string }>> = {
+  "TR-MoE": [
+    { icon: Route, label: "routing", value: "token-ID hash top-2" },
+    { icon: Scale, label: "scaling", value: "492.1M / 20B tokens" },
+    { icon: Zap, label: "serving", value: "vllm-i64 · Linux CPU" },
+  ],
+  compare: [
+    { icon: Route, label: "models", value: "TR-Hash vs dense" },
+    { icon: Scale, label: "scaling", value: "492.1M vs 306.5M" },
+    { icon: Zap, label: "scope", value: "qualitative only" },
+  ],
+  dense: [
+    { icon: Route, label: "path", value: "dense SwiGLU" },
+    { icon: Scale, label: "scaling", value: "306.5M / 8B tokens" },
+    { icon: Zap, label: "serving", value: "vllm-i64 · Linux CPU" },
+  ],
+};
 
 export function WelcomeScreen({
   mode,
@@ -54,7 +66,7 @@ export function WelcomeScreen({
           </p>
 
           <div className="mt-8 grid grid-cols-3 divide-x divide-white/[0.08] border-y border-white/[0.08] py-5">
-            {proof.map((item) => {
+            {proof[mode].map((item) => {
               const Icon = item.icon;
               return (
                 <div key={item.label} className="px-3 first:pl-0 last:pr-0">
