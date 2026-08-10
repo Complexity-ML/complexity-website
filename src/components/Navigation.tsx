@@ -5,7 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { CircleUserRound, Github, LogIn, LogOut, Menu, MessageCircle, Settings, Sparkles } from "lucide-react";
+import { CircleUserRound, Github, LogIn, LogOut, Menu, Settings, Sparkles } from "lucide-react";
+import { FaDiscord } from "react-icons/fa6";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -86,14 +87,9 @@ export default function Navigation() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1.5">
-          <Button variant="ghost" size="icon" className="hidden text-white/55 hover:text-white sm:inline-flex" asChild>
-            <a href="https://github.com/Complexity-ML" target="_blank" rel="noopener noreferrer" aria-label="Complexity-ML on GitHub">
-              <Github className="size-4" />
-            </a>
-          </Button>
           <Button variant="ghost" size="icon" className="hidden text-violet-300/75 hover:text-violet-200 sm:inline-flex" asChild>
             <a href="https://discord.gg/EyDqXqpxWu" target="_blank" rel="noopener noreferrer" aria-label="Join the AETHORIA AI Discord community">
-              <MessageCircle className="size-4" />
+              <FaDiscord className="size-[18px]" />
             </a>
           </Button>
           <Button
@@ -213,7 +209,7 @@ export default function Navigation() {
                 </Button>
                 <Button variant="outline" className="mt-2 border-violet-400/20 bg-violet-400/[0.05] text-violet-200" asChild>
                   <a href="https://discord.gg/EyDqXqpxWu" target="_blank" rel="noopener noreferrer">
-                    <MessageCircle className="size-4" />
+                    <FaDiscord className="size-4" />
                     Join Discord
                   </a>
                 </Button>
