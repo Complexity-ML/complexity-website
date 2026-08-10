@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { CircleUserRound, Github, LogIn, LogOut, Menu, Settings, Sparkles } from "lucide-react";
+import { CircleUserRound, LogIn, LogOut, Menu, Settings, Sparkles } from "lucide-react";
 import { FaDiscord } from "react-icons/fa6";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -201,12 +201,6 @@ export default function Navigation() {
                     </Link>
                   </Button>
                 </SheetClose>
-                <Button variant="outline" className="mt-2 border-white/10" asChild>
-                  <a href="https://github.com/Complexity-ML" target="_blank" rel="noopener noreferrer">
-                    <Github className="size-4" />
-                    GitHub
-                  </a>
-                </Button>
                 <Button variant="outline" className="mt-2 border-violet-400/20 bg-violet-400/[0.05] text-violet-200" asChild>
                   <a href="https://discord.gg/EyDqXqpxWu" target="_blank" rel="noopener noreferrer">
                     <FaDiscord className="size-4" />
