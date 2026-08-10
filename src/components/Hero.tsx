@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, Github, Route, Scale, Terminal, Zap } from "lucide-react";
+import { ArrowRight, BookOpen, Github, MessageCircle, Route, Scale, Terminal, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -62,6 +62,12 @@ export default function Hero() {
             </Button>
             <Button size="lg" variant="outline" className="h-12 border-white/12 bg-white/[0.035] px-6" asChild>
               <a href="/labo-ai">Explore LABO AI</a>
+            </Button>
+            <Button size="lg" variant="outline" className="h-12 border-violet-400/25 bg-violet-400/[0.07] px-6 text-violet-100 hover:bg-violet-400/[0.12]" asChild>
+              <a href="https://discord.gg/EyDqXqpxWu" target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="size-4" />
+                Join the community
+              </a>
             </Button>
             <Button size="lg" variant="ghost" className="h-12 px-5 text-white/50 hover:text-white" asChild>
               <a href="https://github.com/Complexity-ML" target="_blank" rel="noopener noreferrer">

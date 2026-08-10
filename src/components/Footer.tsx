@@ -17,6 +17,7 @@ const groups = [
     links: [
       { label: "LABO AI", href: "/labo-ai" },
       { label: "AI LAB", href: "/ai-lab" },
+      { label: "Discord community", href: "https://discord.gg/EyDqXqpxWu" },
       { label: "GitHub", href: "https://github.com/Complexity-ML" },
       { label: "HuggingFace", href: "https://huggingface.co/Pacific-i64" },
     ],
