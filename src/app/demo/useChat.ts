@@ -50,12 +50,12 @@ interface ResearchResponse {
 }
 
 const DEFAULT_PARAMS: SamplingParams = {
-  temperature: 0.7,
-  maxTokens: 512,
-  topK: 50,
-  topP: 0.9,
-  repetitionPenalty: 1.3,
-  frequencyPenalty: 0.3,
+  temperature: 0,
+  maxTokens: 96,
+  topK: 0,
+  topP: 1,
+  repetitionPenalty: 1.08,
+  frequencyPenalty: 0,
 };
 
 function newConversationCacheId(): string {

@@ -17,7 +17,7 @@ export function ParamPanel({ params, onUpdate, embedded = false }: ParamPanelPro
         <ParamControl label="max_tokens" value={params.maxTokens} min={16} max={4096} step={16} onChange={(v) => onUpdate("maxTokens", v)} />
         <ParamControl label="top_k" value={params.topK} min={0} max={200} step={1} onChange={(v) => onUpdate("topK", v)} />
         <ParamControl label="top_p" value={params.topP} min={0} max={1} step={0.05} onChange={(v) => onUpdate("topP", v)} />
-        <ParamControl label="rep_penalty" value={params.repetitionPenalty} min={1} max={2} step={0.05} onChange={(v) => onUpdate("repetitionPenalty", v)} />
+        <ParamControl label="rep_penalty" value={params.repetitionPenalty} min={1} max={2} step={0.01} onChange={(v) => onUpdate("repetitionPenalty", v)} />
         <ParamControl label="freq_penalty" value={params.frequencyPenalty} min={0} max={1} step={0.05} onChange={(v) => onUpdate("frequencyPenalty", v)} />
       </div>
     </div>
