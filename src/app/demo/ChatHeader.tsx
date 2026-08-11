@@ -60,7 +60,7 @@ export function ChatHeader({
         </div>
 
         <div className="scrollbar-none mx-auto flex min-w-0 items-center gap-1 overflow-x-auto rounded-xl border border-white/[0.07] bg-black/20 p-1">
-          {(["TR-MoE", "compare", "dense"] as Mode[]).map((m) => {
+          {(["TR-MoE"] as Mode[]).map((m) => {
             const meta = MODE_META[m];
             const Icon = meta.icon;
             const active = mode === m;

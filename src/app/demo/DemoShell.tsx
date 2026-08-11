@@ -34,7 +34,7 @@ import {
   type ActivityLogEvent,
 } from "@/components/ai-lab";
 
-const MODES: Mode[] = ["TR-MoE", "compare", "dense"];
+const MODES: Mode[] = ["TR-MoE"];
 type LeftPanel = "chats" | "prompts" | "agent" | "logs";
 type RightPanel = "model" | "metrics" | "results";
 

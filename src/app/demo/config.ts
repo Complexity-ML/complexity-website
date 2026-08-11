@@ -19,10 +19,12 @@ export const MAINTENANCE: Partial<Record<Mode, string>> = {
   dense: process.env.NEXT_PUBLIC_DENSE_MAINTENANCE || undefined,
 };
 
+const ROUTED_ENDPOINT = process.env.NEXT_PUBLIC_TR_MOE_API_URL || "https://pacific-i64-tr-hash-0-5b.hf.space";
+
 export const ENDPOINTS: Record<Mode, string> = {
-  "TR-MoE": process.env.NEXT_PUBLIC_TR_MOE_API_URL || "https://pacific-i64-tr-hash-0-5b.hf.space",
-  compare: process.env.NEXT_PUBLIC_COMPARE_API_URL || "https://pacific-i64-compare-306.hf.space",
-  dense: process.env.NEXT_PUBLIC_DENSE_API_URL || "https://pacific-i64-dense-306.hf.space",
+  "TR-MoE": ROUTED_ENDPOINT,
+  compare: ROUTED_ENDPOINT,
+  dense: ROUTED_ENDPOINT,
 };
 
 export const MODEL_NAMES: Record<Mode, string> = {
