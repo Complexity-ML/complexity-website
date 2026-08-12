@@ -1,10 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import CodeBlock from "@/components/CodeBlock";
 import type { CompareResult } from "./useCompare";
 import type { ExpertActivityData } from "./useExpertActivity";
 import { ExpertActivation } from "./ExpertActivation";
+import { ReasoningContent } from "./ReasoningContent";
 
 interface CompareViewProps {
   results: CompareResult[];
@@ -65,7 +65,7 @@ function ModelColumn({
       )}
       <div className="min-h-[120px]">
         {content ? (
-          <CodeBlock content={content} />
+          <ReasoningContent content={content} streaming={streaming} />
         ) : streaming ? (
           <div className="flex h-8 items-center gap-1">
             {[0, 1, 2].map((i) => (

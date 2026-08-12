@@ -3,13 +3,13 @@
 import { memo, useState } from "react";
 import { motion } from "framer-motion";
 import { Bot, Check, Copy, Loader2 } from "lucide-react";
-import CodeBlock from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Mode, Message } from "./config";
 import { MODEL_NAMES } from "./config";
 import type { ExpertActivityData } from "./useExpertActivity";
 import { ExpertActivation } from "./ExpertActivation";
+import { ReasoningContent, visibleAssistantText } from "./ReasoningContent";
 
 interface ChatMessageProps {
   message: Message;
@@ -33,7 +33,9 @@ export const ChatMessage = memo(function ChatMessage({
     : null;
 
   const copyMessage = async () => {
-    await navigator.clipboard.writeText(message.content);
+    await navigator.clipboard.writeText(
+      isUser ? message.content : visibleAssistantText(message.content),
+    );
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
   };
@@ -84,12 +86,11 @@ export const ChatMessage = memo(function ChatMessage({
           {isUser ? (
             <p className="whitespace-pre-wrap break-words text-xs leading-5 text-[#dce5f2] [overflow-wrap:anywhere]">{message.content}</p>
           ) : message.content ? (
-            <div className="text-[#d6dfec]">
-              <CodeBlock content={message.content} />
-              {streaming && (
-                <span className="ml-0.5 inline-block h-[1em] w-px animate-pulse bg-violet-300 align-[-0.12em]" />
-              )}
-            </div>
+            <ReasoningContent
+              content={message.content}
+              streaming={streaming}
+              className="text-[#d6dfec]"
+            />
           ) : (
             <div className="flex items-center gap-2 text-xs text-[#9aa8bc]">
               <Loader2 className="size-4 animate-spin text-violet-300" />
