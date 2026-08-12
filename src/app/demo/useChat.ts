@@ -51,7 +51,7 @@ interface ResearchResponse {
 
 const DEFAULT_PARAMS: SamplingParams = {
   temperature: 0,
-  maxTokens: 192,
+  maxTokens: 384,
   topK: 0,
   topP: 1,
   repetitionPenalty: 1.08,
