@@ -19,12 +19,12 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.complexity-ai.fr"),
   alternates: { canonical: "./" },
   title: "Complexity-ML | Open-Source AI Lab",
-  description: "Building efficient transformer architectures with deterministic lexical routing and shared-expert Token-Routed MLP. Open-source AI research from Paris.",
+  description: "Building inspectable transformer architectures with deterministic TR-Hash routing, shared experts and open-source model tooling. Independent AI research from Paris.",
   keywords: ["AI", "Machine Learning", "Transformers", "LLM", "MoE", "PyTorch", "Open Source"],
   authors: [{ name: "Boris Peyriguere" }],
   openGraph: {
     title: "Complexity-ML | Open-Source AI Lab",
-    description: "Building efficient transformer architectures with deterministic lexical routing and shared-expert Token-Routed MLP.",
+    description: "Deterministic TR-Hash routing, shared residual experts and open-source transformer tooling.",
     url: "https://www.complexity-ai.fr",
     siteName: "Complexity-ML",
     type: "website",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Complexity-ML | Open-Source AI Lab",
-    description: "Building efficient transformer architectures with deterministic lexical routing and shared-expert Token-Routed MLP.",
+    description: "Deterministic TR-Hash routing, shared residual experts and open-source transformer tooling.",
   },
   verification: {
     google: "H4DZCSF0al4GA7R-OuD-qMs8Mu2FKzFTJ7G8tlnBx3w",

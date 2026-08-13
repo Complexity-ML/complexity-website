@@ -9,29 +9,29 @@ const claims = [
   {
     icon: GitBranch,
     code: "01 / signal",
-    title: "Token identity is enough to route a residual path.",
-    text: "A fixed vocabulary table replaces the learned gate. Routing is deterministic, auditable and has no collapse mode.",
+    title: "Persisted token-ID tables select residual capacity.",
+    text: "Each layer stores a 2 × 32,000 route table that selects two distinct experts. The released checkpoint has no learned router or channel modulation.",
     accent: "text-emerald-300 border-emerald-400/20 bg-emerald-400/[0.055]",
   },
   {
     icon: Boxes,
     code: "02 / capacity",
     title: "A shared expert keeps the contextual backbone.",
-    text: "Common syntax and language structure remain dense while narrow residual experts partition lexical capacity.",
+    text: "Every token keeps the shared SwiGLU path, while both selected experts transform the same contextual hidden state.",
     accent: "text-sky-300 border-sky-400/20 bg-sky-400/[0.055]",
   },
   {
     icon: Scale,
-    code: "03 / control",
-    title: "Evidence is matched before it is compared.",
-    text: "The headline run compares 306.5M-parameter models over the same 8B-token FineWeb-Edu budget.",
+    code: "03 / audit",
+    title: "The exported checkpoint is the source of truth.",
+    text: "Direct inspection finds 492,097,536 trainable parameters, 24 distinct route tables, no duplicate top-2 routes and exact marginal expert balance.",
     accent: "text-violet-300 border-violet-400/20 bg-violet-400/[0.055]",
   },
   {
     icon: TrendingDown,
     code: "04 / result",
-    title: "The advantage appears late, then remains.",
-    text: "Token-Routed first wins at logged step 740 and ends with a −0.0163 smoothed training-loss gap.",
+    title: "A complete 20B-token pretraining run.",
+    text: "The final checkpoint is step 76,293. The last scheduled held-out evaluation at step 76,000 records NLL 2.661519 and perplexity 14.32.",
     accent: "text-amber-300 border-amber-400/20 bg-amber-400/[0.055]",
   },
 ];
@@ -43,10 +43,10 @@ export default function ResearchStory() {
         <SectionHeading
           eyebrow="Research / source of truth"
           title={<>Deterministic routing.<br className="hidden sm:block" /> Claims kept precise.</>}
-          description="The current manuscript tests one focused idea: whether stable token identity can allocate useful residual capacity while a shared path preserves contextual computation."
+          description="The current preprint documents the realized 492.1M-parameter system, audits its exported routes and reports its complete 20B-token pretraining record."
           action={
             <Button variant="outline" className="border-white/12 bg-white/[0.03]" asChild>
-              <a href="/papers/token-identity-routing-residual-experts.pdf" target="_blank" rel="noopener noreferrer">
+              <a href="/papers/tr-hash-deterministic-token-id-routing.pdf" target="_blank" rel="noopener noreferrer">
                 Read hosted PDF
                 <ArrowUpRight className="size-4" />
               </a>
@@ -90,9 +90,9 @@ export default function ResearchStory() {
             </div>
           </div>
           <ul className="grid gap-2 text-xs leading-5 text-white/48 md:grid-cols-3">
-            <li className="rounded-xl border border-white/[0.055] bg-black/15 p-3">Quality at matched tokens is not a pure speed benchmark.</li>
-            <li className="rounded-xl border border-white/[0.055] bg-black/15 p-3">The vLLM throughput result uses the separate 187M serving model.</li>
-            <li className="rounded-xl border border-white/[0.055] bg-black/15 p-3">Single-seed limits and learned-router controls remain explicit.</li>
+            <li className="rounded-xl border border-white/[0.055] bg-black/15 p-3">One architecture and one seed do not establish superiority over dense or learned routing.</li>
+            <li className="rounded-xl border border-white/[0.055] bg-black/15 p-3">The audit proves marginal expert balance, not uniformity over every ordered expert pair.</li>
+            <li className="rounded-xl border border-white/[0.055] bg-black/15 p-3">PIQA is a sanity check; no matched baseline, multi-seed study or contamination audit is available.</li>
           </ul>
         </div>
       </div>

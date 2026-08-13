@@ -5,12 +5,12 @@ import { useState } from "react";
 import SectionHeading from "@/components/SectionHeading";
 import { Button } from "@/components/ui/button";
 
-const citation = `@misc{anonymous2026tokenidentity,
-  title={Token identity provides a fixed routing signal for residual experts in language models},
-  author={Anonymous},
-  note={Eight-page research manuscript},
+const citation = `@misc{peyriguere2026trhash,
+  title={TR-Hash 500M: Deterministic Token-ID Routing for Shared Residual Experts},
+  author={Boris Peyriguere},
+  note={Research preprint},
   year={2026},
-  url={https://www.complexity-ai.fr/papers/token-identity-routing-residual-experts.pdf}
+  url={https://www.complexity-ai.fr/papers/tr-hash-deterministic-token-id-routing.pdf}
 }`;
 
 export default function Publications() {
@@ -26,27 +26,27 @@ export default function Publications() {
     <section id="publications" className="site-section scroll-mt-24 border-b border-white/[0.055] bg-black/[0.12]">
       <div className="site-shell">
         <SectionHeading
-          eyebrow="Research manuscript"
-          title="One result, documented end to end."
-          description="The current manuscript, experimental boundaries and reusable citation live together instead of being scattered across external pages."
+          eyebrow="Research preprint"
+          title="TR-Hash, documented end to end."
+          description="The public preprint, audited checkpoint facts, complete pretraining record, limitations and reusable citation live together with the implementation artifacts."
         />
 
         <article className="grid overflow-hidden rounded-2xl border border-white/[0.075] bg-white/[0.025] lg:grid-cols-[1.15fr_0.85fr]">
           <div className="flex min-h-[430px] flex-col p-6 sm:p-8 lg:p-10 xl:p-12">
             <div className="flex items-center justify-between">
-              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/[0.07] px-3 py-1 font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-200">Research manuscript · 2026</span>
+              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/[0.07] px-3 py-1 font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-200">Public preprint · 2026</span>
               <BookOpen className="size-5 text-white/24" />
             </div>
             <div className="mt-auto pt-20">
               <h3 className="max-w-4xl text-balance text-3xl font-semibold leading-[1.08] tracking-[-0.045em] sm:text-4xl xl:text-5xl">
-                Token identity provides a fixed routing signal for residual experts in language models
+                TR-Hash 500M: Deterministic Token-ID Routing for Shared Residual Experts
               </h3>
               <p className="mt-5 max-w-3xl text-sm leading-7 text-white/48 sm:text-base">
-                An eight-page manuscript of the parameter- and token-matched routing study, including standard task evaluation, short- and full-budget learned-router controls, explicit limitations and reproducibility artifacts.
+                A four-page systems report for the 492.1M-parameter checkpoint: realized architecture, direct route-table audit, complete 20B-token FineWeb-Edu pretraining record and explicit limits on what one run can establish.
               </p>
               <Button className="mt-8 bg-white text-black hover:bg-white/85" asChild>
-                <a href="/papers/token-identity-routing-residual-experts.pdf" target="_blank" rel="noopener noreferrer">
-                  Read manuscript
+                <a href="/papers/tr-hash-deterministic-token-id-routing.pdf" target="_blank" rel="noopener noreferrer">
+                  Read preprint
                   <ArrowUpRight className="size-4" />
                 </a>
               </Button>
@@ -63,12 +63,12 @@ export default function Publications() {
             </div>
             <pre className="scrollbar-none flex-1 overflow-x-auto whitespace-pre-wrap p-5 font-mono text-[11px] leading-6 text-white/46 sm:p-7 sm:text-xs">
               <code>
-                <span className="text-violet-300">@misc</span>{`{anonymous2026tokenidentity,\n`}
-                <span className="text-sky-300">  title</span>{`={Token identity provides a fixed routing signal for residual experts in language models},\n`}
-                <span className="text-sky-300">  author</span>{`={Anonymous},\n`}
-                <span className="text-sky-300">  note</span>{`={Eight-page research manuscript},\n`}
+                <span className="text-violet-300">@misc</span>{`{peyriguere2026trhash,\n`}
+                <span className="text-sky-300">  title</span>{`={TR-Hash 500M: Deterministic Token-ID Routing for Shared Residual Experts},\n`}
+                <span className="text-sky-300">  author</span>{`={Boris Peyriguere},\n`}
+                <span className="text-sky-300">  note</span>{`={Research preprint},\n`}
                 <span className="text-sky-300">  year</span>{`={2026},\n`}
-                <span className="text-sky-300">  url</span>{`={https://www.complexity-ai.fr/papers/token-identity-routing-residual-experts.pdf}\n}`}
+                <span className="text-sky-300">  url</span>{`={https://www.complexity-ai.fr/papers/tr-hash-deterministic-token-id-routing.pdf}\n}`}
               </code>
             </pre>
           </div>

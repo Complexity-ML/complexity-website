@@ -10,10 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const stats = [
-  { value: "306.5M", label: "matched parameters" },
-  { value: "8B", label: "FineWeb-Edu tokens" },
-  { value: "−0.0163", label: "final smoothed gap" },
-  { value: "4", label: "balanced experts" },
+  { value: "492.1M", label: "trainable parameters" },
+  { value: "20B", label: "FineWeb-Edu tokens" },
+  { value: "2.661519", label: "last held-out NLL" },
+  { value: "24", label: "distinct route tables" },
 ];
 
 const comparisons = [
@@ -21,13 +21,13 @@ const comparisons = [
     icon: Route,
     title: "Routing signal",
     dense: "Every token activates the same dense MLP capacity.",
-    routed: "Token identity indexes a stable lexical expert from a fixed table.",
+    routed: "Token identity hashes to an ordered pair of residual experts.",
   },
   {
     icon: Scale,
     title: "Load balance",
     dense: "There is no conditional load to distribute.",
-    routed: "A fixed deterministic assignment distributes token identities across experts without a learned gate.",
+    routed: "Each expert receives exactly one quarter of route slots per layer; ordered-pair frequencies are not claimed uniform.",
   },
   {
     icon: GitMerge,
@@ -56,15 +56,15 @@ export default function I64Page() {
             <Badge className="border-sky-400/20 bg-sky-400/[0.07] px-3 py-1.5 text-sky-200">Architecture field guide</Badge>
             <p className="mt-7 font-mono text-[10px] uppercase tracking-[0.24em] text-white/30">dense.compute // token.routed</p>
             <h1 className="mt-5 text-balance text-[clamp(3.4rem,8vw,8.5rem)] font-semibold leading-[0.86] tracking-[-0.075em]">
-              Same budget.
-              <span className="mt-3 block bg-gradient-to-r from-white via-sky-200 to-emerald-200 bg-clip-text text-transparent">Different path.</span>
+              Fixed routes.
+              <span className="mt-3 block bg-gradient-to-r from-white via-sky-200 to-emerald-200 bg-clip-text text-transparent">Context stays shared.</span>
             </h1>
             <p className="mx-auto mt-8 max-w-3xl text-pretty text-base leading-8 text-white/50 sm:text-lg">
               A visual comparison of dense residual computation and deterministic token-routed capacity—what changes, what stays shared and what the evidence actually supports.
             </p>
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
               <Button size="lg" className="h-12 bg-white px-6 text-black hover:bg-white/85" asChild>
-                <a href="/papers/token-identity-routing-residual-experts.pdf" target="_blank" rel="noopener noreferrer">
+                <a href="/papers/tr-hash-deterministic-token-id-routing.pdf" target="_blank" rel="noopener noreferrer">
                   <BookOpen className="size-4" /> Read the paper
                 </a>
               </Button>
@@ -93,8 +93,8 @@ export default function I64Page() {
         <div className="site-shell">
           <SectionHeading
             eyebrow="Architecture / comparison"
-            title="Dense is the control. Routing is the experiment."
-            description="The shared path keeps contextual processing intact. The experimental variable is how additional residual capacity is selected."
+            title="Dense is the reference concept. Routing is the realized system."
+            description="This architectural comparison explains what changes, but it is not a performance comparison: the current 500M report has no parameter-matched dense control."
           />
 
           <div className="overflow-hidden rounded-2xl border border-white/[0.075]">
@@ -138,7 +138,7 @@ export default function I64Page() {
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary/75">forward.py</p>
             <h2 className="mt-4 text-balance text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">The idea fits in one residual equation.</h2>
-            <p className="mt-5 max-w-xl text-sm leading-7 text-white/46 sm:text-base">Token identity chooses a narrow expert, but it never replaces the shared contextual computation.</p>
+            <p className="mt-5 max-w-xl text-sm leading-7 text-white/46 sm:text-base">Token identity chooses two narrow residual experts, but it never replaces the shared contextual computation.</p>
           </div>
           <div className="lab-surface overflow-hidden rounded-2xl">
             <div className="flex items-center justify-between border-b border-white/[0.07] px-5 py-3">
@@ -146,12 +146,12 @@ export default function I64Page() {
               <span className="font-mono text-[9px] text-emerald-300/65">valid</span>
             </div>
             <div className="overflow-x-auto p-5 font-mono text-xs leading-7 text-white/58 sm:p-7 sm:text-sm lg:p-9">
-              <p><span className="text-violet-300">class</span> <span className="text-sky-300">TokenRoutedMLP</span>(nn.Module):</p>
+              <p><span className="text-violet-300">class</span> <span className="text-sky-300">TRHashEngineMLP</span>(nn.Module):</p>
               <p className="pl-4"><span className="text-violet-300">def</span> <span className="text-sky-300">forward</span>(self, x, token_ids):</p>
-              <p className="pl-8">expert_id = self.routing_table[token_ids]</p>
+              <p className="pl-8">expert_pair = self.route_table[:, token_ids]</p>
               <p className="pl-8">shared = self.shared_expert(x)</p>
-              <p className="pl-8">routed = self.experts[expert_id](x)</p>
-              <p className="pl-8"><span className="text-violet-300">return</span> x <span className="text-amber-300">+</span> shared <span className="text-amber-300">+</span> routed</p>
+              <p className="pl-8">routed = 2 * self.experts(x, expert_pair).mean(dim=0)</p>
+              <p className="pl-8"><span className="text-violet-300">return</span> shared <span className="text-amber-300">+</span> routed</p>
             </div>
           </div>
         </div>

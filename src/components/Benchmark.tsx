@@ -82,7 +82,7 @@ export default function Benchmark() {
             </a>
           </div>
           <figcaption className="border-t border-white/[0.07] px-4 py-4 text-xs leading-6 text-white/42 sm:px-6">
-            The separate 300M training comparison uses an 8B-token FineWeb-Edu budget. Token-Routed first wins at logged train step 740 and validation step 750, ending with a −0.0163 smoothed training-loss gap.
+            This serving benchmark uses a separate 187M routed model and is not evidence about the paper&apos;s 492.1M checkpoint. The paper reports a completed 20B-token pretraining run and checkpoint audit; it makes no matched throughput or quality claim against a dense baseline.
           </figcaption>
         </motion.figure>
 

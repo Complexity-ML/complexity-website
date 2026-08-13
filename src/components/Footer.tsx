@@ -25,7 +25,7 @@ const groups = [
   {
     title: "Research",
     links: [
-      { label: "Hosted paper", href: "/papers/token-identity-routing-residual-experts.pdf" },
+      { label: "TR-Hash preprint", href: "/papers/tr-hash-deterministic-token-id-routing.pdf" },
       { label: "Interactive paper", href: "https://huggingface.co/spaces/Pacific-i64/Token-Routing-Interactive-Paper" },
       { label: "Paper artifacts", href: "https://github.com/Complexity-ML/tmlr-paper-pool" },
       { label: "vllm-i64", href: "https://github.com/Complexity-ML/vllm-i64" },

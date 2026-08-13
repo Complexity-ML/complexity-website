@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Dense vs i64 — Complexity ML',
+  title: 'TR-Hash 500M — Complexity ML',
   description:
-    'Compare dense transformer architectures against deterministic token-identity routing, shared experts, and Token-Routed MLP.',
+    'Explore the audited TR-Hash 500M architecture, deterministic token-ID routes, shared residual experts, and 20B-token pretraining record.',
   keywords: [
     'transformer architecture',
     'token routing',
@@ -13,18 +13,18 @@ export const metadata: Metadata = {
     'dense vs sparse',
   ],
   openGraph: {
-    title: 'Dense vs i64 — Complexity ML',
+    title: 'TR-Hash 500M — Complexity ML',
     description:
-      'Token-routed MLP with deterministic token-identity routing and a shared lexical expert.',
+      'A 492.1M-parameter language model with deterministic token-ID routing and an always-on shared SwiGLU path.',
     url: 'https://www.complexity-ai.fr/i64',
     siteName: 'Complexity ML',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Dense vs i64 — Complexity ML',
+    title: 'TR-Hash 500M — Complexity ML',
     description:
-      'Token-routed MLP with deterministic token-identity routing and a shared lexical expert.',
+      'A 492.1M-parameter language model with deterministic token-ID routing and an always-on shared SwiGLU path.',
   },
   alternates: {
     canonical: 'https://www.complexity-ai.fr/i64',

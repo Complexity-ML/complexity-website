@@ -4,12 +4,12 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 const equations = [
-  "expert_idx(t) = route_table[token_id]",
-  "MLP(x) = Shared(x) + Expert_e(x)",
-  "load(e) = Σ freq(t), t → e",
-  "P_active = P_shared + k·P_expert",
-  "routing_table[token_id] → expert",
-  "TR − Dense = −0.0163",
+  "(e₁, e₂) = route_table[layer, token_id]",
+  "MLP(x,t) = Shared(x) + Expert_e₁(x) + Expert_e₂(x)",
+  "slots(e, layer) = 16,000 / 64,000",
+  "P_active = P_shared + 2·P_expert",
+  "route_table[layer] is persisted",
+  "L_eval(19.923B tokens) = 2.661519",
 ];
 
 function EquationStrip() {

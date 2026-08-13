@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Complexity website
 
-## Getting Started
+Public Next.js site for Complexity-ML research, model tooling, hosted papers,
+benchmarks, LABO AI, and the public inference demo.
 
-First, run the development server:
+## Local development
 
 ```bash
+npm ci
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The site runs at <http://localhost:3000>.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Validation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+```
 
-## Learn More
+The production build applies the tracked Prisma migration, regenerates the
+client, and builds Next.js. It therefore requires the deployment database
+variables used by the linked Vercel project.
 
-To learn more about Next.js, take a look at the following resources:
+## Research publication
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Hosted PDFs live under `public/papers/`. A publication update must keep these
+surfaces synchronized:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `src/components/Publications.tsx` for title, abstract-length summary and
+  citation;
+- `src/components/ResearchStory.tsx` for claims and limitations;
+- `src/components/Hero.tsx`, `Footer.tsx`, and `src/app/i64/page.tsx` for the
+  canonical PDF link;
+- `src/components/Benchmark.tsx` for experiment context;
+- `src/app/layout.tsx` for public metadata.
 
-## Deploy on Vercel
+Current public paper:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```text
+public/papers/tr-hash-deterministic-token-id-routing.pdf
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The earlier token-identity-routing manuscript remains available as a
+historical artifact and interactive-study companion.
+
+## Deployment
+
+Production is hosted at <https://www.complexity-ai.fr>. The `main` branch is
+the release branch used by the connected deployment project. Before pushing,
+verify the PDF locally, run lint and the production build, and review the Git
+diff for unsupported research claims or accidental environment files.

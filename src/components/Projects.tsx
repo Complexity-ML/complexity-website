@@ -19,9 +19,9 @@ const projects = [
   },
   {
     title: "Token Identity Routing",
-    kicker: "Interactive paper companion",
-    description: "Explore the shared-SwiGLU architecture, checkpoint-derived routes, reported measurements and a live SSE comparison of the matched 306.5M models.",
-    tags: ["Paper", "Live SSE", "306.5M"],
+    kicker: "Earlier interactive study",
+    description: "Explore the earlier shared-SwiGLU lookup architecture, checkpoint-derived routes and live SSE comparison of the historical matched 306.5M models.",
+    tags: ["Earlier paper", "Live SSE", "306.5M"],
     href: "https://huggingface.co/spaces/Pacific-i64/Token-Routing-Interactive-Paper",
     icon: Network,
     tone: "emerald",
@@ -47,8 +47,8 @@ const projects = [
   {
     title: "Complexity Framework",
     kicker: "PyTorch foundation",
-    description: "Reusable transformer primitives with GQA, RoPE, FlashAttention and experimental routing modules.",
-    tags: ["PyTorch", "GQA", "RoPE"],
+    description: "Canonical TR-Hash MoE execution, GQA/MHA decoders, CUDA paths and full-shard 2D-weighted LoRA training.",
+    tags: ["PyTorch", "TR-Hash", "LoRA"],
     href: "https://github.com/Complexity-ML/complexity-framework",
     icon: Braces,
     tone: "rose",
