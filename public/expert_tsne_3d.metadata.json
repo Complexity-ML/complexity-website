@@ -1,0 +1,112 @@
+{
+  "title": "TR-Hash 500M pretrained routed-expert contribution t-SNE",
+  "scope": "Exploratory geometry of routed residual contributions; not a specialization, quality, or routing-superiority claim.",
+  "checkpoint": {
+    "artifact": "tr_hash_moe_500m_20b/hf_base",
+    "weights_sha256": "48aec943dcc417809fbbc2fd908e01c66e54ef476647b6a31a00d8d271b148df",
+    "config_sha256": "7a5cd1ab013daae0c2d2c3ff3d3c080098c99d48fbbdb834c87f47997451516b",
+    "trainable_parameters": 492097536,
+    "pretraining_tokens": 19999752192
+  },
+  "probe": {
+    "name": "PIQA validation",
+    "source": "ybisk/piqa",
+    "file": "dev.jsonl",
+    "sha256": "a73f46cb5d72b2cc399522a79f27728a429d9b89d9a236243fcfda8c02588d54",
+    "records_used": 128,
+    "encoded_tokens_available": 7630,
+    "chat_template": false
+  },
+  "method": {
+    "layers_zero_indexed": [
+      0,
+      5,
+      11,
+      17,
+      23
+    ],
+    "sequences": 8,
+    "sequence_length": 256,
+    "tokens_per_layer": 600,
+    "route_points_per_token": 2,
+    "shared_output_included": false,
+    "vector_normalization": "per-point L2",
+    "pca_max_dimensions": 50,
+    "tsne_dimensions": 3,
+    "tsne_seed": 42,
+    "tsne_max_iter": 1500,
+    "layer_metrics": {
+      "0": {
+        "points": 1200,
+        "sampled_tokens": 600,
+        "points_per_expert": [
+          269,
+          259,
+          331,
+          341
+        ],
+        "pca_dimensions": 50,
+        "tsne_perplexity": 35.0,
+        "tsne_kl_divergence": 0.582313060760498
+      },
+      "5": {
+        "points": 1200,
+        "sampled_tokens": 600,
+        "points_per_expert": [
+          332,
+          254,
+          346,
+          268
+        ],
+        "pca_dimensions": 50,
+        "tsne_perplexity": 35.0,
+        "tsne_kl_divergence": 1.3040701150894165
+      },
+      "11": {
+        "points": 1200,
+        "sampled_tokens": 600,
+        "points_per_expert": [
+          314,
+          322,
+          286,
+          278
+        ],
+        "pca_dimensions": 50,
+        "tsne_perplexity": 35.0,
+        "tsne_kl_divergence": 1.4785151481628418
+      },
+      "17": {
+        "points": 1200,
+        "sampled_tokens": 600,
+        "points_per_expert": [
+          315,
+          285,
+          314,
+          286
+        ],
+        "pca_dimensions": 50,
+        "tsne_perplexity": 35.0,
+        "tsne_kl_divergence": 1.1858792304992676
+      },
+      "23": {
+        "points": 1200,
+        "sampled_tokens": 600,
+        "points_per_expert": [
+          287,
+          330,
+          313,
+          270
+        ],
+        "pca_dimensions": 50,
+        "tsne_perplexity": 35.0,
+        "tsne_kl_divergence": 0.984613299369812
+      }
+    }
+  },
+  "artifacts": {
+    "html": "expert_tsne_3d.html",
+    "html_sha256": "6a5faac3f30e2eaee95f301f38ffa5903dff7dfe6d340304d1561bdb09ebdebc",
+    "points": "expert_tsne_3d.points.csv.gz",
+    "points_sha256": "6d63a9260acd6da7eb16a0ca95ef99190a06d83a60d77f8611c937bf07a83346"
+  }
+}

@@ -88,21 +88,39 @@ export default function Benchmark() {
 
         <div className="mt-16 sm:mt-24">
           <SectionHeading
-            eyebrow="Expert analysis"
-            title="Inspect the geometry. Don’t overclaim it."
-            description="The interactive projection is exploratory evidence. Functional specialization is evaluated separately through per-expert perplexity on assigned token subsets."
+            eyebrow="Pretrained expert geometry"
+            title="Inspect the routed contribution—not an old proxy."
+            description="This projection is regenerated from the released 492.1M checkpoint on natural PIQA validation text, without a chat template. The layer menu exposes five independently embedded depths."
           />
           <div className="lab-surface overflow-hidden rounded-2xl">
             <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3 sm:px-6">
-              <span className="font-mono text-[10px] text-violet-300/70">expert_tsne_3d.html</span>
-              <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/25">interactive</span>
+              <span className="font-mono text-[10px] text-violet-300/70">TR-Hash 500M pretrain · expert_tsne_3d.html</span>
+              <a
+                href="/expert_tsne_3d.metadata.json"
+                target="_blank"
+                rel="noreferrer"
+                className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/30 transition-colors hover:text-white/70"
+              >
+                provenance
+              </a>
             </div>
             <iframe
               src="/expert_tsne_3d.html"
-              title="Interactive 3D t-SNE visualization of expert activations"
-              className="h-[460px] w-full border-0 sm:h-[620px] xl:h-[760px]"
+              title="Interactive 3D t-SNE of TR-Hash 500M pretrained routed expert contributions"
+              className="h-[560px] w-full border-0 sm:h-[700px] xl:h-[800px]"
               loading="lazy"
             />
+            <div className="grid gap-3 border-t border-white/[0.07] px-4 py-4 text-xs leading-6 text-white/42 sm:px-6 lg:grid-cols-[1fr_auto] lg:items-center">
+              <p>
+                Each point is one of the two actual routed residual contributions for a sampled token. The shared MLP output is excluded; vectors are L2-normalized before PCA and 3-D t-SNE. Cluster separation remains exploratory and is not evidence of specialization or model quality.
+              </p>
+              <a
+                href="/expert_tsne_3d.points.csv.gz"
+                className="font-mono text-[9px] uppercase tracking-[0.15em] text-violet-200/60 transition-colors hover:text-violet-100"
+              >
+                download 6,000 points
+              </a>
+            </div>
           </div>
         </div>
       </div>
