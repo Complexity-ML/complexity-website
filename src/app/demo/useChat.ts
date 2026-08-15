@@ -3,17 +3,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { Mode, Message } from "./config";
 import { ENDPOINTS, MAINTENANCE, MODEL_NAMES } from "./config";
+import { DEFAULT_SAMPLING_PARAMS, type SamplingParams } from "./sampling";
 import { useEndpointHealth } from "./useEndpointHealth";
 import { useExpertActivity } from "./useExpertActivity";
-
-export interface SamplingParams {
-  temperature: number;
-  maxTokens: number;
-  topK: number;
-  topP: number;
-  repetitionPenalty: number;
-  frequencyPenalty: number;
-}
 
 export interface TokenStats {
   tokens: number;
@@ -48,15 +40,6 @@ interface ResearchResponse {
   context: string;
   error?: string;
 }
-
-const DEFAULT_PARAMS: SamplingParams = {
-  temperature: 0,
-  maxTokens: 384,
-  topK: 0,
-  topP: 1,
-  repetitionPenalty: 1.08,
-  frequencyPenalty: 0,
-};
 
 function newConversationCacheId(): string {
   return `conversation-${crypto.randomUUID()}`;
@@ -103,7 +86,7 @@ export function useChat(initialMode: Mode) {
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [params, setParams] = useState<SamplingParams>(DEFAULT_PARAMS);
+  const [params, setParams] = useState<SamplingParams>(DEFAULT_SAMPLING_PARAMS);
   const [tokenStats, setTokenStats] = useState<TokenStats | null>(null);
   const [researchEvents, setResearchEvents] = useState<ResearchActivityEvent[]>([]);
   const [totalRequests] = useState<number | null>(null);

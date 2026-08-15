@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import type { SamplingParams } from "./useChat";
+import { DEFAULT_SAMPLING_PARAMS, type SamplingParams } from "./sampling";
 import { ENDPOINTS, MAINTENANCE } from "./config";
 import { useEndpointHealth } from "./useEndpointHealth";
 import type { HealthStatus } from "./useEndpointHealth";
@@ -17,15 +17,6 @@ export interface CompareResult {
   dense: { content: string; tokens: number; elapsed: number };
   chat: { content: string; tokens: number; elapsed: number };
 }
-
-const DEFAULT_PARAMS: SamplingParams = {
-  temperature: 0,
-  maxTokens: 384,
-  topK: 0,
-  topP: 1,
-  repetitionPenalty: 1.08,
-  frequencyPenalty: 0,
-};
 
 const COMPARE_BASE = ENDPOINTS.compare.replace(/\/+$/, "");
 const DENSE_BASE = ENDPOINTS.dense.replace(/\/+$/, "");
@@ -103,7 +94,7 @@ export function useCompare() {
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [params, setParams] = useState<SamplingParams>(DEFAULT_PARAMS);
+  const [params, setParams] = useState<SamplingParams>(DEFAULT_SAMPLING_PARAMS);
   const proxyHealth = useEndpointHealth(ENDPOINTS.compare, MAINTENANCE.compare);
   const routedHealth = useEndpointHealth(ENDPOINTS["TR-MoE"], MAINTENANCE.compare);
   const denseHealth = useEndpointHealth(ENDPOINTS.dense, MAINTENANCE.compare);

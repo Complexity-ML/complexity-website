@@ -1,7 +1,7 @@
 "use client";
 
 import { Slider } from "@/components/ui/slider";
-import type { SamplingParams } from "./useChat";
+import type { SamplingParams } from "./sampling";
 
 interface ParamPanelProps {
   params: SamplingParams;
