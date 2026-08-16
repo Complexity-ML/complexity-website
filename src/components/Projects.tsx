@@ -21,8 +21,8 @@ const projects = [
   {
     title: "TR-HASH Vision v8 Demo",
     kicker: "Interactive object detection",
-    description: "Run the compact hash-routed COCO detector on your own image, or explore a curated gallery of 100 validation examples.",
-    tags: ["2.53M parameters", "COCO", "100 demo images"],
+    description: "Run the compact hash-routed COCO detector on your own image, or draw a new example from 100 shuffled validation images without repeats.",
+    tags: ["2.53M parameters", "COCO", "Random 100"],
     href: "https://huggingface.co/spaces/Pacific-i64/TR-HASH-Vision-v8-ComfyUI",
     icon: ScanSearch,
     tone: "cyan",
