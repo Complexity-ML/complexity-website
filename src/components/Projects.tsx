@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowUpRight, Blocks, Box, Braces, Cpu, Github, Network } from "lucide-react";
+import { ArrowUpRight, Blocks, Box, Braces, Cpu, Github, Network, ScanSearch } from "lucide-react";
 import SectionHeading from "@/components/SectionHeading";
 import { Badge } from "@/components/ui/badge";
 
@@ -16,6 +16,17 @@ const projects = [
     icon: Blocks,
     tone: "violet",
     featured: true,
+    span: "xl:col-span-7 xl:min-h-[400px]",
+  },
+  {
+    title: "TR-HASH Vision v8 Demo",
+    kicker: "Interactive object detection",
+    description: "Run the compact hash-routed COCO detector on your own image, or explore a curated gallery of 100 validation examples.",
+    tags: ["2.53M parameters", "COCO", "100 demo images"],
+    href: "https://huggingface.co/spaces/Pacific-i64/TR-HASH-Vision-v8-ComfyUI",
+    icon: ScanSearch,
+    tone: "cyan",
+    span: "xl:col-span-5 xl:min-h-[400px]",
   },
   {
     title: "Token Identity Routing",
@@ -25,6 +36,7 @@ const projects = [
     href: "https://huggingface.co/spaces/Pacific-i64/Token-Routing-Interactive-Paper",
     icon: Network,
     tone: "emerald",
+    span: "xl:col-span-3",
   },
   {
     title: "vllm-i64",
@@ -34,6 +46,7 @@ const projects = [
     href: "https://github.com/Complexity-ML/vllm-i64",
     icon: Cpu,
     tone: "sky",
+    span: "xl:col-span-3",
   },
   {
     title: "Pacific-i64",
@@ -43,6 +56,7 @@ const projects = [
     href: "https://huggingface.co/Pacific-i64",
     icon: Box,
     tone: "amber",
+    span: "xl:col-span-3",
   },
   {
     title: "Complexity Framework",
@@ -52,11 +66,13 @@ const projects = [
     href: "https://github.com/Complexity-ML/complexity-framework",
     icon: Braces,
     tone: "rose",
+    span: "xl:col-span-3",
   },
 ];
 
 const tones: Record<string, string> = {
   violet: "border-violet-400/20 bg-violet-400/[0.05] text-violet-200",
+  cyan: "border-cyan-400/20 bg-cyan-400/[0.05] text-cyan-100",
   emerald: "border-emerald-400/20 bg-emerald-400/[0.05] text-emerald-200",
   sky: "border-sky-400/20 bg-sky-400/[0.05] text-sky-200",
   amber: "border-amber-400/20 bg-amber-400/[0.05] text-amber-200",
@@ -93,7 +109,7 @@ export default function Projects() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.42, delay: index * 0.045 }}
-                className={`group relative flex min-h-[280px] flex-col overflow-hidden rounded-2xl border p-5 transition-all duration-300 hover:-translate-y-1 hover:brightness-110 sm:p-6 ${tones[project.tone]} ${project.featured ? "xl:col-span-7 xl:min-h-[400px]" : index === 1 ? "xl:col-span-5" : "xl:col-span-4"}`}
+                className={`group relative flex min-h-[280px] flex-col overflow-hidden rounded-2xl border p-5 transition-all duration-300 hover:-translate-y-1 hover:brightness-110 sm:p-6 ${tones[project.tone]} ${project.span}`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <span className="grid size-11 place-items-center rounded-xl border border-current/20 bg-black/15">
