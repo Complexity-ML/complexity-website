@@ -24,6 +24,7 @@ import LogoMark from "@/components/LogoMark";
 const NAV_LINKS = [
   { href: "/#research", label: "Research" },
   { href: "/#projects", label: "Projects" },
+  { href: "/models", label: "Models" },
   { href: "/#benchmark", label: "Benchmarks" },
   { href: "/i64", label: "Architecture" },
   { href: "/labo-ai", label: "LABO AI", accent: true },

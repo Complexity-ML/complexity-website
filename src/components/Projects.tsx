@@ -50,9 +50,9 @@ const projects = [
   },
   {
     title: "Pacific-i64",
-    kicker: "Open model releases",
-    description: "Hosts the current 492.1M-parameter TR-Hash MoE release trained over 20B tokens, alongside the historical matched checkpoints.",
-    tags: ["TR-Hash MoE", "492.1M", "20B tokens"],
+    kicker: "Hugging Face organization",
+    description: "Every TR-Hash checkpoint, dataset and Space we publish, in one place — see /models on this site for the current releases with their real numbers.",
+    tags: ["Models", "Datasets", "Spaces"],
     href: "https://huggingface.co/Pacific-i64",
     icon: Box,
     tone: "amber",

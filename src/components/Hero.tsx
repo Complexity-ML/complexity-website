@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const metrics = [
-  { value: "492.1M", label: "parameters", color: "text-sky-300" },
-  { value: "20B", label: "train tokens", color: "text-violet-300" },
+  { value: "200M", label: "parameters", color: "text-sky-300" },
+  { value: "130B", label: "train tokens", color: "text-violet-300" },
   { value: "32K", label: "vocabulary", color: "text-emerald-300" },
   { value: "top-2", label: "hash routing", color: "text-amber-300" },
 ];
@@ -132,7 +132,7 @@ export default function Hero() {
 
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] pt-4 font-mono text-[9px] uppercase tracking-[0.16em] text-white/30">
                 <span>no learned router</span>
-                <span className="text-emerald-300/75">status: reproducible</span>
+                <span className="text-amber-300/75">status: training in progress</span>
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@ const groups = [
     links: [
       { label: "Research", href: "/#research" },
       { label: "Projects", href: "/#projects" },
+      { label: "Models", href: "/models" },
       { label: "Benchmarks", href: "/#benchmark" },
       { label: "Architecture", href: "/i64" },
     ],
