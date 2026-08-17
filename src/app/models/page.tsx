@@ -43,7 +43,7 @@ const models: Model[] = [
     description: [
       "A hash-routed detector: a dense shared SwiGLU branch plus 8 narrow experts, top-2 routed by a deterministic hash of spatial-grid position — no learned gating, no auxiliary load-balancing loss.",
       "Two-stage recipe — from-scratch pretraining (Mosaic + MixUp, MuSGD) followed by a full-parameter, clean-image supervised fine-tuning stage. SFT alone moved AP50-95 from 16.59 to 20.05 (+20.9% relative), reaching 62.3% of the 32.2 AP YOLO26 reference used on our model cards. Single random-init run, no hyperparameter search, neither stage had plateaued.",
-      "Independently reproduced by the open-source community (thanks, Knight_Bee): O2M+NMS mAP50 0.325 / mAP50-95 0.200 / AR100 0.379, NMS-free mAP50 0.140 / mAP50-95 0.096 — matching our reported numbers.",
+      "Independently reproduced — thanks to the community: O2M+NMS mAP50 0.325 / mAP50-95 0.200 / AR100 0.379, NMS-free mAP50 0.140 / mAP50-95 0.096 — matching our reported numbers.",
     ],
     links: [
       { label: "Read the paper", href: "/papers/tr-hash-vision-v8-sft.pdf" },
