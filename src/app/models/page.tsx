@@ -45,6 +45,7 @@ const models: Model[] = [
       "Two-stage recipe — from-scratch pretraining (Mosaic + MixUp, MuSGD) followed by a full-parameter, clean-image supervised fine-tuning stage. SFT alone moved AP50-95 from 16.59 to 20.05 (+20.9% relative), reaching 62.3% of the 32.2 AP YOLO26 reference used on our model cards. Single random-init run, no hyperparameter search, neither stage had plateaued.",
     ],
     links: [
+      { label: "Read the paper", href: "/papers/tr-hash-vision-v8-sft.pdf" },
       { label: "Pretrain checkpoint", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-Vision-v8-2M-COCO" },
       { label: "SFT checkpoint", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-Vision-v8-2M-COCO-SFT" },
       { label: "Live demo", href: "https://huggingface.co/spaces/Pacific-i64/TR-HASH-Vision-v8-ComfyUI" },
@@ -87,7 +88,10 @@ const models: Model[] = [
       "Currently training on a curated mixture (DCLM, FineWeb-Edu, Stack-Edu, FineMath, Cosmopedia-v2): 70B unique tokens replayed to a 130B-token schedule, wide shared SwiGLU branch with narrow routed experts.",
       "Checkpoints back up automatically to Hugging Face as the run progresses. Nothing below is a final result yet — this card will update as the run completes.",
     ],
-    links: [{ label: "Model page (HF, live)", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-200M-130B" }],
+    links: [
+      { label: "Architecture & plan (paper)", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
+      { label: "Model page (HF, live)", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-200M-130B" },
+    ],
   },
 ];
 

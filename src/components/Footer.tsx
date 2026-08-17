@@ -26,7 +26,9 @@ const groups = [
   {
     title: "Research",
     links: [
-      { label: "TR-Hash preprint", href: "/papers/tr-hash-deterministic-token-id-routing.pdf" },
+      { label: "TR-Hash 500M preprint", href: "/papers/tr-hash-deterministic-token-id-routing.pdf" },
+      { label: "TR-Hash 200M architecture & plan", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
+      { label: "Vision v8 paper", href: "/papers/tr-hash-vision-v8-sft.pdf" },
       { label: "Interactive paper", href: "https://huggingface.co/spaces/Pacific-i64/Token-Routing-Interactive-Paper" },
       { label: "Vision v8 live demo", href: "https://huggingface.co/spaces/Pacific-i64/TR-HASH-Vision-v8-ComfyUI" },
       { label: "Paper artifacts", href: "https://github.com/Complexity-ML/tmlr-paper-pool" },
