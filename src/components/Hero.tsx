@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { ArrowRight, BookOpen, Github, Route, Scale, Terminal, Zap } from "lucide-react";
 import { FaDiscord } from "react-icons/fa6";
 import { Badge } from "@/components/ui/badge";
@@ -55,11 +56,11 @@ export default function Hero() {
 
           <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button size="lg" className="h-12 bg-white px-6 text-black hover:bg-white/85" asChild>
-              <a href="/papers/tr-hash-deterministic-token-id-routing.pdf" target="_blank" rel="noopener noreferrer">
+              <Link href="/models">
                 <BookOpen className="size-4" />
                 Read the research
                 <ArrowRight className="size-4" />
-              </a>
+              </Link>
             </Button>
             <Button size="lg" variant="outline" className="h-12 border-white/12 bg-white/[0.035] px-6" asChild>
               <a href="/labo-ai">Explore LABO AI</a>
