@@ -5,74 +5,111 @@ import { useState } from "react";
 import SectionHeading from "@/components/SectionHeading";
 import { Button } from "@/components/ui/button";
 
-const citation = `@misc{peyriguere2026trhash,
-  title={TR-Hash 500M: Deterministic Token-ID Routing for Shared Residual Experts},
-  author={Boris Peyriguere},
-  note={Research preprint},
-  year={2026},
-  url={https://www.complexity-ai.fr/papers/tr-hash-deterministic-token-id-routing.pdf}
-}`;
+type Paper = {
+  id: string;
+  badge: string;
+  title: string;
+  description: string;
+  href: string;
+  citation: string;
+};
 
-export default function Publications() {
+const papers: Paper[] = [
+  {
+    id: "200m",
+    badge: "Training in progress · 2026",
+    title: "TR-Hash 200M: Multi-Hash Token-ID Routing for Shared Residual Experts",
+    description:
+      "Architecture and training-plan report for the 201.2M-parameter run currently in progress: the realized multi-hash rendezvous routing construction, a route-table audit performed before training completion, and the exact 70B-unique/130B-replay data schedule. No pretraining trajectory is reported yet.",
+    href: "/papers/tr-hash-200m-multi-hash-routing.pdf",
+    citation: `@misc{peyriguere2026trhash200m,
+  title={TR-Hash 200M: Multi-Hash Token-ID Routing for Shared Residual Experts},
+  author={Boris Peyriguere},
+  note={Research report, training in progress},
+  year={2026},
+  url={https://www.complexity-ai.fr/papers/tr-hash-200m-multi-hash-routing.pdf}
+}`,
+  },
+  {
+    id: "vision-v8",
+    badge: "Public report · 2026",
+    title: "TR-Hash Vision: Deterministic Spatial-Token Routing for a Compact Object Detector",
+    description:
+      "A four-page report for the 2.53M-parameter hash-routed object detector: architecture, the two-stage from-scratch-pretrain-then-SFT recipe, and complete COCO AP results for both the one-to-many and NMS-free branches.",
+    href: "/papers/tr-hash-vision-v8-sft.pdf",
+    citation: `@misc{peyriguere2026trhashvision,
+  title={TR-Hash Vision: Deterministic Spatial-Token Routing for a Compact Object Detector},
+  author={Boris Peyriguere},
+  note={Research report},
+  year={2026},
+  url={https://www.complexity-ai.fr/papers/tr-hash-vision-v8-sft.pdf}
+}`,
+  },
+];
+
+function PaperCard({ paper }: { paper: Paper }) {
   const [copied, setCopied] = useState(false);
 
   const copyCitation = async () => {
-    await navigator.clipboard.writeText(citation);
+    await navigator.clipboard.writeText(paper.citation);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
   };
 
   return (
+    <article className="grid overflow-hidden rounded-2xl border border-white/[0.075] bg-white/[0.025] lg:grid-cols-[1.15fr_0.85fr]">
+      <div className="flex min-h-[380px] flex-col p-6 sm:p-8 lg:p-10 xl:p-12">
+        <div className="flex items-center justify-between">
+          <span className="rounded-full border border-emerald-400/20 bg-emerald-400/[0.07] px-3 py-1 font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-200">{paper.badge}</span>
+          <BookOpen className="size-5 text-white/24" />
+        </div>
+        <div className="mt-auto pt-16">
+          <h3 className="max-w-4xl text-balance text-2xl font-semibold leading-[1.1] tracking-[-0.04em] sm:text-3xl xl:text-4xl">
+            {paper.title}
+          </h3>
+          <p className="mt-5 max-w-3xl text-sm leading-7 text-white/48 sm:text-base">
+            {paper.description}
+          </p>
+          <Button className="mt-8 bg-white text-black hover:bg-white/85" asChild>
+            <a href={paper.href} target="_blank" rel="noopener noreferrer">
+              Read report
+              <ArrowUpRight className="size-4" />
+            </a>
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex flex-col border-t border-white/[0.07] bg-[#080a0e] lg:border-l lg:border-t-0">
+        <div className="flex items-center justify-between border-b border-white/[0.07] px-5 py-4">
+          <span className="font-mono text-[10px] text-white/38">citation.bib</span>
+          <button onClick={copyCitation} className="flex items-center gap-2 text-[10px] text-white/35 transition-colors hover:text-white" type="button">
+            <Copy className="size-3.5" />
+            {copied ? "Copied" : "Copy"}
+          </button>
+        </div>
+        <pre className="scrollbar-none flex-1 overflow-x-auto whitespace-pre-wrap p-5 font-mono text-[11px] leading-6 text-white/46 sm:p-7 sm:text-xs">
+          <code>{paper.citation}</code>
+        </pre>
+      </div>
+    </article>
+  );
+}
+
+export default function Publications() {
+  return (
     <section id="publications" className="site-section scroll-mt-24 border-b border-white/[0.055] bg-black/[0.12]">
       <div className="site-shell">
         <SectionHeading
-          eyebrow="Research preprint"
+          eyebrow="Research reports"
           title="TR-Hash, documented end to end."
-          description="The public preprint, audited checkpoint facts, complete pretraining record, limitations and reusable citation live together with the implementation artifacts."
+          description="Every report lives with its architecture facts, audited claims, explicit limitations and a reusable citation — including the run that hasn't finished yet."
         />
 
-        <article className="grid overflow-hidden rounded-2xl border border-white/[0.075] bg-white/[0.025] lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="flex min-h-[430px] flex-col p-6 sm:p-8 lg:p-10 xl:p-12">
-            <div className="flex items-center justify-between">
-              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/[0.07] px-3 py-1 font-mono text-[9px] uppercase tracking-[0.18em] text-emerald-200">Public preprint · 2026</span>
-              <BookOpen className="size-5 text-white/24" />
-            </div>
-            <div className="mt-auto pt-20">
-              <h3 className="max-w-4xl text-balance text-3xl font-semibold leading-[1.08] tracking-[-0.045em] sm:text-4xl xl:text-5xl">
-                TR-Hash 500M: Deterministic Token-ID Routing for Shared Residual Experts
-              </h3>
-              <p className="mt-5 max-w-3xl text-sm leading-7 text-white/48 sm:text-base">
-                A four-page systems report for the 492.1M-parameter checkpoint: realized architecture, direct route-table audit, complete 20B-token FineWeb-Edu pretraining record and explicit limits on what one run can establish.
-              </p>
-              <Button className="mt-8 bg-white text-black hover:bg-white/85" asChild>
-                <a href="/papers/tr-hash-deterministic-token-id-routing.pdf" target="_blank" rel="noopener noreferrer">
-                  Read preprint
-                  <ArrowUpRight className="size-4" />
-                </a>
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex flex-col border-t border-white/[0.07] bg-[#080a0e] lg:border-l lg:border-t-0">
-            <div className="flex items-center justify-between border-b border-white/[0.07] px-5 py-4">
-              <span className="font-mono text-[10px] text-white/38">citation.bib</span>
-              <button onClick={copyCitation} className="flex items-center gap-2 text-[10px] text-white/35 transition-colors hover:text-white" type="button">
-                <Copy className="size-3.5" />
-                {copied ? "Copied" : "Copy"}
-              </button>
-            </div>
-            <pre className="scrollbar-none flex-1 overflow-x-auto whitespace-pre-wrap p-5 font-mono text-[11px] leading-6 text-white/46 sm:p-7 sm:text-xs">
-              <code>
-                <span className="text-violet-300">@misc</span>{`{peyriguere2026trhash,\n`}
-                <span className="text-sky-300">  title</span>{`={TR-Hash 500M: Deterministic Token-ID Routing for Shared Residual Experts},\n`}
-                <span className="text-sky-300">  author</span>{`={Boris Peyriguere},\n`}
-                <span className="text-sky-300">  note</span>{`={Research preprint},\n`}
-                <span className="text-sky-300">  year</span>{`={2026},\n`}
-                <span className="text-sky-300">  url</span>{`={https://www.complexity-ai.fr/papers/tr-hash-deterministic-token-id-routing.pdf}\n}`}
-              </code>
-            </pre>
-          </div>
-        </article>
+        <div className="flex flex-col gap-4">
+          {papers.map((paper) => (
+            <PaperCard key={paper.id} paper={paper} />
+          ))}
+        </div>
       </div>
     </section>
   );
