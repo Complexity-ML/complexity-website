@@ -49,11 +49,11 @@ const projects = [
     span: "xl:col-span-3",
   },
   {
-    title: "Pacific-i64",
+    title: "AETHORIA-AI",
     kicker: "Hugging Face organization",
     description: "Every TR-Hash checkpoint, dataset and Space we publish, in one place — see /models on this site for the current releases with their real numbers.",
     tags: ["Models", "Datasets", "Spaces"],
-    href: "https://huggingface.co/Pacific-i64",
+    href: "https://huggingface.co/AETHORIA-AI",
     icon: Box,
     tone: "amber",
     span: "xl:col-span-3",
