@@ -21,7 +21,7 @@ const proof: Record<Mode, Array<{ icon: typeof Route; label: string; value: stri
   "TR-MoE": [
     { icon: Route, label: "routing", value: "token-ID hash top-2" },
     { icon: Scale, label: "scaling", value: "492.1M / 20B tokens" },
-    { icon: Zap, label: "serving", value: "vllm-i64 · Linux CPU" },
+    { icon: Zap, label: "serving", value: "TR-Hash-i64 · Linux CPU" },
   ],
   compare: [
     { icon: Route, label: "models", value: "TR-Hash vs dense" },
@@ -31,7 +31,7 @@ const proof: Record<Mode, Array<{ icon: typeof Route; label: string; value: stri
   dense: [
     { icon: Route, label: "path", value: "dense SwiGLU" },
     { icon: Scale, label: "scaling", value: "306.5M / 8B tokens" },
-    { icon: Zap, label: "serving", value: "vllm-i64 · Linux CPU" },
+    { icon: Zap, label: "serving", value: "TR-Hash-i64 · Linux CPU" },
   ],
 };
 

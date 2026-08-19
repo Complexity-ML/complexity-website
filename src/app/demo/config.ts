@@ -43,9 +43,9 @@ export const DESCRIPTIONS: Record<Mode, string> = {
 };
 
 export const FOOTERS: Record<Mode, string> = {
-  "TR-MoE": "TR-HASH-0.5B · 492.1M parameters · 20B pretraining tokens · vllm-i64",
+  "TR-MoE": "TR-HASH-0.5B · 492.1M parameters · 20B pretraining tokens · TR-Hash-i64",
   compare: "TR-Hash 492.1M vs Dense 306.5M · qualitative, non-iso-parameter comparison",
-  dense: "Dense-306 · 306.5M parameters · public Linux CPU inference with vllm-i64",
+  dense: "Dense-306 · 306.5M parameters · public Linux CPU inference with TR-Hash-i64",
 };
 
 export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {

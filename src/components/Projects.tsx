@@ -39,11 +39,11 @@ const projects = [
     span: "xl:col-span-3",
   },
   {
-    title: "vllm-i64",
+    title: "TR-Hash-i64",
     kicker: "Serving engine",
     description: "Paged KV cache, continuous batching and an OpenAI-compatible API for token-routed inference.",
     tags: ["Inference", "CUDA", "API"],
-    href: "https://github.com/Complexity-ML/vllm-i64",
+    href: "https://github.com/Complexity-ML/TR-Hash-i64",
     icon: Cpu,
     tone: "sky",
     span: "xl:col-span-3",
