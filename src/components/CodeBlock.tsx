@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Check, Copy } from "lucide-react";
 import hljs from "highlight.js/lib/core";
 import python from "highlight.js/lib/languages/python";
-import { normalizeAssistantMarkdown } from "@/lib/assistant-markdown";
+import { normalizeAssistantMarkdown, splitImplicitCode } from "@/lib/assistant-markdown";
 
 hljs.registerLanguage("python", python);
 
@@ -229,7 +229,9 @@ function FencedCode({ content, language }: { content: string; language: string }
 }
 
 export default function CodeBlock({ content }: { content: string }) {
-  const segments = parseFencedCode(normalizeAssistantMarkdown(content));
+  const segments = parseFencedCode(normalizeAssistantMarkdown(content)).flatMap((segment) => (
+    segment.type === "text" ? splitImplicitCode(segment.content) : [segment]
+  ));
 
   return (
     <div className="space-y-3">
