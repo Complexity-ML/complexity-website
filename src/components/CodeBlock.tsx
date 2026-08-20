@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Check, Copy } from "lucide-react";
 import hljs from "highlight.js/lib/core";
 import python from "highlight.js/lib/languages/python";
+import { normalizeAssistantMarkdown } from "@/lib/assistant-markdown";
 
 hljs.registerLanguage("python", python);
 
@@ -15,9 +16,10 @@ type TextBlock =
   | { type: "paragraph"; content: string }
   | { type: "list"; ordered: boolean; items: string[] };
 
-const FENCED_CODE_RE = /```([\w-]*)?\n([\s\S]*?)```/g;
+const FENCED_CODE_RE = /```(?:([\w+-]+)\n|\n)?([\s\S]*?)```/g;
 const BULLET_RE = /^\s*[-*•]\s+(.+)$/;
 const ORDERED_RE = /^\s*\d+[.)]\s+(.+)$/;
+const INLINE_MARKDOWN_RE = /(\*\*[^*\n]+\*\*|__[^_\n]+__|`[^`\n]+`)/g;
 
 function parseFencedCode(content: string): Segment[] {
   const segments: Segment[] = [];
@@ -38,7 +40,24 @@ function parseFencedCode(content: string): Segment[] {
   }
 
   if (lastIndex < content.length) {
-    segments.push({ type: "text", content: content.slice(lastIndex) });
+    const trailing = content.slice(lastIndex);
+    const openFence = trailing.indexOf("```");
+    if (openFence < 0) {
+      segments.push({ type: "text", content: trailing });
+    } else {
+      if (openFence > 0) {
+        segments.push({ type: "text", content: trailing.slice(0, openFence) });
+      }
+      const unfinished = trailing.slice(openFence + 3);
+      const newline = unfinished.indexOf("\n");
+      const possibleLanguage = newline >= 0 ? unfinished.slice(0, newline).trim() : "";
+      const hasLanguage = /^[\w+-]+$/.test(possibleLanguage);
+      segments.push({
+        type: "code",
+        language: hasLanguage ? possibleLanguage.toLowerCase() : "text",
+        content: (hasLanguage ? unfinished.slice(newline + 1) : unfinished).trimEnd(),
+      });
+    }
   }
 
   return segments.length > 0 ? segments : [{ type: "text", content }];
@@ -118,7 +137,7 @@ function TextContent({ content }: { content: string }) {
     <div className="min-w-0 space-y-3 break-words text-[15px] leading-7 text-foreground/90 [overflow-wrap:anywhere]">
       {blocks.map((block, index) => {
         if (block.type === "paragraph") {
-          return <p className="max-w-full" key={index}>{block.content}</p>;
+          return <p className="max-w-full" key={index}><InlineMarkdown content={block.content} /></p>;
         }
 
         const ListTag = block.ordered ? "ol" : "ul";
@@ -129,7 +148,7 @@ function TextContent({ content }: { content: string }) {
           >
             {block.items.map((item, itemIndex) => (
               <li key={`${index}-${itemIndex}`} className="pl-1 marker:text-primary/70">
-                {item}
+                <InlineMarkdown content={item} />
               </li>
             ))}
           </ListTag>
@@ -137,6 +156,18 @@ function TextContent({ content }: { content: string }) {
       })}
     </div>
   );
+}
+
+function InlineMarkdown({ content }: { content: string }) {
+  return content.split(INLINE_MARKDOWN_RE).map((part, index) => {
+    if ((part.startsWith("**") && part.endsWith("**")) || (part.startsWith("__") && part.endsWith("__"))) {
+      return <strong key={index} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return <code key={index} className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.88em] text-violet-200">{part.slice(1, -1)}</code>;
+    }
+    return part;
+  });
 }
 
 function FencedCode({ content, language }: { content: string; language: string }) {
@@ -198,7 +229,7 @@ function FencedCode({ content, language }: { content: string; language: string }
 }
 
 export default function CodeBlock({ content }: { content: string }) {
-  const segments = parseFencedCode(content);
+  const segments = parseFencedCode(normalizeAssistantMarkdown(content));
 
   return (
     <div className="space-y-3">

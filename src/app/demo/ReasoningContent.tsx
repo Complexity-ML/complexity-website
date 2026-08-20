@@ -3,6 +3,7 @@
 import { Brain, Loader2 } from "lucide-react";
 import CodeBlock from "@/components/CodeBlock";
 import { cn } from "@/lib/utils";
+import { normalizeAssistantMarkdown } from "@/lib/assistant-markdown";
 
 type ReasoningState = "plain" | "think" | "final";
 
@@ -77,8 +78,9 @@ export function parseReasoningEnvelope(content: string): ReasoningEnvelope {
 }
 
 export function visibleAssistantText(content: string): string {
-  const envelope = parseReasoningEnvelope(content);
-  if (!envelope.hasEnvelope) return content;
+  const normalizedContent = normalizeAssistantMarkdown(content);
+  const envelope = parseReasoningEnvelope(normalizedContent);
+  if (!envelope.hasEnvelope) return normalizedContent;
   return envelope.answer || envelope.reasoning;
 }
 
@@ -91,7 +93,7 @@ export function ReasoningContent({
   streaming?: boolean;
   className?: string;
 }) {
-  const envelope = parseReasoningEnvelope(content);
+  const envelope = parseReasoningEnvelope(normalizeAssistantMarkdown(content));
 
   if (!envelope.hasEnvelope) {
     return (
