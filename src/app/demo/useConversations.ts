@@ -45,7 +45,7 @@ export function useConversations(userId?: string) {
             data.conversations.map((c: Record<string, unknown>) => ({
               id: c.id,
               title: c.title,
-              mode: c.mode as Mode,
+              mode: "TR-MoE" as Mode,
               messages: [], // loaded on select
               messagesLoaded: false,
               createdAt: new Date(c.createdAt as string).getTime(),

@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   Activity,
@@ -15,13 +14,11 @@ import {
 import type { Mode } from "./config";
 import { AGENT_MODE_ENABLED, MAINTENANCE, SUGGESTIONS } from "./config";
 import { useChat } from "./useChat";
-import { useCompare } from "./useCompare";
 import { useConversations } from "./useConversations";
 import { useModelMetadata } from "./useModelMetadata";
 import { useSourceAgent } from "./useSourceAgent";
 import { ParamPanel } from "./ParamPanel";
 import { ChatMessage, ErrorBanner } from "./ChatMessage";
-import { CompareView } from "./CompareView";
 import { ChatInput } from "./ChatInput";
 import { MonitorPanel } from "./MonitorPanel";
 import { ChatSidebar } from "./ChatSidebar";
@@ -51,10 +48,6 @@ const RIGHT_RAIL = [
   { id: "results", label: "Results", icon: CheckCircle2 },
 ];
 
-function parseMode(mode: string | null): Mode {
-  return MODES.includes(mode as Mode) ? (mode as Mode) : "TR-MoE";
-}
-
 function shortTitle(value: string) {
   const compact = value.replace(/\s+/g, " ").trim();
   if (!compact) return "New inference";
@@ -62,18 +55,16 @@ function shortTitle(value: string) {
 }
 
 export function DemoShell() {
-  const searchParams = useSearchParams();
   const { data: session } = useSession();
-  const initialMode = parseMode(searchParams.get("mode"));
+  const initialMode: Mode = "TR-MoE";
   const userId = (session?.user as Record<string, unknown> | undefined)?.id as string | undefined;
 
-  const chat = useChat(initialMode === "dense" ? "dense" : initialMode === "compare" ? "TR-MoE" : initialMode);
-  const compare = useCompare();
+  const chat = useChat();
   const convos = useConversations(userId);
   const sourceAgent = useSourceAgent(AGENT_MODE_ENABLED);
   const { labels: modelLabels } = useModelMetadata();
 
-  const [activeMode, setActiveMode] = useState<Mode>(initialMode);
+  const activeMode = initialMode;
   const [leftPanel, setLeftPanel] = useState<LeftPanel | null>(null);
   const [rightPanel, setRightPanel] = useState<RightPanel | null>(null);
   const mainRef = useRef<HTMLElement>(null);
@@ -81,7 +72,6 @@ export function DemoShell() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const userScrolledUp = useRef(false);
 
-  const isCompare = activeMode === "compare";
   const suggestions = useMemo(
     () => SUGGESTIONS[activeMode]
       .flatMap((group) => group.prompts.slice(0, 2).map((prompt) => ({ label: group.label, prompt })))
@@ -149,9 +139,6 @@ export function DemoShell() {
       if (!convos.activeConversation.messagesLoaded) {
         return;
       }
-      if (convos.activeConversation.mode !== chat.mode) {
-        chat.switchMode(convos.activeConversation.mode);
-      }
       chat.loadMessages(convos.activeConversation.messages);
     } else {
       chat.loadMessages([]);
@@ -195,18 +182,7 @@ export function DemoShell() {
     }
   }, [chat.messages.length, chat.streaming, streamedContentLength]);
 
-  const handleSwitchMode = useCallback((mode: Mode) => {
-    if (mode === activeMode || MAINTENANCE[mode]) return;
-    chat.switchMode(mode);
-    setActiveMode(mode);
-    inputRef.current?.focus();
-  }, [activeMode, chat]);
-
   const handleSend = useCallback(() => {
-    if (isCompare) {
-      compare.sendMessage();
-      return;
-    }
     if (!convos.activeId && chat.input.trim()) {
       if (convos.isFull) return;
       convos.createConversation(chat.mode);
@@ -214,19 +190,14 @@ export function DemoShell() {
     chat.sendMessage(undefined, {
       research: AGENT_MODE_ENABLED && sourceAgent.subagentEnabled,
     });
-  }, [isCompare, compare, convos, chat, sourceAgent.subagentEnabled]);
+  }, [convos, chat, sourceAgent.subagentEnabled]);
 
   const handleNewChat = useCallback(() => {
-    if (isCompare) {
-      compare.clearResults();
-      inputRef.current?.focus();
-      return;
-    }
     if (chat.streaming || chat.loading) chat.stopGeneration();
     chat.clearChat();
     convos.selectConversation(null);
     inputRef.current?.focus();
-  }, [isCompare, compare, chat, convos]);
+  }, [chat, convos]);
 
   const handleSelectConvo = useCallback((id: string | null) => {
     if (chat.streaming || chat.loading) chat.stopGeneration();
@@ -235,26 +206,17 @@ export function DemoShell() {
   }, [chat, convos]);
 
   const handleClear = useCallback(() => {
-    if (isCompare) {
-      compare.clearResults();
-    } else {
-      chat.clearChat();
-      if (convos.activeId) convos.deleteConversation(convos.activeId);
-    }
+    chat.clearChat();
+    if (convos.activeId) convos.deleteConversation(convos.activeId);
     inputRef.current?.focus();
-  }, [isCompare, compare, chat, convos]);
+  }, [chat, convos]);
 
   const handleStop = useCallback(() => {
-    if (isCompare) compare.stopGeneration();
-    else chat.stopGeneration();
-  }, [isCompare, compare, chat]);
+    chat.stopGeneration();
+  }, [chat]);
 
   const handlePromptSelection = useCallback((prompt: string) => {
     setLeftPanel(null);
-    if (isCompare) {
-      compare.sendMessage(prompt);
-      return;
-    }
     if (!convos.activeId) {
       if (convos.isFull) return;
       convos.createConversation(chat.mode);
@@ -262,21 +224,17 @@ export function DemoShell() {
     chat.sendMessage(prompt, {
       research: AGENT_MODE_ENABLED && sourceAgent.subagentEnabled,
     });
-  }, [chat, compare, convos, isCompare, sourceAgent.subagentEnabled]);
+  }, [chat, convos, sourceAgent.subagentEnabled]);
 
-  const inputValue = isCompare ? compare.input : chat.input;
-  const messageCount = isCompare ? compare.results.length * 3 : chat.messages.length;
-  const runCount = isCompare
-    ? compare.results.length
-    : chat.messages.filter((message) => message.role === "user").length;
-  const conversationTitle = isCompare
-    ? "Compare routed and dense output"
-    : convos.activeConversation?.title
-      ?? shortTitle(chat.messages.find((message) => message.role === "user")?.content ?? "");
-  const publicLabel = activeMode === "compare" ? "COMPARE MODE" : "PUBLIC DEMO";
-  const activeParams = isCompare ? compare.params : chat.params;
-  const updateParams = isCompare ? compare.updateParam : chat.updateParam;
-  const activeHealth = isCompare ? compare.healthStatus : chat.healthStatus;
+  const inputValue = chat.input;
+  const messageCount = chat.messages.length;
+  const runCount = chat.messages.filter((message) => message.role === "user").length;
+  const conversationTitle = convos.activeConversation?.title
+    ?? shortTitle(chat.messages.find((message) => message.role === "user")?.content ?? "");
+  const publicLabel = "PUBLIC DEMO";
+  const activeParams = chat.params;
+  const updateParams = chat.updateParam;
+  const activeHealth = chat.healthStatus;
   const unavailableReason = MAINTENANCE[activeMode]
     ?? (activeHealth === "offline" ? `${modelLabels[activeMode]} is temporarily unavailable.` : undefined);
   const leftRail = useMemo(
@@ -395,60 +353,42 @@ export function DemoShell() {
                 </span>
               </div>
 
-              {isCompare ? (
-                <>
-                  <CompareView
-                    results={compare.results}
-                    denseContent={compare.denseContent}
-                    chatContent={compare.chatContent}
-                    denseTokens={compare.denseTokens}
-                    chatTokens={compare.chatTokens}
-                    streaming={compare.streaming}
-                    expertActivity={compare.expertActivity}
-                    denseLabel={modelLabels.dense}
-                    routedLabel={modelLabels["TR-MoE"]}
+              <div className="space-y-8">
+                {chat.messages.map((message, index) => (
+                  <ChatMessage
+                    key={message.createdAt
+                      ? `${message.role}-${message.createdAt}`
+                      : `${message.role}-${index}`}
+                    message={message}
+                    mode={chat.mode}
+                    modelLabel={modelLabels[chat.mode]}
+                    streaming={
+                      chat.streaming
+                      && message.role === "assistant"
+                      && index === chat.messages.length - 1
+                    }
+                    expertActivity={
+                      message.role === "assistant"
+                      && index === chat.messages.length - 1
+                        ? chat.expertActivity
+                        : null
+                    }
                   />
-                  {compare.error && <ErrorBanner message={compare.error} />}
-                </>
-              ) : (
-                <div className="space-y-8">
-                  {chat.messages.map((message, index) => (
-                    <ChatMessage
-                      key={message.createdAt
-                        ? `${message.role}-${message.createdAt}`
-                        : `${message.role}-${index}`}
-                      message={message}
-                      mode={chat.mode}
-                      modelLabel={modelLabels[chat.mode]}
-                      streaming={
-                        chat.streaming
-                        && message.role === "assistant"
-                        && index === chat.messages.length - 1
-                      }
-                      expertActivity={
-                        message.role === "assistant"
-                        && index === chat.messages.length - 1
-                          ? chat.expertActivity
-                          : null
-                      }
-                    />
-                  ))}
-                  {chat.error && <ErrorBanner message={chat.error} />}
-                </div>
-              )}
+                ))}
+                {chat.error && <ErrorBanner message={chat.error} />}
+              </div>
               <div ref={messagesEndRef} />
             </div>
           </main>
 
           <ChatInput
-            mode={activeMode}
             input={inputValue}
-            loading={isCompare ? compare.loading : chat.loading}
-            streaming={isCompare ? compare.streaming : chat.streaming}
+            loading={chat.loading}
+            streaming={chat.streaming}
             maxTokens={activeParams.maxTokens}
-            tokenStats={isCompare ? null : chat.tokenStats}
+            tokenStats={chat.tokenStats}
             unavailableReason={unavailableReason}
-            onInputChange={isCompare ? compare.setInput : chat.setInput}
+            onInputChange={chat.setInput}
             onSend={handleSend}
             onStop={handleStop}
             inputRef={inputRef}
@@ -460,23 +400,16 @@ export function DemoShell() {
             <p className="mb-3 font-mono text-[8px] uppercase tracking-[0.16em] text-[#718096]">Active model</p>
             <div className="mb-6 space-y-1.5">
               {MODES.map((mode) => (
-                <button
+                <div
                   key={mode}
-                  type="button"
-                  onClick={() => handleSwitchMode(mode)}
-                  disabled={!!MAINTENANCE[mode]}
-                  className={`flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-[10px] transition-colors ${
-                    activeMode === mode
-                      ? "border-violet-400/50 bg-violet-400/10 text-violet-100"
-                      : "border-[#2c3a50] bg-[#222d3f] text-[#9aa8bc] hover:border-[#40516d] hover:text-[#e8eef7]"
-                  } disabled:cursor-not-allowed disabled:opacity-40`}
+                  className="flex w-full items-center justify-between rounded-lg border border-violet-400/50 bg-violet-400/10 px-3 py-2.5 text-left text-[10px] text-violet-100"
                 >
                   <span>
                     {modelLabels[mode]}
                     {MAINTENANCE[mode] && <small className="ml-2 text-amber-300">maintenance</small>}
                   </span>
-                  {activeMode === mode && <span className="size-1.5 rounded-full bg-violet-300" />}
-                </button>
+                  <span className="size-1.5 rounded-full bg-violet-300" />
+                </div>
               ))}
             </div>
             <p className="mb-4 font-mono text-[8px] uppercase tracking-[0.16em] text-[#718096]">Generation</p>
@@ -486,9 +419,9 @@ export function DemoShell() {
 
         {rightPanel === "metrics" && (
           <AILabPanel eyebrow="live" title="Metrics" side="right" onClose={() => setRightPanel(null)}>
-            <MonitorPanel health={activeHealth} snapshot={isCompare ? null : chat.snapshot} embedded />
+            <MonitorPanel health={activeHealth} snapshot={chat.snapshot} embedded />
             <div className="mt-5 divide-y divide-[#2c3a50] border-y border-[#2c3a50]">
-              <MetricRow label="Output tokens" value={isCompare ? `${compare.denseTokens + compare.chatTokens}` : `${chat.tokenStats?.tokens ?? 0}`} />
+              <MetricRow label="Output tokens" value={`${chat.tokenStats?.tokens ?? 0}`} />
               <MetricRow label="Elapsed" value={chat.tokenStats ? `${chat.tokenStats.elapsed.toFixed(1)} s` : "—"} />
               <MetricRow
                 label="Throughput"
@@ -505,14 +438,14 @@ export function DemoShell() {
           <AILabPanel eyebrow="run" title="Results" side="right" onClose={() => setRightPanel(null)}>
             <div className="divide-y divide-[#2c3a50] border-y border-[#2c3a50]">
               <ResultRow
-                title={isCompare ? "Comparison state" : "Latest inference"}
+                title="Latest inference"
                 detail={messageCount ? `${messageCount} messages across ${runCount} run${runCount === 1 ? "" : "s"}.` : "No inference has run yet."}
               />
               <ResultRow title="Model" detail={modelLabels[activeMode]} />
               <ResultRow
                 title="Status"
-                detail={(isCompare ? compare.streaming : chat.streaming) ? "Generation in progress" : "Ready for another prompt"}
-                success={!(isCompare ? compare.streaming : chat.streaming)}
+                detail={chat.streaming ? "Generation in progress" : "Ready for another prompt"}
+                success={!chat.streaming}
               />
             </div>
             <button

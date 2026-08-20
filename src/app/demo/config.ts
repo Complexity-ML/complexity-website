@@ -1,4 +1,4 @@
-export type Mode = "TR-MoE" | "compare" | "dense";
+export type Mode = "TR-MoE";
 
 export const AGENT_MODE_ENABLED = process.env.NEXT_PUBLIC_AGENT_MODE_ENABLED === "true";
 
@@ -14,38 +14,26 @@ export interface SuggestionGroup {
 }
 
 export const MAINTENANCE: Partial<Record<Mode, string>> = {
-  "TR-MoE": process.env.NEXT_PUBLIC_TR_MOE_MAINTENANCE || undefined,
-  compare: process.env.NEXT_PUBLIC_COMPARE_MAINTENANCE || undefined,
-  dense: process.env.NEXT_PUBLIC_DENSE_MAINTENANCE || undefined,
+  "TR-MoE": process.env.NEXT_PUBLIC_TR_HASH_TINY_MAINTENANCE || undefined,
 };
 
-const ROUTED_ENDPOINT = process.env.NEXT_PUBLIC_TR_MOE_API_URL || "https://pacific-i64-tr-hash-0-5b.hf.space";
+const ROUTED_ENDPOINT = process.env.NEXT_PUBLIC_TR_HASH_TINY_API_URL || "https://pacific-i64-tr-hash-tiny.hf.space";
 
 export const ENDPOINTS: Record<Mode, string> = {
   "TR-MoE": ROUTED_ENDPOINT,
-  compare: ROUTED_ENDPOINT,
-  dense: ROUTED_ENDPOINT,
 };
 
 export const MODEL_NAMES: Record<Mode, string> = {
-  "TR-MoE": "TR-HASH-0.5B",
-  compare: "TR-HASH-0.5B vs Dense-306",
-  dense: "Dense-306",
+  "TR-MoE": "TR-Hash Tiny",
 };
 
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE":
-    "A 492.1M-parameter TR-Hash MoE with deterministic token-ID top-2 routing and a shared dense path, pretrained over 20B tokens.",
-  compare:
-    "TR-Hash 492.1M and the historical Dense-306 control streamed side by side for qualitative inspection; this is not an iso-parameter benchmark.",
-  dense:
-    "The matched 306.5M dense SwiGLU baseline for comparison against routed generation.",
+    "A 201.2M-parameter TR-Hash model with deterministic token-ID top-2 routing and a shared dense path, trained on 70B unique tokens replayed to 130B exposures.",
 };
 
 export const FOOTERS: Record<Mode, string> = {
-  "TR-MoE": "TR-HASH-0.5B · 492.1M parameters · 20B pretraining tokens · TR-Hash-i64",
-  compare: "TR-Hash 492.1M vs Dense 306.5M · qualitative, non-iso-parameter comparison",
-  dense: "Dense-306 · 306.5M parameters · public Linux CPU inference with TR-Hash-i64",
+  "TR-MoE": "TR-Hash Tiny · 201.2M parameters · 70B unique / 130B replayed tokens · TR-Hash-i64",
 };
 
 export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
@@ -147,128 +135,6 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
         "Describe the solar system",
         "Explain how the internet works",
         "Why do we dream?",
-      ],
-    },
-  ],
-  compare: [
-    {
-      label: "science",
-      prompts: [
-        "Machine learning is a branch of artificial intelligence that",
-        "The human brain contains approximately",
-        "Photosynthesis is the process by which plants",
-        "In physics, Newton's second law states that",
-        "The water cycle begins when the sun heats",
-        "DNA stands for deoxyribonucleic acid and is responsible for",
-      ],
-    },
-    {
-      label: "history & geography",
-      prompts: [
-        "The French Revolution began in 1789 when",
-        "The Great Wall of China was built to",
-        "During the Industrial Revolution, factories",
-        "The Amazon rainforest is home to",
-        "Ancient Egypt was one of the earliest civilizations and",
-        "The Pacific Ocean is the largest ocean and covers",
-      ],
-    },
-    {
-      label: "technology",
-      prompts: [
-        "A computer program is a set of instructions that",
-        "The internet was originally developed in the",
-        "In programming, a variable is used to",
-        "Artificial neural networks are inspired by",
-        "An operating system is software that manages",
-        "Encryption is the process of converting data into",
-      ],
-    },
-    {
-      label: "functions",
-      prompts: [
-        "Write a fibonacci function in Python",
-        "Write a bubble sort function in Python",
-        "Write a binary search function",
-        "Write a function to check if a string is a palindrome",
-        "Write a function to merge two sorted lists",
-        "Write a function to count occurrences of an element in a list",
-      ],
-    },
-    {
-      label: "chat",
-      prompts: [
-        "Hello, how are you?",
-        "Tell me a joke",
-        "What is artificial intelligence?",
-        "Explain what machine learning is",
-        "Tell me a short story",
-        "Explain how the internet works",
-      ],
-    },
-  ],
-  dense: [
-    {
-      label: "science",
-      prompts: [
-        "Machine learning is a branch of artificial intelligence that",
-        "The human brain contains approximately",
-        "Photosynthesis is the process by which plants",
-        "In physics, Newton's second law states that",
-        "The water cycle begins when the sun heats",
-        "DNA stands for deoxyribonucleic acid and is responsible for",
-      ],
-    },
-    {
-      label: "general",
-      prompts: [
-        "The meaning of life is",
-        "France is a country located in",
-        "In a world where artificial intelligence",
-        "The most important invention in human history is",
-        "Climate change affects the planet by",
-        "The internet was originally developed in the",
-      ],
-    },
-    {
-      label: "chat",
-      prompts: [
-        "Hello, how are you?",
-        "What is the capital of France?",
-        "Tell me a joke",
-        "What is the meaning of life?",
-        "What is artificial intelligence?",
-        "Explain what machine learning is",
-        "What makes a good leader?",
-        "Give me three tips for a healthy lifestyle",
-        "What are the seasons of the year?",
-        "Describe a beautiful sunset",
-      ],
-    },
-    {
-      label: "fun time",
-      prompts: [
-        "Tell me a short story",
-        "Write a poem about the ocean",
-        "Give me a recipe for chocolate cake",
-        "List 5 interesting facts about dogs",
-        "Give me a recipe for pancakes",
-        "What is the most beautiful place on Earth?",
-        "Tell me about the history of computers",
-        "Describe the solar system",
-        "Explain how the internet works",
-        "Why do we dream?",
-      ],
-    },
-    {
-      label: "functions",
-      prompts: [
-        "Write a fibonacci function in Python",
-        "Write a function to reverse a string",
-        "Write a binary search function",
-        "Write a function to check if a number is prime",
-        "Write a function to find the max element in a list",
-        "Write a function to calculate the mean of a list of numbers",
       ],
     },
   ],

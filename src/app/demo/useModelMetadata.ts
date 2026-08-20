@@ -11,11 +11,6 @@ interface PublicModelMetadata {
   quantization?: string;
 }
 
-type ModelPair = {
-  routed: PublicModelMetadata | null;
-  dense: PublicModelMetadata | null;
-};
-
 function formatParameterCount(value: number): string {
   if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
@@ -42,15 +37,12 @@ async function readModel(endpoint: string): Promise<PublicModelMetadata | null> 
 }
 
 export function useModelMetadata() {
-  const [models, setModels] = useState<ModelPair>({ routed: null, dense: null });
+  const [model, setModel] = useState<PublicModelMetadata | null>(null);
 
   useEffect(() => {
     let disposed = false;
-    void Promise.all([
-      readModel(ENDPOINTS["TR-MoE"]),
-      readModel(ENDPOINTS.dense),
-    ]).then(([routed, dense]) => {
-      if (!disposed) setModels({ routed, dense });
+    void readModel(ENDPOINTS["TR-MoE"]).then((loadedModel) => {
+      if (!disposed) setModel(loadedModel);
     }).catch(() => {
       // A sleeping or maintained Space keeps the stable model ID fallback.
     });
@@ -60,18 +52,13 @@ export function useModelMetadata() {
   }, []);
 
   const labels = useMemo<Record<Mode, string>>(() => {
-    const routed = models.routed
-      ? `${MODEL_NAMES["TR-MoE"]} · ${formatParameterCount(models.routed.parameter_count)}`
+    const routed = model
+      ? `${MODEL_NAMES["TR-MoE"]} · ${formatParameterCount(model.parameter_count)}`
       : MODEL_NAMES["TR-MoE"];
-    const dense = models.dense
-      ? `${MODEL_NAMES.dense} · ${formatParameterCount(models.dense.parameter_count)}`
-      : MODEL_NAMES.dense;
     return {
       "TR-MoE": routed,
-      dense,
-      compare: `${routed} vs ${dense}`,
     };
-  }, [models]);
+  }, [model]);
 
-  return { models, labels };
+  return { model, labels };
 }

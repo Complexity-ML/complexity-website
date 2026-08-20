@@ -45,8 +45,8 @@ function newConversationCacheId(): string {
   return `conversation-${crypto.randomUUID()}`;
 }
 
-function getBaseUrl(mode: Mode): string {
-  return ENDPOINTS[mode].replace(/\/+$/, "");
+function getBaseUrl(): string {
+  return ENDPOINTS["TR-MoE"].replace(/\/+$/, "");
 }
 
 /** Parse an SSE stream and yield text chunks */
@@ -79,8 +79,8 @@ async function* readSSE(response: Response): AsyncGenerator<string> {
   }
 }
 
-export function useChat(initialMode: Mode) {
-  const [mode, setMode] = useState<Mode>(initialMode);
+export function useChat() {
+  const mode: Mode = "TR-MoE";
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -131,20 +131,6 @@ export function useChat(initialMode: Mode) {
     }
   }, []);
 
-  const switchMode = useCallback((newMode: Mode) => {
-    if (newMode === mode) return;
-    if (MAINTENANCE[newMode]) return;
-    if (streaming || loading) stopGeneration();
-    setMode(newMode);
-    messagesRef.current = [];
-    conversationCacheIdRef.current = newConversationCacheId();
-    setMessages([]);
-    setError(null);
-    setInput("");
-    setTokenStats(null);
-    setResearchEvents([]);
-  }, [mode, streaming, loading, stopGeneration]);
-
   const clearChat = useCallback(() => {
     if (streaming || loading) stopGeneration();
     messagesRef.current = [];
@@ -182,7 +168,7 @@ export function useChat(initialMode: Mode) {
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
-    const base = getBaseUrl(mode);
+    const base = getBaseUrl();
 
     try {
       let modelPrompt = text;
@@ -249,10 +235,6 @@ export function useChat(initialMode: Mode) {
           "ANSWER:",
         ].join("\n");
       }
-      const modelMessages = options.research
-        ? [{ role: "user" as const, content: modelPrompt }]
-        : newMessages.map(({ role, content }) => ({ role, content }));
-
       streamStartRef.current = performance.now();
       tokenCountRef.current = 0;
       setTokenStats({ tokens: 0, elapsed: 0, streaming: true });
@@ -287,12 +269,11 @@ export function useChat(initialMode: Mode) {
       };
 
       // Stream via fetch (axios doesn't support ReadableStream)
-      const response = await fetch(`${base}/v1/chat/completions`, {
+      const response = await fetch(`${base}/v1/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: modelMessages,
-          context_management: "auto",
+          prompt: modelPrompt,
           max_tokens: params.maxTokens,
           temperature: params.temperature,
           top_k: params.topK,
@@ -373,7 +354,6 @@ export function useChat(initialMode: Mode) {
     totalRequests,
     healthStatus,
     snapshot,
-    switchMode,
     clearChat,
     loadMessages,
     sendMessage,

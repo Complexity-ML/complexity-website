@@ -7,14 +7,13 @@ export interface SamplingParams {
   frequencyPenalty: number;
 }
 
-// Calibrated against the public TR-HASH-0.5B Space. Sampling temperatures
-// made this checkpoint less reliable, while removing the repetition penalty
-// caused long loops. Keep generation greedy and cap the response length.
+// Balanced defaults for the public 201.2M base model: enough sampling
+// diversity for completion while keeping short CPU generations stable.
 export const DEFAULT_SAMPLING_PARAMS: SamplingParams = {
-  temperature: 0,
-  maxTokens: 192,
-  topK: 0,
-  topP: 1,
-  repetitionPenalty: 1.08,
+  temperature: 0.7,
+  maxTokens: 128,
+  topK: 40,
+  topP: 0.9,
+  repetitionPenalty: 1.1,
   frequencyPenalty: 0,
 };

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { Settings2, Activity, Trash2, CircleUserRound, GitCompareArrows, Network, Rows3, LogIn } from "lucide-react";
+import { Settings2, Activity, Trash2, CircleUserRound, Network, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -13,9 +13,7 @@ import { MODEL_NAMES, MAINTENANCE } from "./config";
 import LogoMark from "@/components/LogoMark";
 
 const MODE_META = {
-  "TR-MoE": { label: "TR-Hash", detail: "492.1M · hash top-2", icon: Network },
-  compare: { label: "Compare", detail: "492.1M vs 306.5M", icon: GitCompareArrows },
-  dense: { label: "Dense", detail: "306.5M · SwiGLU", icon: Rows3 },
+  "TR-MoE": { label: "TR-Hash Tiny", detail: "201.2M · hash top-2", icon: Network },
 } satisfies Record<Mode, { label: string; detail: string; icon: typeof Network }>;
 
 interface ChatHeaderProps {

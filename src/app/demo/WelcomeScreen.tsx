@@ -7,30 +7,16 @@ import { DESCRIPTIONS, SUGGESTIONS } from "./config";
 
 const MODE_TITLES: Record<Mode, string> = {
   "TR-MoE": "Try deterministic TR-Hash routing",
-  compare: "Compare routed vs dense generation",
-  dense: "Probe the dense baseline",
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
-  "TR-MoE": "Public inference from the 492.1M TR-Hash MoE checkpoint pretrained over 20B tokens.",
-  compare: "TR-Hash 492.1M versus Dense 306.5M. This non-iso-parameter view is qualitative inspection, not a controlled benchmark.",
-  dense: "Public inference from the matched 306.5M dense baseline.",
+  "TR-MoE": "Public inference from the 201.2M TR-Hash Tiny base checkpoint trained on 70B unique tokens replayed to 130B exposures.",
 };
 
 const proof: Record<Mode, Array<{ icon: typeof Route; label: string; value: string }>> = {
   "TR-MoE": [
     { icon: Route, label: "routing", value: "token-ID hash top-2" },
-    { icon: Scale, label: "scaling", value: "492.1M / 20B tokens" },
-    { icon: Zap, label: "serving", value: "TR-Hash-i64 · Linux CPU" },
-  ],
-  compare: [
-    { icon: Route, label: "models", value: "TR-Hash vs dense" },
-    { icon: Scale, label: "scaling", value: "492.1M vs 306.5M" },
-    { icon: Zap, label: "scope", value: "qualitative only" },
-  ],
-  dense: [
-    { icon: Route, label: "path", value: "dense SwiGLU" },
-    { icon: Scale, label: "scaling", value: "306.5M / 8B tokens" },
+    { icon: Scale, label: "scaling", value: "201.2M / 130B tokens" },
     { icon: Zap, label: "serving", value: "TR-Hash-i64 · Linux CPU" },
   ],
 };

@@ -6,11 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import type { Mode } from "./config";
 import type { TokenStats } from "./useChat";
 
 interface ChatInputProps {
-  mode: Mode;
   input: string;
   loading: boolean;
   streaming: boolean;
@@ -24,7 +22,6 @@ interface ChatInputProps {
 }
 
 export function ChatInput({
-  mode,
   input,
   loading,
   streaming,
@@ -67,7 +64,7 @@ export function ChatInput({
             value={input}
             onChange={(e) => onInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={unavailableReason || (mode === "compare" ? "Send one prompt to both models…" : "Ask AI LAB…")}
+            placeholder={unavailableReason || "Continue the text…"}
             disabled={!!unavailableReason}
             rows={1}
             className="field-sizing-fixed h-[38px] min-h-[38px] max-h-[88px] resize-none overflow-x-hidden overflow-y-auto break-words border-0 bg-transparent px-2 py-2.5 text-[11px] text-[#e8eef7] shadow-none [overflow-wrap:anywhere] placeholder:text-[#738198] focus-visible:ring-0"

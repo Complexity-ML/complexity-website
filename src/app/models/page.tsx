@@ -92,6 +92,7 @@ const models: Model[] = [
     links: [
       { label: "Architecture & plan (paper)", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
       { label: "Model page (HF, live)", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-200M-130B" },
+      { label: "Live demo", href: "https://huggingface.co/spaces/Pacific-i64/Tr-Hash-tiny" },
     ],
   },
 ];
