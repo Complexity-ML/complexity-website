@@ -280,7 +280,7 @@ export function useChat() {
         body: JSON.stringify({
           messages: chatMessages,
           max_tokens: params.maxTokens,
-          thinking_budget: Math.min(128, Math.max(32, Math.floor(params.maxTokens / 2))),
+          thinking_budget: Math.min(192, Math.max(32, Math.floor(params.maxTokens / 2))),
           temperature: params.temperature,
           top_k: params.topK,
           top_p: params.topP,
