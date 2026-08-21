@@ -13,6 +13,6 @@ export const DEFAULT_SAMPLING_PARAMS: SamplingParams = {
   maxTokens: 1024,
   topK: 20,
   topP: 0.95,
-  repetitionPenalty: 1.05,
-  frequencyPenalty: 0,
+  repetitionPenalty: 1.1,
+  frequencyPenalty: 0.1,
 };

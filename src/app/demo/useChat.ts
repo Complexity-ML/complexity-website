@@ -71,6 +71,12 @@ function getBaseUrl(): string {
   return ENDPOINTS["TR-MoE"].replace(/\/+$/, "");
 }
 
+const PUBLIC_SYSTEM_PROMPT = [
+  "You are a helpful instruction-following assistant.",
+  "When the user asks for code, provide complete runnable code instead of a list of ideas or a description.",
+  "Follow the requested language and output format exactly.",
+].join(" ");
+
 /** Parse an SSE stream and yield text chunks */
 async function* readSSE(response: Response): AsyncGenerator<SSEChunk> {
   if (!response.body) return;
@@ -295,7 +301,13 @@ export function useChat() {
         setMessages(nextMessages);
       };
 
-      const chatMessages = newMessages.map(({ role, content }) => ({ role, content }));
+      const chatMessages: Array<{
+        role: "system" | "user" | "assistant";
+        content: string;
+      }> = [
+        { role: "system", content: PUBLIC_SYSTEM_PROMPT },
+        ...newMessages.map(({ role, content }) => ({ role, content })),
+      ];
       chatMessages[chatMessages.length - 1] = { role: "user", content: modelPrompt };
 
       // The deployed model is instruction/chat tuned. Send the full
