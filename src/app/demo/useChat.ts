@@ -72,7 +72,7 @@ function getBaseUrl(): string {
 }
 
 const PUBLIC_SYSTEM_PROMPT =
-  "Think carefully before answering, then give the final answer.";
+  "Complete the task, then put the useful answer in <final>.";
 
 /** Parse an SSE stream and yield text chunks */
 async function* readSSE(response: Response): AsyncGenerator<SSEChunk> {
