@@ -75,6 +75,7 @@ const PUBLIC_SYSTEM_PROMPT = [
   "You are a helpful instruction-following assistant.",
   "When the user asks for code, provide complete runnable code instead of a list of ideas or a description.",
   "For mathematics, perform the calculation, show a concise verification, and state the final numeric answer explicitly without repeating the question.",
+  "Do not repeat or paraphrase the same point, do not enumerate near-duplicate answers, and stop as soon as the request is fully answered.",
   "Follow the requested language and output format exactly.",
 ].join(" ");
 
