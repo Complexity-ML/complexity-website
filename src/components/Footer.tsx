@@ -24,18 +24,23 @@ const groups = [
     ],
   },
   {
-    title: "Research",
+    title: "Releases",
     links: [
-      { label: "TR-Hash 500M preprint", href: "/papers/tr-hash-deterministic-token-id-routing.pdf" },
       { label: "TR-Hash 200M release paper", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
       { label: "TR-Hash 200M full SFT", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT" },
-      { label: "TR-Hash 200M live chat", href: "/ai-lab" },
       { label: "Vision v8 paper", href: "/papers/tr-hash-vision-v8-sft.pdf" },
-      { label: "Interactive paper", href: "https://huggingface.co/spaces/Pacific-i64/Token-Routing-Interactive-Paper" },
+      { label: "TR-Hash 500M preprint", href: "/papers/tr-hash-deterministic-token-id-routing.pdf" },
+      { label: "TR-Hash 0.5B archive", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MOE-500M-HF" },
+    ],
+  },
+  {
+    title: "Demos & tools",
+    links: [
+      { label: "TR-Hash 200M live chat", href: "/ai-lab" },
       { label: "Vision v8 live demo", href: "https://huggingface.co/spaces/Pacific-i64/TR-HASH-Vision-v8-ComfyUI" },
+      { label: "Interactive paper", href: "https://huggingface.co/spaces/Pacific-i64/Token-Routing-Interactive-Paper" },
       { label: "Paper artifacts", href: "https://github.com/Complexity-ML/tmlr-paper-pool" },
       { label: "TR-Hash-i64", href: "https://github.com/Complexity-ML/TR-Hash-i64" },
-      { label: "TR-Hash 0.5B", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MOE-500M-HF" },
     ],
   },
   {
@@ -52,7 +57,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-white/[0.07] bg-[#07090c]">
       <div className="site-shell py-12 sm:py-16 lg:py-20">
-        <div className="grid gap-12 lg:grid-cols-[1.35fr_1fr] lg:gap-20">
+        <div className="grid gap-12 lg:grid-cols-[0.85fr_1.65fr] lg:gap-16">
           <div>
             <Link href="/" className="inline-flex items-center gap-3">
               <LogoMark className="size-10" />
@@ -64,7 +69,7 @@ export default function Footer() {
             <p className="mt-8 font-mono text-[9px] uppercase tracking-[0.2em] text-white/22">Paris · France · Open science</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 xl:grid-cols-5">
             {groups.map((group) => (
               <div key={group.title}>
                 <p className="mb-4 font-mono text-[9px] uppercase tracking-[0.2em] text-white/28">{group.title}</p>
