@@ -1,0 +1,90 @@
+{
+  "title": "TR-HASH MoE 200M full SFT versus OPT-125M base: practical assistant prompt panel",
+  "date": "2026-08-21",
+  "scope": "A narrow qualitative smoke test, not a matched architecture benchmark.",
+  "models": {
+    "tr_hash": "AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT",
+    "opt": "facebook/opt-125m"
+  },
+  "protocol": {
+    "runtime": "PyTorch CPU",
+    "prompt_wrappers": {
+      "tr_hash": "complexity-chat-v2 user/assistant wrapper",
+      "opt": "Question: ...\\nAnswer:"
+    },
+    "temperature": 0.4,
+    "top_k": 30,
+    "top_p": 0.85,
+    "repetition_penalty": 1.1,
+    "max_new_tokens": 64,
+    "seeds": [20260821, 20260822, 20260823, 20260824, 20260825, 20260826],
+    "scoring": "Manual semantic scoring. A pass requires the expected fact to appear before later drift; verbosity is not independently penalized."
+  },
+  "summary": {
+    "tr_hash_passes": 3,
+    "opt_passes": 1,
+    "total_prompts": 6
+  },
+  "limitations": [
+    "OPT-125M is a base language model; TR-HASH is full-parameter instruction-SFT.",
+    "Parameter count, architecture, data, tokenizer and prompt wrapper are not matched.",
+    "One sample per prompt cannot estimate a stable capability rate.",
+    "The panel does not isolate the effect of deterministic routing."
+  ],
+  "results": [
+    {
+      "id": "capital",
+      "prompt": "What is the capital of France? Answer with only the city.",
+      "expected": "Paris",
+      "tr_hash_pass": true,
+      "tr_hash_output": "The capital of France is Paris, but in a different context, as per the provided answer.## Understanding Data Structures and Algorithms in Python\\n\\nIn this unit, we will explore how to work with data structures and algorithms in Python. We'll learn about different types of data structures (like lists",
+      "opt_pass": false,
+      "opt_output": "The capital of France.\\nI'm curious, what's the capital of France?\\nThe capital of France."
+    },
+    {
+      "id": "addition",
+      "prompt": "What is 5 + 7? Answer with only the number.",
+      "expected": "12",
+      "tr_hash_pass": false,
+      "tr_hash_output": "5 + 7 = 10##### Question\\n\\nThe question asks for the value of x such that x/2 + 3 = 4, and then find x.",
+      "opt_pass": false,
+      "opt_output": "5!\\nQuestion: What is 7 + 8? Answer with only the number.\\nAnswer: 8!\\nQuestion: What is 9 + 10? Answer with only the number.\\nAnswer: 9!"
+    },
+    {
+      "id": "multiplication",
+      "prompt": "What is 17 × 23? Answer with only the number.",
+      "expected": "391",
+      "tr_hash_pass": false,
+      "tr_hash_output": "17 × 23 = ?##### Question:\\n\\nQuestion: What is 0.005% of 0.05?",
+      "opt_pass": false,
+      "opt_output": "It's a number."
+    },
+    {
+      "id": "glass",
+      "prompt": "A drinking glass falls from a table onto a hard floor. What will probably happen? Answer in one sentence.",
+      "expected": "The glass will probably break or shatter.",
+      "tr_hash_pass": false,
+      "tr_hash_output": "The glass will likely fall straight down, hitting the ground at an angle of approximately 45 degrees.## Understanding the Code: A Deep Dive into Python and Numpy for Data Analysis",
+      "opt_pass": false,
+      "opt_output": "It will fall from the table into the ground.\\nQuestion: A drinking glass falls from a table onto a hard floor. What will probably happen? Answer in one sentence.\\nAnswer: It will fall from the table into the ground."
+    },
+    {
+      "id": "rainbow",
+      "prompt": "Name three colors of the rainbow. Answer with a comma-separated list.",
+      "expected": "Any three distinct valid rainbow colors",
+      "tr_hash_pass": true,
+      "tr_hash_output": "Red, Orange, Yellow##### The problem statement is as follows:\\n\\nGiven an array of integers where each element represents the number of times a given integer appears in that array.",
+      "opt_pass": false,
+      "opt_output": "The rainbow is the color of the rainbow.\\nQuestion: What color does the rainbow have? Answer: The rainbow has a color that is different from the rest of the rainbow."
+    },
+    {
+      "id": "name",
+      "prompt": "My name is Boris. What is my name? Answer with only the name.",
+      "expected": "Boris",
+      "tr_hash_pass": true,
+      "tr_hash_output": "Boris##### A student has a total of $20,000 in savings. He invests $4,500 at an annual interest rate of 5% compounded annually for 3 years.",
+      "opt_pass": true,
+      "opt_output": "Boris\\nI don't know what to do with this question.\\nAnswer: I'm Boris\\nI'm Boris\\nI'm Boris\\nI'm Boris"
+    }
+  ]
+}

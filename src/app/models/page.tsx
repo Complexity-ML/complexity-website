@@ -44,9 +44,11 @@ const models: Model[] = [
     description: [
       "The base pretraining run completed its 130B-token replay schedule. A fresh-optimizer full-parameter refinement then reached step 8,156 / 17,802, adding approximately 32.07B unique-token exposures before it was intentionally stopped; the refinement release is therefore an evaluated intermediate checkpoint, not a completed 70B pass.",
       "The released assistant is a full-parameter SFT, not LoRA: three epochs over the Luciole 16-way instruction mixture (238.9M supervised tokens). Epoch 2 was promoted at 68.82% PIQA accuracy and 69.31% normalized accuracy; epoch 3 reached the lowest held-out SFT loss, 1.2209.",
+      "In a reproducible six-prompt practical assistant smoke test, the released checkpoint supplied the expected fact on 3/6 prompts versus 1/6 for base OPT-125M. This is a qualitative post-training comparison—not a parameter-, data- or architecture-matched benchmark—and both models still failed the arithmetic prompts.",
     ],
     links: [
       { label: "Try the 200M chat", href: "/ai-lab" },
+      { label: "OPT-125M prompt panel", href: "/#benchmark" },
       { label: "200M release paper", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
       { label: "130B base", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-130B" },
       { label: "≈162B refinement", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-Refinement" },

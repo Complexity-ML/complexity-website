@@ -97,7 +97,7 @@ export default function ResearchStory() {
           <ul className="grid gap-2 text-xs leading-5 text-white/48 md:grid-cols-3">
             <li className="rounded-xl border border-white/[0.055] bg-black/15 p-3">One architecture and one seed do not establish superiority over dense or learned routing.</li>
             <li className="rounded-xl border border-white/[0.055] bg-black/15 p-3">The audit proves marginal expert balance, not uniformity over every ordered expert pair.</li>
-            <li className="rounded-xl border border-white/[0.055] bg-black/15 p-3">PIQA is a sanity check; no matched baseline, multi-seed study or contamination audit is available.</li>
+            <li className="rounded-xl border border-white/[0.055] bg-black/15 p-3">PIQA is a sanity check. The six-prompt OPT panel is qualitative and stage-mismatched; neither result replaces a matched baseline, multi-seed study or contamination audit.</li>
           </ul>
         </div>
       </div>
