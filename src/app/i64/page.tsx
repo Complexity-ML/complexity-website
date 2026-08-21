@@ -10,10 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const stats = [
-  { value: "492.1M", label: "trainable parameters" },
-  { value: "20B", label: "FineWeb-Edu tokens" },
-  { value: "2.661519", label: "last held-out NLL" },
-  { value: "24", label: "distinct route tables" },
+  { value: "201.2M", label: "trainable parameters" },
+  { value: "≈162B", label: "source-token exposure" },
+  { value: "69.31%", label: "PIQA acc_norm · SFT epoch 2" },
+  { value: "16", label: "persisted layer route tables" },
 ];
 
 const comparisons = [
@@ -21,13 +21,13 @@ const comparisons = [
     icon: Route,
     title: "Routing signal",
     dense: "Every token activates the same dense MLP capacity.",
-    routed: "Token identity hashes to an ordered pair of residual experts.",
+    routed: "Multi-hash rendezvous voting compiles each token identity to a fixed top-2 expert pair.",
   },
   {
     icon: Scale,
     title: "Load balance",
     dense: "There is no conditional load to distribute.",
-    routed: "Each expert receives exactly one quarter of route slots per layer; ordered-pair frequencies are not claimed uniform.",
+    routed: "The persisted table makes routing auditable in advance; runtime dispatch needs no learned gate or balancing loss.",
   },
   {
     icon: GitMerge,
@@ -53,23 +53,23 @@ export default function I64Page() {
         <div className="pointer-events-none absolute left-1/2 top-20 size-[45rem] -translate-x-1/2 rounded-full bg-sky-500/[0.07] blur-[150px]" />
         <div className="site-shell relative z-10">
           <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mx-auto max-w-5xl text-center">
-            <Badge className="border-sky-400/20 bg-sky-400/[0.07] px-3 py-1.5 text-sky-200">Architecture field guide</Badge>
+            <Badge className="border-sky-400/20 bg-sky-400/[0.07] px-3 py-1.5 text-sky-200">TR-HASH MoE 200M · architecture field guide</Badge>
             <p className="mt-7 font-mono text-[10px] uppercase tracking-[0.24em] text-white/30">dense.compute // token.routed</p>
             <h1 className="mt-5 text-balance text-[clamp(3.4rem,8vw,8.5rem)] font-semibold leading-[0.86] tracking-[-0.075em]">
               Fixed routes.
               <span className="mt-3 block bg-gradient-to-r from-white via-sky-200 to-emerald-200 bg-clip-text text-transparent">Context stays shared.</span>
             </h1>
             <p className="mx-auto mt-8 max-w-3xl text-pretty text-base leading-8 text-white/50 sm:text-lg">
-              A visual comparison of dense residual computation and deterministic token-routed capacity—what changes, what stays shared and what the evidence actually supports.
+              The released 201.2M-parameter model uses a shared SwiGLU path plus deterministic multi-hash top-2 residual experts in each of its 16 layers. This guide shows what changes, what stays shared and what the released evidence actually supports.
             </p>
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
               <Button size="lg" className="h-12 bg-white px-6 text-black hover:bg-white/85" asChild>
-                <a href="/papers/tr-hash-deterministic-token-id-routing.pdf" target="_blank" rel="noopener noreferrer">
-                  <BookOpen className="size-4" /> Read the paper
+                <a href="/papers/tr-hash-200m-multi-hash-routing.pdf" target="_blank" rel="noopener noreferrer">
+                  <BookOpen className="size-4" /> Read the 200M report
                 </a>
               </Button>
               <Button size="lg" variant="outline" className="h-12 border-white/12 bg-white/[0.03] px-6" asChild>
-                <a href="https://github.com/Complexity-ML" target="_blank" rel="noopener noreferrer">
+                <a href="https://github.com/Complexity-ML/complexity-framework" target="_blank" rel="noopener noreferrer">
                   <Github className="size-4" /> Source artifacts
                 </a>
               </Button>
@@ -94,7 +94,7 @@ export default function I64Page() {
           <SectionHeading
             eyebrow="Architecture / comparison"
             title="Dense is the reference concept. Routing is the realized system."
-            description="This architectural comparison explains what changes, but it is not a performance comparison: the current 500M report has no parameter-matched dense control."
+            description="This is the architecture realized by the released TR-HASH MoE 200M lineage. The dense column is a conceptual reference, not a benchmark: no parameter-matched dense control is claimed."
           />
 
           <div className="overflow-hidden rounded-2xl border border-white/[0.075]">
@@ -138,7 +138,7 @@ export default function I64Page() {
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary/75">forward.py</p>
             <h2 className="mt-4 text-balance text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">The idea fits in one residual equation.</h2>
-            <p className="mt-5 max-w-xl text-sm leading-7 text-white/46 sm:text-base">Token identity chooses two narrow residual experts, but it never replaces the shared contextual computation.</p>
+              <p className="mt-5 max-w-xl text-sm leading-7 text-white/46 sm:text-base">Each layer persists a top-2 table compiled from multi-hash rendezvous voting. Token identity selects two narrow residual experts, but never replaces the shared contextual computation.</p>
           </div>
           <div className="lab-surface overflow-hidden rounded-2xl">
             <div className="flex items-center justify-between border-b border-white/[0.07] px-5 py-3">
@@ -148,7 +148,7 @@ export default function I64Page() {
             <div className="overflow-x-auto p-5 font-mono text-xs leading-7 text-white/58 sm:p-7 sm:text-sm lg:p-9">
               <p><span className="text-violet-300">class</span> <span className="text-sky-300">TRHashEngineMLP</span>(nn.Module):</p>
               <p className="pl-4"><span className="text-violet-300">def</span> <span className="text-sky-300">forward</span>(self, x, token_ids):</p>
-              <p className="pl-8">expert_pair = self.route_table[:, token_ids]</p>
+              <p className="pl-8">expert_pair = self.route_table[:, token_ids]  <span className="text-white/25"># compiled multi-hash top-2</span></p>
               <p className="pl-8">shared = self.shared_expert(x)</p>
               <p className="pl-8">routed = 2 * self.experts(x, expert_pair).mean(dim=0)</p>
               <p className="pl-8"><span className="text-violet-300">return</span> shared <span className="text-amber-300">+</span> routed</p>

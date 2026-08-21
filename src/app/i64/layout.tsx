@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'TR-Hash 500M — Complexity ML',
+  title: 'TR-HASH MoE 200M Architecture — Complexity ML',
   description:
-    'Explore the audited TR-Hash 500M architecture, deterministic token-ID routes, shared residual experts, and 20B-token pretraining record.',
+    'Explore the released TR-HASH MoE 200M architecture: multi-hash token-ID routing, fixed top-2 residual experts, a shared SwiGLU path, GQA, and the full-SFT lineage.',
   keywords: [
     'transformer architecture',
     'token routing',
@@ -13,18 +13,18 @@ export const metadata: Metadata = {
     'dense vs sparse',
   ],
   openGraph: {
-    title: 'TR-Hash 500M — Complexity ML',
+    title: 'TR-HASH MoE 200M Architecture — Complexity ML',
     description:
-      'A 492.1M-parameter language model with deterministic token-ID routing and an always-on shared SwiGLU path.',
+      'The released 201.2M-parameter language model with deterministic multi-hash top-2 routing and an always-on shared SwiGLU path.',
     url: 'https://www.complexity-ai.fr/i64',
     siteName: 'Complexity ML',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'TR-Hash 500M — Complexity ML',
+    title: 'TR-HASH MoE 200M Architecture — Complexity ML',
     description:
-      'A 492.1M-parameter language model with deterministic token-ID routing and an always-on shared SwiGLU path.',
+      'The released 201.2M-parameter language model with deterministic multi-hash top-2 routing and an always-on shared SwiGLU path.',
   },
   alternates: {
     canonical: 'https://www.complexity-ai.fr/i64',

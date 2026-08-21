@@ -30,6 +30,31 @@ const tones: Record<Model["tone"], { border: string; bg: string; text: string; s
 
 const models: Model[] = [
   {
+    id: "200m",
+    icon: Network,
+    tone: "violet",
+    status: "Released · Full SFT live",
+    name: "TR-HASH MoE 200M — ≈162B source",
+    kicker: "130B pretrain → 32.07B refinement → full SFT",
+    stats: [
+      { value: "201.2M", label: "parameters" },
+      { value: "≈162B", label: "source-token exposure" },
+      { value: "69.31%", label: "PIQA acc_norm (SFT epoch 2)" },
+    ],
+    description: [
+      "The base pretraining run completed its 130B-token replay schedule. A fresh-optimizer full-parameter refinement then reached step 8,156 / 17,802, adding approximately 32.07B unique-token exposures before it was intentionally stopped; the refinement release is therefore an evaluated intermediate checkpoint, not a completed 70B pass.",
+      "The released assistant is a full-parameter SFT, not LoRA: three epochs over the Luciole 16-way instruction mixture (238.9M supervised tokens). Epoch 2 was promoted at 68.82% PIQA accuracy and 69.31% normalized accuracy; epoch 3 reached the lowest held-out SFT loss, 1.2209.",
+    ],
+    links: [
+      { label: "Architecture report", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
+      { label: "130B base", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-130B" },
+      { label: "≈162B refinement", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-Refinement" },
+      { label: "Full SFT", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT" },
+      { label: "Live demo", href: "https://huggingface.co/spaces/Pacific-i64/TR-hash-tiny" },
+      { label: "Interactive paper", href: "https://huggingface.co/spaces/Pacific-i64/Token-Routing-Interactive-Paper" },
+    ],
+  },
+  {
     id: "vision-v8",
     icon: ScanSearch,
     tone: "cyan",
@@ -68,34 +93,9 @@ const models: Model[] = [
       "An SFT follow-up on this base (LoRA, one full-shard epoch) wasn't pretrained long enough to pass our behavioral promotion gate — it isn't published as an assistant. But the metrics show real learning, not a dead run: full PIQA accuracy was retained (0.6953 → 0.6964) and matched eval loss dropped (3.68 → 2.98). The base simply needed more pretraining before instruction-following behavior could reliably stick — an instruction-coverage limit, not a capability regression.",
     ],
     links: [
-      { label: "Architecture deep-dive", href: "/i64" },
+      { label: "500M research paper", href: "/papers/tr-hash-deterministic-token-id-routing.pdf" },
       { label: "Base pretrain (HF)", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MOE-500M-20B" },
       { label: "SFT experiment (HF)", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MOE-500M-HF" },
-    ],
-  },
-  {
-    id: "200m",
-    icon: Network,
-    tone: "violet",
-    status: "Released · Full SFT live",
-    name: "TR-HASH MoE 200M — ≈162B source",
-    kicker: "130B pretrain → 32.07B refinement → full SFT",
-    stats: [
-      { value: "201.2M", label: "parameters" },
-      { value: "≈162B", label: "source-token exposure" },
-      { value: "69.31%", label: "PIQA acc_norm (SFT epoch 2)" },
-    ],
-    description: [
-      "The base pretraining run completed its 130B-token replay schedule. A fresh-optimizer full-parameter refinement then reached step 8,156 / 17,802, adding approximately 32.07B unique-token exposures before it was intentionally stopped; the refinement release is therefore an evaluated intermediate checkpoint, not a completed 70B pass.",
-      "The released assistant is a full-parameter SFT, not LoRA: three epochs over the Luciole 16-way instruction mixture (238.9M supervised tokens). Epoch 2 was promoted at 68.82% PIQA accuracy and 69.31% normalized accuracy; epoch 3 reached the lowest held-out SFT loss, 1.2209.",
-    ],
-    links: [
-      { label: "Architecture report", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
-      { label: "130B base", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-130B" },
-      { label: "≈162B refinement", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-Refinement" },
-      { label: "Full SFT", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT" },
-      { label: "Live demo", href: "https://huggingface.co/spaces/Pacific-i64/TR-hash-tiny" },
-      { label: "Interactive paper", href: "https://huggingface.co/spaces/Pacific-i64/Token-Routing-Interactive-Paper" },
     ],
   },
 ];
