@@ -16,7 +16,7 @@ const MODE_DISCLAIMERS: Record<Mode, string> = {
 const proof: Record<Mode, Array<{ icon: typeof Route; label: string; value: string }>> = {
   "TR-MoE": [
     { icon: Route, label: "routing", value: "token-ID hash top-2" },
-    { icon: Scale, label: "scaling", value: "201.2M / ~160B tokens" },
+    { icon: Scale, label: "scaling", value: "201.2M / ≈162B source tokens" },
     { icon: Zap, label: "serving", value: "TR-Hash-i64 · Linux CPU" },
   ],
 };

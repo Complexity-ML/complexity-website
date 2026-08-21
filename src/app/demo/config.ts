@@ -29,7 +29,7 @@ export const MODEL_NAMES: Record<Mode, string> = {
 
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE":
-    "A 201.2M-parameter TR-HASH MoE instruction model with deterministic token-ID top-2 routing, fully fine-tuned on the Luciole 16-way mixture from the 160B-token refinement source.",
+    "A 201.2M-parameter TR-HASH MoE instruction model with deterministic token-ID top-2 routing, fully fine-tuned on the Luciole 16-way mixture from the ≈162B-token source checkpoint.",
 };
 
 export const FOOTERS: Record<Mode, string> = {

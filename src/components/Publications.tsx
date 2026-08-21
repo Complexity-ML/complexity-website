@@ -17,15 +17,15 @@ type Paper = {
 const papers: Paper[] = [
   {
     id: "200m",
-    badge: "Training in progress · 2026",
+    badge: "Architecture report · 2026",
     title: "TR-Hash 200M: Multi-Hash Token-ID Routing for Shared Residual Experts",
     description:
-      "Architecture and training-plan report for the 201.2M-parameter run currently in progress: the realized multi-hash rendezvous routing construction, a route-table audit performed before training completion, and the exact 70B-unique/130B-replay data schedule. No pretraining trajectory is reported yet.",
+      "Architecture and training-plan report prepared during the 201.2M-parameter run: the realized multi-hash routing construction, a route-table audit, and the exact 70B-unique/130B-replay schedule. The run has since produced a completed 130B base, an interrupted 32.07B-token refinement checkpoint and a released full-parameter SFT.",
     href: "/papers/tr-hash-200m-multi-hash-routing.pdf",
     citation: `@misc{peyriguere2026trhash200m,
   title={TR-Hash 200M: Multi-Hash Token-ID Routing for Shared Residual Experts},
   author={Boris Peyriguere},
-  note={Research report, training in progress},
+  note={Architecture and training-plan report},
   year={2026},
   url={https://www.complexity-ai.fr/papers/tr-hash-200m-multi-hash-routing.pdf}
 }`,
@@ -102,7 +102,7 @@ export default function Publications() {
         <SectionHeading
           eyebrow="Research reports"
           title="TR-Hash, documented end to end."
-          description="Every report lives with its architecture facts, audited claims, explicit limitations and a reusable citation — including the run that hasn't finished yet."
+          description="Every report lives with its architecture facts, audited claims, explicit limitations and a reusable citation. Current release status and measured checkpoints are tracked separately on the Models page."
         />
 
         <div className="flex flex-col gap-4">

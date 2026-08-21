@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowUpRight, Box, Hourglass, ScanSearch } from "lucide-react";
+import { ArrowUpRight, Box, CheckCircle2, Network, ScanSearch } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navigation from "@/components/Navigation";
 import SectionHeading from "@/components/SectionHeading";
@@ -75,24 +75,27 @@ const models: Model[] = [
   },
   {
     id: "200m",
-    icon: Hourglass,
+    icon: Network,
     tone: "violet",
-    status: "Training in progress",
-    name: "TR-HASH 200M — 130B tokens",
-    kicker: "Next generation, replay-scheduled pretrain",
+    status: "Released · Full SFT live",
+    name: "TR-HASH MoE 200M — ≈162B source",
+    kicker: "130B pretrain → 32.07B refinement → full SFT",
     stats: [
-      { value: "~201M", label: "parameters" },
-      { value: "70B → 130B", label: "unique tokens, replayed" },
-      { value: "4", label: "routed experts" },
+      { value: "201.2M", label: "parameters" },
+      { value: "≈162B", label: "source-token exposure" },
+      { value: "69.31%", label: "PIQA acc_norm (SFT epoch 2)" },
     ],
     description: [
-      "Currently training on a curated mixture (DCLM, FineWeb-Edu, Stack-Edu, FineMath, Cosmopedia-v2): 70B unique tokens replayed to a 130B-token schedule, wide shared SwiGLU branch with narrow routed experts.",
-      "Checkpoints back up automatically to Hugging Face as the run progresses. Nothing below is a final result yet — this card will update as the run completes.",
+      "The base pretraining run completed its 130B-token replay schedule. A fresh-optimizer full-parameter refinement then reached step 8,156 / 17,802, adding approximately 32.07B unique-token exposures before it was intentionally stopped; the refinement release is therefore an evaluated intermediate checkpoint, not a completed 70B pass.",
+      "The released assistant is a full-parameter SFT, not LoRA: three epochs over the Luciole 16-way instruction mixture (238.9M supervised tokens). Epoch 2 was promoted at 68.82% PIQA accuracy and 69.31% normalized accuracy; epoch 3 reached the lowest held-out SFT loss, 1.2209.",
     ],
     links: [
-      { label: "Architecture & plan (paper)", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
-      { label: "Model page (HF, live)", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-200M-130B" },
+      { label: "Architecture report", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
+      { label: "130B base", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-130B" },
+      { label: "≈162B refinement", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-Refinement" },
+      { label: "Full SFT", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT" },
       { label: "Live demo", href: "https://huggingface.co/spaces/Pacific-i64/TR-hash-tiny" },
+      { label: "Interactive paper", href: "https://huggingface.co/spaces/Pacific-i64/Token-Routing-Interactive-Paper" },
     ],
   },
 ];
@@ -108,7 +111,7 @@ export default function ModelsPage() {
           <SectionHeading
             eyebrow="Model releases"
             title="Three generations, tracked honestly."
-            description="Every checkpoint below ships with the numbers that actually happened — including the ones that didn't work yet. Compact vision, the first end-to-end pretrain, and the run currently in flight."
+            description="Every checkpoint below ships with the numbers that actually happened — including interrupted runs and experiments that did not pass promotion. Compact vision, the first end-to-end pretrain, and the released 200M full-SFT lineage."
           />
         </div>
       </section>
@@ -139,7 +142,7 @@ export default function ModelsPage() {
                   </div>
                   {model.status && (
                     <Badge className={`border ${tone.border} ${tone.bg} ${tone.text}`}>
-                      <Hourglass className="size-3" /> {model.status}
+                      <CheckCircle2 className="size-3" /> {model.status}
                     </Badge>
                   )}
                 </div>

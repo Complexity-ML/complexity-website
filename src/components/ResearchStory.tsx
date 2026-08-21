@@ -43,7 +43,7 @@ export default function ResearchStory() {
         <SectionHeading
           eyebrow="Research / source of truth"
           title={<>Deterministic routing.<br className="hidden sm:block" /> Claims kept precise.</>}
-          description="Our published preprint documents the audited TR-Hash 492.1M/20B checkpoint — a separate, already-completed release from the 200M/130B run in progress above. See /models for every current checkpoint and its real status."
+          description="Our published preprint documents the audited TR-Hash 492.1M/20B checkpoint — a separate release from the newer TR-HASH MoE 200M lineage, whose 130B base, refinement checkpoint and full SFT are now published. See /models for every current checkpoint and its exact status."
           action={
             <Button variant="outline" className="border-white/12 bg-white/[0.03]" asChild>
               <a href="/papers/tr-hash-deterministic-token-id-routing.pdf" target="_blank" rel="noopener noreferrer">
