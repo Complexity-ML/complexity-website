@@ -70,12 +70,19 @@ function PaperCard({ paper }: { paper: Paper }) {
           <p className="mt-5 max-w-3xl text-sm leading-7 text-white/48 sm:text-base">
             {paper.description}
           </p>
-          <Button className="mt-8 bg-white text-black hover:bg-white/85" asChild>
-            <a href={paper.href} target="_blank" rel="noopener noreferrer">
-              Read report
-              <ArrowUpRight className="size-4" />
-            </a>
-          </Button>
+          <div className="mt-8 flex flex-wrap gap-3">
+            {paper.id === "200m" && (
+              <Button className="bg-white text-black hover:bg-white/85" asChild>
+                <a href="/ai-lab">Try the 200M chat</a>
+              </Button>
+            )}
+            <Button variant={paper.id === "200m" ? "outline" : "default"} className={paper.id === "200m" ? "border-white/12 bg-white/[0.03]" : "bg-white text-black hover:bg-white/85"} asChild>
+              <a href={paper.href} target="_blank" rel="noopener noreferrer">
+                Read report
+                <ArrowUpRight className="size-4" />
+              </a>
+            </Button>
+          </div>
         </div>
       </div>
 

@@ -56,6 +56,12 @@ export default function Hero() {
 
           <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button size="lg" className="h-12 bg-white px-6 text-black hover:bg-white/85" asChild>
+              <Link href="/ai-lab">
+                Try the 200M chat
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" className="h-12 border-white/12 bg-white/[0.035] px-6" asChild>
               <Link href="/models">
                 <BookOpen className="size-4" />
                 Read the research

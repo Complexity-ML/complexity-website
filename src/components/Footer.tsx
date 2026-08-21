@@ -17,7 +17,7 @@ const groups = [
     title: "Build",
     links: [
       { label: "LABO AI", href: "/labo-ai" },
-      { label: "AI LAB", href: "/ai-lab" },
+      { label: "Try the 200M chat", href: "/ai-lab" },
       { label: "Discord community", href: "https://discord.gg/EyDqXqpxWu" },
       { label: "GitHub", href: "https://github.com/Complexity-ML" },
       { label: "HuggingFace", href: "https://huggingface.co/AETHORIA-AI" },
@@ -29,6 +29,7 @@ const groups = [
       { label: "TR-Hash 500M preprint", href: "/papers/tr-hash-deterministic-token-id-routing.pdf" },
       { label: "TR-Hash 200M architecture & plan", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
       { label: "TR-Hash 200M full SFT", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT" },
+      { label: "TR-Hash 200M live chat", href: "/ai-lab" },
       { label: "Vision v8 paper", href: "/papers/tr-hash-vision-v8-sft.pdf" },
       { label: "Interactive paper", href: "https://huggingface.co/spaces/Pacific-i64/Token-Routing-Interactive-Paper" },
       { label: "Vision v8 live demo", href: "https://huggingface.co/spaces/Pacific-i64/TR-HASH-Vision-v8-ComfyUI" },

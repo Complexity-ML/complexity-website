@@ -95,14 +95,19 @@ export default function Benchmark() {
           <div className="lab-surface overflow-hidden rounded-2xl">
             <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3 sm:px-6">
               <span className="font-mono text-[10px] text-violet-300/70">TR-HASH MoE 200M full SFT · expert_tsne_3d.html</span>
-              <a
-                href="/expert_tsne_3d.metadata.json"
-                target="_blank"
-                rel="noreferrer"
-                className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/30 transition-colors hover:text-white/70"
-              >
-                provenance
-              </a>
+              <div className="flex items-center gap-4">
+                <a href="/ai-lab" className="font-mono text-[9px] uppercase tracking-[0.16em] text-violet-200/65 transition-colors hover:text-violet-100">
+                  try 200M chat
+                </a>
+                <a
+                  href="/expert_tsne_3d.metadata.json"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/30 transition-colors hover:text-white/70"
+                >
+                  provenance
+                </a>
+              </div>
             </div>
             <iframe
               src="/expert_tsne_3d.html"

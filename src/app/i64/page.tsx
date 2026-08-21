@@ -64,6 +64,11 @@ export default function I64Page() {
             </p>
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
               <Button size="lg" className="h-12 bg-white px-6 text-black hover:bg-white/85" asChild>
+                <Link href="/ai-lab">
+                  Try the 200M chat <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" className="h-12 border-white/12 bg-white/[0.03] px-6" asChild>
                 <a href="/papers/tr-hash-200m-multi-hash-routing.pdf" target="_blank" rel="noopener noreferrer">
                   <BookOpen className="size-4" /> Read the 200M report
                 </a>

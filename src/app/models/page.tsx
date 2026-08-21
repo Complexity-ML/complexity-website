@@ -46,6 +46,7 @@ const models: Model[] = [
       "The released assistant is a full-parameter SFT, not LoRA: three epochs over the Luciole 16-way instruction mixture (238.9M supervised tokens). Epoch 2 was promoted at 68.82% PIQA accuracy and 69.31% normalized accuracy; epoch 3 reached the lowest held-out SFT loss, 1.2209.",
     ],
     links: [
+      { label: "Try the 200M chat", href: "/ai-lab" },
       { label: "Architecture report", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
       { label: "130B base", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-130B" },
       { label: "≈162B refinement", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-Refinement" },
