@@ -6,17 +6,17 @@ import type { Mode } from "./config";
 import { DESCRIPTIONS, SUGGESTIONS } from "./config";
 
 const MODE_TITLES: Record<Mode, string> = {
-  "TR-MoE": "Try deterministic TR-Hash routing",
+  "TR-MoE": "Chat with TR-HASH MoE Thinking",
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
-  "TR-MoE": "Public inference from the 201.2M TR-Hash Tiny base checkpoint trained on 70B unique tokens replayed to 130B exposures.",
+  "TR-MoE": "Public chat inference from the 201.2M TR-HASH MoE 160B-token LoRA release. Thinking structure is constrained, but answers remain experimental.",
 };
 
 const proof: Record<Mode, Array<{ icon: typeof Route; label: string; value: string }>> = {
   "TR-MoE": [
     { icon: Route, label: "routing", value: "token-ID hash top-2" },
-    { icon: Scale, label: "scaling", value: "201.2M / 130B tokens" },
+    { icon: Scale, label: "scaling", value: "201.2M / ~160B tokens" },
     { icon: Zap, label: "serving", value: "TR-Hash-i64 · Linux CPU" },
   ],
 };

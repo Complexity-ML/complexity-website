@@ -268,13 +268,19 @@ export function useChat() {
         setMessages(nextMessages);
       };
 
-      // Stream via fetch (axios doesn't support ReadableStream)
-      const response = await fetch(`${base}/v1/completions`, {
+      const chatMessages = newMessages.map(({ role, content }) => ({ role, content }));
+      chatMessages[chatMessages.length - 1] = { role: "user", content: modelPrompt };
+
+      // The deployed model is instruction/chat tuned. Send the full
+      // conversation through the server-side chat template instead of
+      // treating the latest user message as an unformatted base completion.
+      const response = await fetch(`${base}/v1/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: modelPrompt,
+          messages: chatMessages,
           max_tokens: params.maxTokens,
+          thinking_budget: Math.max(32, Math.floor(params.maxTokens / 2)),
           temperature: params.temperature,
           top_k: params.topK,
           top_p: params.topP,

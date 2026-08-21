@@ -13,7 +13,7 @@ import { MODEL_NAMES, MAINTENANCE } from "./config";
 import LogoMark from "@/components/LogoMark";
 
 const MODE_META = {
-  "TR-MoE": { label: "TR-Hash Tiny", detail: "201.2M · hash top-2", icon: Network },
+  "TR-MoE": { label: "TR-HASH MoE 200M", detail: "160B · Thinking LoRA · hash top-2", icon: Network },
 } satisfies Record<Mode, { label: string; detail: string; icon: typeof Network }>;
 
 interface ChatHeaderProps {

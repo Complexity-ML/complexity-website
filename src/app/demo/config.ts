@@ -24,16 +24,16 @@ export const ENDPOINTS: Record<Mode, string> = {
 };
 
 export const MODEL_NAMES: Record<Mode, string> = {
-  "TR-MoE": "TR-Hash Tiny",
+  "TR-MoE": "TR-HASH MoE 200M · 160B LoRA",
 };
 
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE":
-    "A 201.2M-parameter TR-Hash model with deterministic token-ID top-2 routing and a shared dense path, trained on 70B unique tokens replayed to 130B exposures.",
+    "A 201.2M-parameter TR-HASH MoE instruction model with deterministic token-ID top-2 routing, promoted from the 160B-token source and refined with Luciole 16-way Thinking LoRA.",
 };
 
 export const FOOTERS: Record<Mode, string> = {
-  "TR-MoE": "TR-Hash Tiny · 201.2M parameters · 70B unique / 130B replayed tokens · TR-Hash-i64",
+  "TR-MoE": "TR-HASH MoE 200M · 160B-token source · Thinking LoRA · TR-Hash-i64",
 };
 
 export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
