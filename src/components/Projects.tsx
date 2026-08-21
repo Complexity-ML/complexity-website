@@ -38,7 +38,7 @@ const projects = [
     href: "https://huggingface.co/spaces/Pacific-i64/TR-HASH-Vision-v8-ComfyUI",
     icon: ScanSearch,
     tone: "cyan",
-    span: "xl:col-span-5 xl:min-h-[400px]",
+    span: "xl:col-span-3",
   },
   {
     title: "TR-Hash-i64",
