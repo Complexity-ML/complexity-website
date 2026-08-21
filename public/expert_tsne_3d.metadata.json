@@ -1,12 +1,13 @@
 {
-  "title": "TR-Hash 500M pretrained routed-expert contribution t-SNE",
+  "title": "TR-HASH MoE 200M full SFT routed-expert contribution t-SNE",
   "scope": "Exploratory geometry of routed residual contributions; not a specialization, quality, or routing-superiority claim.",
   "checkpoint": {
-    "artifact": "tr_hash_moe_500m_20b/hf_base",
-    "weights_sha256": "48aec943dcc417809fbbc2fd908e01c66e54ef476647b6a31a00d8d271b148df",
-    "config_sha256": "7a5cd1ab013daae0c2d2c3ff3d3c080098c99d48fbbdb834c87f47997451516b",
-    "trainable_parameters": 492097536,
-    "pretraining_tokens": 19999752192
+    "artifact": "AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT@main",
+    "weights_sha256": "2dd5a35624dda4cb267d872f974fd448c9e085004c163b31772515bfd9573caa",
+    "config_sha256": "1a16fc9cb87f1f6f509630bb2d0f56115e3fd3d2bec69eb9e5e8023e9169be96",
+    "trainable_parameters": 201194368,
+    "source_token_exposure": 162065132681,
+    "sft_tokens": 238900000
   },
   "probe": {
     "name": "PIQA validation",
@@ -14,16 +15,16 @@
     "file": "dev.jsonl",
     "sha256": "a73f46cb5d72b2cc399522a79f27728a429d9b89d9a236243fcfda8c02588d54",
     "records_used": 128,
-    "encoded_tokens_available": 7630,
+    "encoded_tokens_available": 7628,
     "chat_template": false
   },
   "method": {
     "layers_zero_indexed": [
       0,
-      5,
+      3,
+      7,
       11,
-      17,
-      23
+      15
     ],
     "sequences": 8,
     "sequence_length": 256,
@@ -40,73 +41,73 @@
         "points": 1200,
         "sampled_tokens": 600,
         "points_per_expert": [
-          269,
-          259,
-          331,
-          341
+          344,
+          330,
+          255,
+          271
         ],
         "pca_dimensions": 50,
         "tsne_perplexity": 35.0,
-        "tsne_kl_divergence": 0.582313060760498
+        "tsne_kl_divergence": 1.0953254699707031
       },
-      "5": {
+      "3": {
         "points": 1200,
         "sampled_tokens": 600,
         "points_per_expert": [
-          332,
-          254,
-          346,
-          268
+          304,
+          277,
+          285,
+          334
         ],
         "pca_dimensions": 50,
         "tsne_perplexity": 35.0,
-        "tsne_kl_divergence": 1.3040701150894165
+        "tsne_kl_divergence": 1.1664159297943115
+      },
+      "7": {
+        "points": 1200,
+        "sampled_tokens": 600,
+        "points_per_expert": [
+          276,
+          283,
+          336,
+          305
+        ],
+        "pca_dimensions": 50,
+        "tsne_perplexity": 35.0,
+        "tsne_kl_divergence": 1.3699026107788086
       },
       "11": {
         "points": 1200,
         "sampled_tokens": 600,
         "points_per_expert": [
-          314,
-          322,
-          286,
-          278
-        ],
-        "pca_dimensions": 50,
-        "tsne_perplexity": 35.0,
-        "tsne_kl_divergence": 1.4785151481628418
-      },
-      "17": {
-        "points": 1200,
-        "sampled_tokens": 600,
-        "points_per_expert": [
           315,
-          285,
-          314,
-          286
+          298,
+          275,
+          312
         ],
         "pca_dimensions": 50,
         "tsne_perplexity": 35.0,
-        "tsne_kl_divergence": 1.1858792304992676
+        "tsne_kl_divergence": 1.258880853652954
       },
-      "23": {
+      "15": {
         "points": 1200,
         "sampled_tokens": 600,
         "points_per_expert": [
-          287,
-          330,
-          313,
-          270
+          336,
+          288,
+          282,
+          294
         ],
         "pca_dimensions": 50,
         "tsne_perplexity": 35.0,
-        "tsne_kl_divergence": 0.984613299369812
+        "tsne_kl_divergence": 1.1793758869171143
       }
     }
   },
   "artifacts": {
     "html": "expert_tsne_3d.html",
-    "html_sha256": "6a5faac3f30e2eaee95f301f38ffa5903dff7dfe6d340304d1561bdb09ebdebc",
+    "html_sha256": "62c41dff60d23734da4a86dfbe755251b7446aac8f34c7fd68108d30efe530ac",
     "points": "expert_tsne_3d.points.csv.gz",
-    "points_sha256": "6d63a9260acd6da7eb16a0ca95ef99190a06d83a60d77f8611c937bf07a83346"
+    "points_sha256": "5f80b745931a5f9a3570eecddf17f15346c684ed6873c909beb32a2827205f0c"
   }
 }

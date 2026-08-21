@@ -82,19 +82,19 @@ export default function Benchmark() {
             </a>
           </div>
           <figcaption className="border-t border-white/[0.07] px-4 py-4 text-xs leading-6 text-white/42 sm:px-6">
-            This serving benchmark uses a separate 187M routed model and is not evidence about the paper&apos;s 492.1M checkpoint. The paper reports a completed 20B-token pretraining run and checkpoint audit; it makes no matched throughput or quality claim against a dense baseline.
+            This serving benchmark uses a separate 187M routed model and is not evidence about either the current 201.2M full-SFT checkpoint or the earlier 492.1M pretrain. It reports serving throughput only and makes no matched quality claim against a dense baseline.
           </figcaption>
         </motion.figure>
 
         <div className="mt-16 sm:mt-24">
           <SectionHeading
-            eyebrow="Pretrained expert geometry"
+            eyebrow="Full-SFT expert geometry"
             title="Inspect the routed contribution—not an old proxy."
-            description="This projection is regenerated from the released 492.1M checkpoint on natural PIQA validation text, without a chat template. The layer menu exposes five independently embedded depths."
+            description="This projection is regenerated from the released 201.2M full-SFT checkpoint on natural PIQA validation text, without a chat template. The layer menu exposes independently embedded layers 1, 4, 8, 12 and 16."
           />
           <div className="lab-surface overflow-hidden rounded-2xl">
             <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3 sm:px-6">
-              <span className="font-mono text-[10px] text-violet-300/70">TR-Hash 500M pretrain · expert_tsne_3d.html</span>
+              <span className="font-mono text-[10px] text-violet-300/70">TR-HASH MoE 200M full SFT · expert_tsne_3d.html</span>
               <a
                 href="/expert_tsne_3d.metadata.json"
                 target="_blank"
@@ -106,7 +106,7 @@ export default function Benchmark() {
             </div>
             <iframe
               src="/expert_tsne_3d.html"
-              title="Interactive 3D t-SNE of TR-Hash 500M pretrained routed expert contributions"
+              title="Interactive 3D t-SNE of TR-HASH MoE 200M full-SFT routed expert contributions"
               className="h-[560px] w-full border-0 sm:h-[700px] xl:h-[800px]"
               loading="lazy"
             />
