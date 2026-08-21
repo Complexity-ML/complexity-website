@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 const stats = [
   { value: "201.2M", label: "trainable parameters" },
   { value: "≈162B", label: "source-token exposure" },
-  { value: "69.31%", label: "PIQA acc_norm · SFT epoch 2" },
+  { value: "68.82 / 69.31%", label: "PIQA acc / acc_norm · full SFT epoch 2" },
   { value: "16", label: "persisted layer route tables" },
 ];
 
@@ -60,7 +60,7 @@ export default function I64Page() {
               <span className="mt-3 block bg-gradient-to-r from-white via-sky-200 to-emerald-200 bg-clip-text text-transparent">Context stays shared.</span>
             </h1>
             <p className="mx-auto mt-8 max-w-3xl text-pretty text-base leading-8 text-white/50 sm:text-lg">
-              The released 201.2M-parameter model uses a shared SwiGLU path plus deterministic multi-hash top-2 residual experts in each of its 16 layers. This guide shows what changes, what stays shared and what the released evidence actually supports.
+              The released 201.2M-parameter model uses a shared SwiGLU path plus deterministic multi-hash top-2 residual experts in each of its 16 layers. Its promoted full-SFT epoch-2 checkpoint scores 68.82% PIQA accuracy and 69.31% normalized accuracy.
             </p>
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
               <Button size="lg" className="h-12 bg-white px-6 text-black hover:bg-white/85" asChild>
