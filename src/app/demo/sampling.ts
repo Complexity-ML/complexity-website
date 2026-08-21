@@ -7,7 +7,7 @@ export interface SamplingParams {
   frequencyPenalty: number;
 }
 
-// Validated low-variance defaults for the public 201.2M Thinking LoRA chat.
+// Validated low-variance defaults for the public 201.2M full-SFT chat.
 export const DEFAULT_SAMPLING_PARAMS: SamplingParams = {
   temperature: 0.4,
   maxTokens: 384,

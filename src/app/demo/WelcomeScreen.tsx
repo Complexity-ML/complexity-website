@@ -10,7 +10,7 @@ const MODE_TITLES: Record<Mode, string> = {
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
-  "TR-MoE": "Public chat inference from the 201.2M TR-HASH MoE 160B-token LoRA release. Thinking tags are optional and answers remain experimental.",
+  "TR-MoE": "Public chat inference from the 201.2M TR-HASH MoE full-parameter SFT release. Answers remain experimental.",
 };
 
 const proof: Record<Mode, Array<{ icon: typeof Route; label: string; value: string }>> = {
