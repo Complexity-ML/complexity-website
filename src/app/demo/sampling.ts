@@ -7,13 +7,12 @@ export interface SamplingParams {
   frequencyPenalty: number;
 }
 
-// Balanced defaults for the public 201.2M base model: enough sampling
-// diversity for completion while keeping short CPU generations stable.
+// Validated low-variance defaults for the public 201.2M Thinking LoRA chat.
 export const DEFAULT_SAMPLING_PARAMS: SamplingParams = {
-  temperature: 0.7,
+  temperature: 0.4,
   maxTokens: 128,
-  topK: 40,
-  topP: 0.9,
+  topK: 30,
+  topP: 0.85,
   repetitionPenalty: 1.1,
   frequencyPenalty: 0,
 };
