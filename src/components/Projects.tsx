@@ -7,6 +7,18 @@ import { Badge } from "@/components/ui/badge";
 
 const projects = [
   {
+    title: "TR-HASH MoE 200M",
+    kicker: "Released full-parameter SFT",
+    description: "Try the 201.2M assistant trained through a 130B-token base run, a 32.07B-token full-parameter refinement and three full-SFT epochs. The promoted checkpoint reaches 68.82% PIQA accuracy and 69.31% normalized accuracy.",
+    tags: ["201.2M parameters", "≈162B source", "Full SFT"],
+    href: "/ai-lab",
+    source: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT",
+    icon: Network,
+    tone: "emerald",
+    featured: true,
+    span: "xl:col-span-7 xl:min-h-[400px]",
+  },
+  {
     title: "LABO AI",
     kicker: "Visual architecture laboratory",
     description: "Build, inspect and execute PyTorch architectures as typed atomic graphs—with an agent that uses the same visible tools.",
@@ -16,7 +28,7 @@ const projects = [
     icon: Blocks,
     tone: "violet",
     featured: true,
-    span: "xl:col-span-7 xl:min-h-[400px]",
+    span: "xl:col-span-5 xl:min-h-[400px]",
   },
   {
     title: "TR-HASH Vision v8 Demo",
@@ -27,16 +39,6 @@ const projects = [
     icon: ScanSearch,
     tone: "cyan",
     span: "xl:col-span-5 xl:min-h-[400px]",
-  },
-  {
-    title: "Token Identity Routing",
-    kicker: "Earlier interactive study",
-    description: "Explore the earlier shared-SwiGLU lookup architecture, checkpoint-derived routes and live SSE comparison of the historical matched 306.5M models.",
-    tags: ["Earlier paper", "Live SSE", "306.5M"],
-    href: "https://huggingface.co/spaces/Pacific-i64/Token-Routing-Interactive-Paper",
-    icon: Network,
-    tone: "emerald",
-    span: "xl:col-span-3",
   },
   {
     title: "TR-Hash-i64",
@@ -61,8 +63,8 @@ const projects = [
   {
     title: "Complexity Framework",
     kicker: "PyTorch foundation",
-    description: "Canonical TR-Hash MoE execution, GQA/MHA decoders, CUDA paths and full-shard 2D-weighted LoRA training.",
-    tags: ["PyTorch", "TR-Hash", "LoRA"],
+    description: "Canonical TR-Hash MoE execution, multi-hash routing, GQA/MHA decoders, CUDA paths and full-parameter pretraining, refinement and SFT.",
+    tags: ["PyTorch", "TR-Hash 200M", "Full SFT"],
     href: "https://github.com/Complexity-ML/complexity-framework",
     icon: Braces,
     tone: "rose",

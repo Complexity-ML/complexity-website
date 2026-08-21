@@ -17,15 +17,15 @@ type Paper = {
 const papers: Paper[] = [
   {
     id: "200m",
-    badge: "Architecture report · 2026",
-    title: "TR-Hash 200M: Multi-Hash Token-ID Routing for Shared Residual Experts",
+    badge: "Release paper · 2026",
+    title: "TR-Hash 200M: Multi-Hash Token Routing Across 162B Token Exposures and Full-Parameter SFT",
     description:
-      "Architecture and training-plan report prepared during the 201.2M-parameter run: the realized multi-hash routing construction, a route-table audit, and the exact 70B-unique/130B-replay schedule. The run has since produced a completed 130B base, an interrupted 32.07B-token refinement checkpoint and a released full-parameter SFT.",
+      "The complete 201.2M release record: multi-hash architecture, 130B replay pretraining, the interrupted 32.07B full-parameter refinement, three full-SFT epochs, held-out loss, PIQA checkpoint selection, artifacts and limitations.",
     href: "/papers/tr-hash-200m-multi-hash-routing.pdf",
     citation: `@misc{peyriguere2026trhash200m,
-  title={TR-Hash 200M: Multi-Hash Token-ID Routing for Shared Residual Experts},
+  title={TR-Hash 200M: Multi-Hash Token Routing Across 162B Token Exposures and Full-Parameter SFT},
   author={Boris Peyriguere},
-  note={Architecture and training-plan report},
+  note={Release paper},
   year={2026},
   url={https://www.complexity-ai.fr/papers/tr-hash-200m-multi-hash-routing.pdf}
 }`,

@@ -47,7 +47,7 @@ const models: Model[] = [
     ],
     links: [
       { label: "Try the 200M chat", href: "/ai-lab" },
-      { label: "Architecture report", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
+      { label: "200M release paper", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
       { label: "130B base", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-130B" },
       { label: "≈162B refinement", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-Refinement" },
       { label: "Full SFT", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT" },

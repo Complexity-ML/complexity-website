@@ -70,7 +70,7 @@ export default function I64Page() {
               </Button>
               <Button size="lg" variant="outline" className="h-12 border-white/12 bg-white/[0.03] px-6" asChild>
                 <a href="/papers/tr-hash-200m-multi-hash-routing.pdf" target="_blank" rel="noopener noreferrer">
-                  <BookOpen className="size-4" /> Read the 200M report
+                  <BookOpen className="size-4" /> Read the 200M paper
                 </a>
               </Button>
               <Button size="lg" variant="outline" className="h-12 border-white/12 bg-white/[0.03] px-6" asChild>
