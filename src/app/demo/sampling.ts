@@ -9,10 +9,10 @@ export interface SamplingParams {
 
 // Validated low-variance defaults for the public 201.2M full-SFT chat.
 export const DEFAULT_SAMPLING_PARAMS: SamplingParams = {
-  temperature: 0.3,
+  temperature: 0.15,
   maxTokens: 1024,
-  topK: 20,
-  topP: 0.95,
-  repetitionPenalty: 1.1,
-  frequencyPenalty: 0.1,
+  topK: 10,
+  topP: 0.85,
+  repetitionPenalty: 1.02,
+  frequencyPenalty: 0,
 };
