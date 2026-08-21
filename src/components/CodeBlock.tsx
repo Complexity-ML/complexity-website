@@ -107,7 +107,8 @@ function parseTextBlocks(content: string): TextBlock[] {
 
     if (!trimmed) {
       flushParagraph(paragraph, blocks);
-      flushList();
+      // Markdown permits blank lines between list items. Keep the current list
+      // open so repeated `1.` markers render as one automatically numbered list.
       continue;
     }
 
