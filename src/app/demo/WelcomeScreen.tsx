@@ -6,11 +6,11 @@ import type { Mode } from "./config";
 import { DESCRIPTIONS, SUGGESTIONS } from "./config";
 
 const MODE_TITLES: Record<Mode, string> = {
-  "TR-MoE": "Chat with TR-HASH MoE Thinking",
+  "TR-MoE": "Chat with TR-HASH MoE",
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
-  "TR-MoE": "Public chat inference from the 201.2M TR-HASH MoE 160B-token LoRA release. Thinking structure is constrained, but answers remain experimental.",
+  "TR-MoE": "Public chat inference from the 201.2M TR-HASH MoE 160B-token LoRA release. Thinking tags are optional and answers remain experimental.",
 };
 
 const proof: Record<Mode, Array<{ icon: typeof Route; label: string; value: string }>> = {
