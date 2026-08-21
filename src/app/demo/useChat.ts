@@ -71,8 +71,7 @@ function getBaseUrl(): string {
   return ENDPOINTS["TR-MoE"].replace(/\/+$/, "");
 }
 
-const PUBLIC_SYSTEM_PROMPT =
-  "Complete the task, then put the useful answer in <final>.";
+const PUBLIC_SYSTEM_PROMPT = "Answer in <final>.";
 
 /** Parse an SSE stream and yield text chunks */
 async function* readSSE(response: Response): AsyncGenerator<SSEChunk> {
