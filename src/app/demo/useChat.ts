@@ -13,6 +13,28 @@ export interface TokenStats {
   streaming: boolean;
 }
 
+export interface ContextMetrics {
+  policy: string;
+  compressed: boolean;
+  max_seq_len: number;
+  reserved_output_tokens: number;
+  available_prompt_tokens: number;
+  compact_at_tokens: number | null;
+  original_messages: number;
+  retained_messages: number;
+  summarized_messages: number;
+  dropped_messages: number;
+  original_tokens: number;
+  prompt_tokens: number;
+  summary_tokens: number;
+  tokens_saved: number;
+}
+
+interface SSEChunk {
+  content: string;
+  contextMetrics: ContextMetrics | null;
+}
+
 export interface MonitorData {
   tokPerS: number;
   gpuUtil: number;
@@ -50,7 +72,7 @@ function getBaseUrl(): string {
 }
 
 /** Parse an SSE stream and yield text chunks */
-async function* readSSE(response: Response): AsyncGenerator<string> {
+async function* readSSE(response: Response): AsyncGenerator<SSEChunk> {
   if (!response.body) return;
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
@@ -70,7 +92,8 @@ async function* readSSE(response: Response): AsyncGenerator<string> {
         try {
           const data = JSON.parse(payload);
           const content = data.choices?.[0]?.delta?.content ?? data.choices?.[0]?.text ?? "";
-          if (content) yield content;
+          const contextMetrics = data.context_metrics ?? null;
+          if (content || contextMetrics) yield { content, contextMetrics };
         } catch { /* skip malformed */ }
       }
     }
@@ -88,6 +111,7 @@ export function useChat() {
   const [error, setError] = useState<string | null>(null);
   const [params, setParams] = useState<SamplingParams>(DEFAULT_SAMPLING_PARAMS);
   const [tokenStats, setTokenStats] = useState<TokenStats | null>(null);
+  const [contextMetrics, setContextMetrics] = useState<ContextMetrics | null>(null);
   const [researchEvents, setResearchEvents] = useState<ResearchActivityEvent[]>([]);
   const [totalRequests] = useState<number | null>(null);
   const healthStatus = useEndpointHealth(ENDPOINTS[mode], MAINTENANCE[mode]);
@@ -138,6 +162,7 @@ export function useChat() {
     setMessages([]);
     setError(null);
     setTokenStats(null);
+    setContextMetrics(null);
     setResearchEvents([]);
   }, [streaming, loading, stopGeneration]);
 
@@ -147,6 +172,7 @@ export function useChat() {
     setMessages(msgs);
     setError(null);
     setTokenStats(null);
+    setContextMetrics(null);
     setResearchEvents([]);
   }, []);
 
@@ -158,6 +184,7 @@ export function useChat() {
     if (!text || loading || streaming || MAINTENANCE[mode] || healthStatus === "offline") return;
 
     setError(null);
+    setContextMetrics(null);
     setResearchEvents([]);
     const userMessage: Message = { role: "user", content: text, createdAt: Date.now() };
     const newMessages = [...messagesRef.current, userMessage];
@@ -301,11 +328,15 @@ export function useChat() {
       let receivedFirstChunk = false;
       for await (const chunk of readSSE(response)) {
         if (controller.signal.aborted) break;
+        if (chunk.contextMetrics) {
+          setContextMetrics(chunk.contextMetrics);
+        }
         if (!receivedFirstChunk) {
           receivedFirstChunk = true;
           setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
         }
-        assistantContent += chunk;
+        if (!chunk.content) continue;
+        assistantContent += chunk.content;
         tokenCountRef.current++;
         const elapsed = (performance.now() - streamStartRef.current) / 1000;
         setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
@@ -354,6 +385,7 @@ export function useChat() {
     params,
     updateParam,
     tokenStats,
+    contextMetrics,
     expertActivity,
     researchEvents,
     totalRequests,

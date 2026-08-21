@@ -387,6 +387,7 @@ export function DemoShell() {
             streaming={chat.streaming}
             maxTokens={activeParams.maxTokens}
             tokenStats={chat.tokenStats}
+            contextMetrics={chat.contextMetrics}
             unavailableReason={unavailableReason}
             onInputChange={chat.setInput}
             onSend={handleSend}
@@ -422,6 +423,28 @@ export function DemoShell() {
             <MonitorPanel health={activeHealth} snapshot={chat.snapshot} embedded />
             <div className="mt-5 divide-y divide-[#2c3a50] border-y border-[#2c3a50]">
               <MetricRow label="Output tokens" value={`${chat.tokenStats?.tokens ?? 0}`} />
+              <MetricRow
+                label="Context before"
+                value={chat.contextMetrics ? `${chat.contextMetrics.original_tokens} tok` : "—"}
+              />
+              <MetricRow
+                label="Context sent"
+                value={chat.contextMetrics ? `${chat.contextMetrics.prompt_tokens} tok` : "—"}
+              />
+              <MetricRow
+                label="Compaction threshold"
+                value={chat.contextMetrics
+                  ? `${chat.contextMetrics.compact_at_tokens ?? chat.contextMetrics.available_prompt_tokens} tok`
+                  : "1024 tok"}
+              />
+              <MetricRow
+                label="Compaction"
+                value={chat.contextMetrics?.compressed
+                  ? `active · −${chat.contextMetrics.tokens_saved} tok`
+                  : chat.contextMetrics
+                    ? "not needed"
+                    : "—"}
+              />
               <MetricRow label="Elapsed" value={chat.tokenStats ? `${chat.tokenStats.elapsed.toFixed(1)} s` : "—"} />
               <MetricRow
                 label="Throughput"

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import type { TokenStats } from "./useChat";
+import type { ContextMetrics, TokenStats } from "./useChat";
 
 interface ChatInputProps {
   input: string;
@@ -14,6 +14,7 @@ interface ChatInputProps {
   streaming: boolean;
   maxTokens: number;
   tokenStats: TokenStats | null;
+  contextMetrics: ContextMetrics | null;
   unavailableReason?: string;
   onInputChange: (value: string) => void;
   onSend: () => void;
@@ -27,6 +28,7 @@ export function ChatInput({
   streaming,
   maxTokens,
   tokenStats,
+  contextMetrics,
   unavailableReason,
   onInputChange,
   onSend,
@@ -94,17 +96,46 @@ export function ChatInput({
           )}
         </div>
         </div>
-        <div className="mt-2 flex items-center justify-end gap-3 px-1">
+        <div className="mt-2 flex items-center justify-between gap-3 px-1">
           {unavailableReason && (
             <p className="mr-auto font-mono text-[9px] text-amber-300/75">
               {unavailableReason}
             </p>
+          )}
+          {contextMetrics && (
+            <ContextStatsDisplay metrics={contextMetrics} streaming={streaming} />
           )}
           {tokenStats && tokenStats.tokens > 0 && (
             <TokenStatsDisplay stats={tokenStats} maxTokens={maxTokens} />
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function ContextStatsDisplay({ metrics, streaming }: { metrics: ContextMetrics; streaming: boolean }) {
+  const limit = metrics.compact_at_tokens ?? metrics.available_prompt_tokens;
+  const compacted = metrics.compressed;
+  return (
+    <div className="min-w-0 flex-1">
+      <div className="flex items-center gap-2 font-mono text-[9px]">
+        <span className={compacted ? "text-amber-300" : "text-cyan-300/80"}>
+          {compacted ? "Context compacted" : "Context"}
+        </span>
+        <span className="text-[#718096]">
+          {compacted
+            ? `${metrics.original_tokens} → ${metrics.prompt_tokens}`
+            : `${metrics.prompt_tokens}`}
+          {` / ${limit} tokens`}
+        </span>
+        {compacted && <span className="text-emerald-300/75">−{metrics.tokens_saved}</span>}
+        {streaming && <span className="text-violet-300/70">· generating</span>}
+      </div>
+      <Progress
+        value={Math.min((metrics.prompt_tokens / Math.max(limit, 1)) * 100, 100)}
+        className="mt-1 h-1 w-36 bg-border/30 [&>[data-slot=progress-indicator]]:bg-cyan-400"
+      />
     </div>
   );
 }
