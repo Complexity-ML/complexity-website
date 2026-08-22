@@ -28,7 +28,7 @@ export default function Benchmark() {
         <SectionHeading
           eyebrow="Inference / evidence"
           title="Numbers with their context attached."
-          description="Serving performance and quality-at-matched-tokens are separate measurements. The interface keeps the hardware, model scale and experimental limits visible."
+          description="The cards preserve the separate CUDA-graph serving result. The figure reports zero-shot quality for the released 201.2M checkpoint, with model scale and protocol kept visible."
         />
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -64,24 +64,24 @@ export default function Benchmark() {
         >
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] bg-black/15 px-4 py-3 sm:px-6">
             <div>
-              <p className="font-mono text-[10px] text-emerald-300/75">benchmark_throughput.png</p>
-              <p className="mt-1 text-xs text-white/35">vLLM 0.18 · RTX PRO 6000 96 GB · 187M routed model</p>
+              <p className="font-mono text-[10px] text-violet-300/75">combined_arc_model_comparison.png</p>
+              <p className="mt-1 text-xs text-white/35">Full ARC public splits · zero-shot causal-choice · 201.2M versus 124M–774M</p>
             </div>
-            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/[0.07] px-3 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-emerald-200">verified artifact</span>
+            <span className="rounded-full border border-violet-400/20 bg-violet-400/[0.07] px-3 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-violet-200">full-split evaluation</span>
           </div>
           <div className="flex justify-center bg-[#090b10] p-3 sm:p-5 lg:p-8">
             <a
-              href="/benchmark_throughput.png"
+              href="/combined_arc_model_comparison.png"
               target="_blank"
               rel="noreferrer"
               className="group relative flex max-h-[500px] w-full items-center justify-center overflow-hidden rounded-xl bg-white/[0.025]"
-              aria-label="Open the complete benchmark image"
+              aria-label="Open the complete Combined ARC comparison image"
             >
               <Image
-                src="/benchmark_throughput.png"
-                alt="vLLM inference benchmark — 8,078 tokens/s sustained, 10,179 tokens/s peak on a single NVIDIA RTX PRO 6000"
-                width={2780}
-                height={1968}
+                src="/combined_arc_model_comparison.png"
+                alt="Combined ARC zero-shot accuracy comparison: TR-HASH MoE 200M reaches 47.29%, ahead of evaluated GPT-2, Pythia, and OPT baselines from 124M to 774M parameters"
+                width={1714}
+                height={1321}
                 sizes="(min-width: 1024px) 880px, (min-width: 640px) 80vw, calc(100vw - 48px)"
                 className="max-h-[500px] w-auto max-w-full object-contain transition-opacity duration-200 group-hover:opacity-90"
               />
@@ -91,7 +91,7 @@ export default function Benchmark() {
             </a>
           </div>
           <figcaption className="border-t border-white/[0.07] px-4 py-4 text-xs leading-6 text-white/42 sm:px-6">
-            This serving benchmark uses a separate 187M routed model and is not evidence about either the current 201.2M full-SFT checkpoint or the earlier 492.1M pretrain. It reports serving throughput only and makes no matched quality claim against a dense baseline.
+            TR-HASH MoE 200M reaches 47.29% Combined ARC: the zero-shot micro-average over all 2,376 ARC-Easy and 1,172 ARC-Challenge questions. The comparison uses complete public splits and one documented causal-choice scoring protocol; it does not isolate routing because training data, tokenizers and token budgets differ. The serving cards above remain a separate 187M CUDA-graph-compatible runtime result and are not used as evidence for this quality comparison.
           </figcaption>
         </motion.figure>
 
