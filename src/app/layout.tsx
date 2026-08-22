@@ -18,6 +18,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.complexity-ai.fr"),
   alternates: { canonical: "./" },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
+      { url: "/icon.svg", sizes: "any", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   title: "Complexity-ML | Open-Source AI Lab",
   description: "Building inspectable transformer architectures with deterministic TR-Hash routing, shared experts and open-source model tooling. Independent AI research from Paris.",
   keywords: ["AI", "Machine Learning", "Transformers", "LLM", "MoE", "PyTorch", "Open Source"],
