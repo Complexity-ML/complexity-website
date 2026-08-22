@@ -12,15 +12,6 @@ const stats = [
   { icon: Cpu, value: "100", unit: "req", label: "concurrent clients" },
 ];
 
-const assistantPromptPanel = [
-  { prompt: "Capital of France", expected: "Paris", trHash: "The capital of France is Paris…", opt: "The capital of France…", trPass: true, optPass: false },
-  { prompt: "5 + 7", expected: "12", trHash: "5 + 7 = 10…", opt: "5!…", trPass: false, optPass: false },
-  { prompt: "17 × 23", expected: "391", trHash: "17 × 23 = ?…", opt: "It’s a number.", trPass: false, optPass: false },
-  { prompt: "Falling drinking glass", expected: "Breaks / shatters", trHash: "Falls straight down…", opt: "Falls … into the ground.", trPass: false, optPass: false },
-  { prompt: "Three rainbow colors", expected: "Any 3 valid colors", trHash: "Red, Orange, Yellow…", opt: "The rainbow is the color…", trPass: true, optPass: false },
-  { prompt: "Recall the name Boris", expected: "Boris", trHash: "Boris…", opt: "Boris… (then repeats)", trPass: true, optPass: true },
-];
-
 export default function Benchmark() {
   return (
     <section id="benchmark" className="site-section scroll-mt-24 border-b border-white/[0.055]">
@@ -94,59 +85,6 @@ export default function Benchmark() {
             TR-HASH MoE 200M reaches 47.29% Combined ARC: the zero-shot micro-average over all 2,376 ARC-Easy and 1,172 ARC-Challenge questions. The comparison uses complete public splits and one documented causal-choice scoring protocol; it does not isolate routing because training data, tokenizers and token budgets differ. The serving cards above remain a separate 187M CUDA-graph-compatible runtime result and are not used as evidence for this quality comparison.
           </figcaption>
         </motion.figure>
-
-        <div className="mt-16 sm:mt-24">
-          <SectionHeading
-            eyebrow="Practical assistant smoke test"
-            title="3/6 versus 1/6—useful signal, not a matched benchmark."
-            description="Six fixed everyday prompts were sampled once per model with the same generation limits. TR-HASH full SFT produced a usable answer on three; base OPT-125M did so on one. The comparison is intentionally narrow and the training stages are not matched."
-          />
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-violet-400/20 bg-violet-400/[0.05] p-6">
-              <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-violet-200/60">TR-HASH MoE 200M · full SFT</p>
-              <p className="mt-4 font-mono text-4xl tracking-[-0.05em] text-violet-100">3 / 6</p>
-              <p className="mt-2 text-sm text-white/42">Correct fact present before any drift.</p>
-            </div>
-            <div className="rounded-2xl border border-white/[0.075] bg-white/[0.025] p-6">
-              <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/35">OPT-125M · base</p>
-              <p className="mt-4 font-mono text-4xl tracking-[-0.05em] text-white/70">1 / 6</p>
-              <p className="mt-2 text-sm text-white/42">Only the explicit name recall passed.</p>
-            </div>
-          </div>
-
-          <div className="mt-3 overflow-x-auto rounded-2xl border border-white/[0.075]">
-            <table className="min-w-[860px] w-full text-left text-sm">
-              <thead className="border-b border-white/[0.07] bg-white/[0.025] font-mono text-[9px] uppercase tracking-[0.16em] text-white/35">
-                <tr>
-                  <th className="px-4 py-4">Prompt</th>
-                  <th className="px-4 py-4">Expected</th>
-                  <th className="px-4 py-4 text-violet-200/70">TR-HASH 200M SFT</th>
-                  <th className="px-4 py-4">OPT-125M base</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/[0.06] text-white/52">
-                {assistantPromptPanel.map((row) => (
-                  <tr key={row.prompt} className="bg-black/10 align-top">
-                    <td className="px-4 py-4 font-medium text-white/75">{row.prompt}</td>
-                    <td className="px-4 py-4 text-white/38">{row.expected}</td>
-                    <td className="px-4 py-4"><span className={row.trPass ? "text-emerald-300" : "text-rose-300"}>{row.trPass ? "✓" : "✕"}</span> <span className="ml-2">{row.trHash}</span></td>
-                    <td className="px-4 py-4"><span className={row.optPass ? "text-emerald-300" : "text-rose-300"}>{row.optPass ? "✓" : "✕"}</span> <span className="ml-2">{row.opt}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="mt-3 grid gap-3 rounded-2xl border border-amber-400/15 bg-amber-400/[0.035] p-5 text-xs leading-6 text-white/46 lg:grid-cols-[1fr_auto] lg:items-center">
-            <p>
-              Protocol: model-specific intended prompt wrapper, PyTorch CPU, fixed per-prompt seeds, temperature 0.4, top-k 30, top-p 0.85, repetition penalty 1.1 and 64 generated tokens. Manual semantic scoring accepts the expected fact before later drift. OPT-125M is a base model trained on about 180B tokens; TR-HASH is a 201.2M full-SFT assistant. This does not isolate routing, scale, data or architecture.
-            </p>
-            <a href="/data/tr-hash-200m-vs-opt-125m-prompt-panel.json" target="_blank" rel="noreferrer" className="font-mono text-[9px] uppercase tracking-[0.15em] text-amber-200/70 transition-colors hover:text-amber-100">
-              raw outputs + protocol
-            </a>
-          </div>
-        </div>
 
         <div className="mt-16 sm:mt-24">
           <SectionHeading

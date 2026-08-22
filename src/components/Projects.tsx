@@ -9,8 +9,8 @@ const projects = [
   {
     title: "TR-HASH MoE 200M",
     kicker: "Released full-parameter SFT",
-    description: "Try the 201.2M assistant trained through a 130B-token base run, a 32.07B-token refinement and three full-SFT epochs. It reaches 69.31% normalized PIQA and answered 3/6 fixed everyday prompts versus 1/6 for base OPT-125M; this small panel is not a matched benchmark.",
-    tags: ["201.2M parameters", "69.31% PIQA", "3/6 vs OPT 1/6"],
+    description: "Try the 201.2M assistant trained through a 130B-token base run, a 32.07B-token refinement and three full-parameter SFT v2 epochs over 300,000 examples. The published epoch-3 checkpoint reaches 69.10% normalized PIQA and 47.29% Combined ARC.",
+    tags: ["201.2M parameters", "69.10% PIQA", "47.29% Combined ARC"],
     href: "/ai-lab",
     source: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT",
     icon: Network,
