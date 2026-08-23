@@ -47,7 +47,8 @@ const models: Model[] = [
       "The promoted v2 checkpoint reaches 56.73% ARC-Easy, 25.43% ARC-Challenge and 46.39% Combined ARC on the complete public zero-shot splits. The previous 32,000-token SFT remains online as a reference and rollback; the chat interface exposes both checkpoints as separate choices. This does not imply a general capability win: the same-prompt panel supports a modest v2 improvement in explicit format control, while both releases still fail the documented arithmetic and complete-code instructions.",
     ],
     links: [
-      { label: "Try the 200M chat", href: "/ai-lab" },
+      { label: "Try Full SFT v2", href: "/ai-lab?model=v2" },
+      { label: "Try previous SFT v1", href: "/ai-lab?model=v1" },
       { label: "Combined ARC benchmark", href: "/#benchmark" },
       { label: "200M release paper", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
       { label: "130B base", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-130B" },

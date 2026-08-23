@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import {
   Activity,
   Bot,
@@ -12,10 +13,18 @@ import {
   WandSparkles,
 } from "lucide-react";
 import type { Mode } from "./config";
-import { AGENT_MODE_ENABLED, MAINTENANCE, SUGGESTIONS } from "./config";
+import {
+  AGENT_MODE_ENABLED,
+  DEFAULT_MODE,
+  ENDPOINTS,
+  MAINTENANCE,
+  parseMode,
+  SUGGESTIONS,
+} from "./config";
 import { useChat } from "./useChat";
 import { useConversations } from "./useConversations";
 import { useModelMetadata } from "./useModelMetadata";
+import { useEndpointHealth } from "./useEndpointHealth";
 import { useSourceAgent } from "./useSourceAgent";
 import { ParamPanel } from "./ParamPanel";
 import { ChatMessage, ErrorBanner } from "./ChatMessage";
@@ -56,12 +65,20 @@ function shortTitle(value: string) {
 
 export function DemoShell() {
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
   const userId = (session?.user as Record<string, unknown> | undefined)?.id as string | undefined;
 
-  const chat = useChat();
+  const requestedMode = parseMode(searchParams.get("model")) ?? DEFAULT_MODE;
+  const chat = useChat(requestedMode);
   const convos = useConversations(userId);
   const sourceAgent = useSourceAgent(AGENT_MODE_ENABLED);
   const { labels: modelLabels } = useModelMetadata();
+  const v2Health = useEndpointHealth(ENDPOINTS["TR-MoE-v2"], MAINTENANCE["TR-MoE-v2"]);
+  const v1Health = useEndpointHealth(ENDPOINTS["TR-MoE-v1"], MAINTENANCE["TR-MoE-v1"]);
+  const modelHealth: Record<Mode, typeof v2Health> = {
+    "TR-MoE-v2": v2Health,
+    "TR-MoE-v1": v1Health,
+  };
 
   const activeMode = chat.mode;
   const [leftPanel, setLeftPanel] = useState<LeftPanel | null>(null);
@@ -423,10 +440,28 @@ export function DemoShell() {
                 >
                   <span>
                     {modelLabels[mode]}
-                    {MAINTENANCE[mode] && <small className="ml-2 text-amber-300">maintenance</small>}
+                    <small className={`ml-2 ${
+                      modelHealth[mode] === "ok"
+                        ? "text-emerald-300"
+                        : modelHealth[mode] === "degraded"
+                          ? "text-amber-300"
+                          : "text-rose-300"
+                    }`}>
+                      {MAINTENANCE[mode]
+                        ? "maintenance"
+                        : modelHealth[mode] === "ok"
+                          ? "online"
+                          : modelHealth[mode] === "degraded"
+                            ? "waking"
+                            : "offline"}
+                    </small>
                   </span>
                   <span className={`size-1.5 rounded-full ${
-                    mode === activeMode ? "bg-violet-300" : "bg-[#53647c]"
+                    modelHealth[mode] === "ok"
+                      ? mode === activeMode ? "bg-violet-300" : "bg-emerald-300"
+                      : modelHealth[mode] === "degraded"
+                        ? "bg-amber-300"
+                        : "bg-rose-300"
                   }`} />
                 </button>
               ))}

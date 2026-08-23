@@ -2,8 +2,12 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { Mode, Message } from "./config";
-import { DEFAULT_MODE, ENDPOINTS, MAINTENANCE, MODEL_NAMES } from "./config";
-import { DEFAULT_SAMPLING_PARAMS, type SamplingParams } from "./sampling";
+import { DEFAULT_MODE, ENDPOINTS, MAINTENANCE, MODEL_NAMES, modeQueryValue } from "./config";
+import {
+  DEFAULT_SAMPLING_PARAMS,
+  DEFAULT_V2_SAMPLING_PARAMS,
+  type SamplingParams,
+} from "./sampling";
 import { useEndpointHealth } from "./useEndpointHealth";
 import { useExpertActivity } from "./useExpertActivity";
 
@@ -102,14 +106,18 @@ async function* readSSE(response: Response): AsyncGenerator<SSEChunk> {
   }
 }
 
-export function useChat() {
-  const [mode, setMode] = useState<Mode>(DEFAULT_MODE);
+export function useChat(initialMode: Mode = DEFAULT_MODE) {
+  const [mode, setModeState] = useState<Mode>(initialMode);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [params, setParams] = useState<SamplingParams>(DEFAULT_SAMPLING_PARAMS);
+  const [paramsByMode, setParamsByMode] = useState<Record<Mode, SamplingParams>>(() => ({
+    "TR-MoE-v2": { ...DEFAULT_V2_SAMPLING_PARAMS },
+    "TR-MoE-v1": { ...DEFAULT_SAMPLING_PARAMS },
+  }));
+  const params = paramsByMode[mode];
   const [tokenStats, setTokenStats] = useState<TokenStats | null>(null);
   const [contextMetrics, setContextMetrics] = useState<ContextMetrics | null>(null);
   const [researchEvents, setResearchEvents] = useState<ResearchActivityEvent[]>([]);
@@ -130,6 +138,18 @@ export function useChat() {
     ENDPOINTS[mode],
     streaming || hasTokenStats,
   );
+
+  useEffect(() => {
+    setModeState(initialMode);
+  }, [initialMode]);
+
+  const setMode = useCallback((nextMode: Mode) => {
+    setModeState(nextMode);
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("model", modeQueryValue(nextMode));
+    window.history.replaceState(window.history.state, "", url);
+  }, []);
 
   useEffect(() => {
     const onUnload = () => {
@@ -375,8 +395,11 @@ export function useChat() {
   }, [input, loading, streaming, mode, params, healthStatus]);
 
   const updateParam = useCallback(<K extends keyof SamplingParams>(key: K, value: SamplingParams[K]) => {
-    setParams((p) => ({ ...p, [key]: value }));
-  }, []);
+    setParamsByMode((current) => ({
+      ...current,
+      [mode]: { ...current[mode], [key]: value },
+    }));
+  }, [mode]);
 
   return {
     mode,

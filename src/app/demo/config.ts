@@ -2,6 +2,16 @@ export type Mode = "TR-MoE-v2" | "TR-MoE-v1";
 
 export const DEFAULT_MODE: Mode = "TR-MoE-v2";
 
+export function parseMode(value: string | null | undefined): Mode | null {
+  if (value === "v2" || value === "TR-MoE-v2") return "TR-MoE-v2";
+  if (value === "v1" || value === "TR-MoE-v1") return "TR-MoE-v1";
+  return null;
+}
+
+export function modeQueryValue(mode: Mode): "v1" | "v2" {
+  return mode === "TR-MoE-v1" ? "v1" : "v2";
+}
+
 export const AGENT_MODE_ENABLED = process.env.NEXT_PUBLIC_AGENT_MODE_ENABLED === "true";
 
 export interface Message {
