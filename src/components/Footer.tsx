@@ -27,7 +27,7 @@ const groups = [
     title: "Releases",
     links: [
       { label: "TR-Hash 200M release paper", href: "/papers/tr-hash-200m-multi-hash-routing.pdf" },
-      { label: "TR-Hash 200M full SFT", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT" },
+      { label: "TR-Hash 200M full SFT v2", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT-v2" },
       { label: "Vision v8 paper", href: "/papers/tr-hash-vision-v8-sft.pdf" },
       { label: "TR-Hash 500M preprint", href: "/papers/tr-hash-deterministic-token-id-routing.pdf" },
       { label: "TR-Hash 0.5B archive", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MOE-500M-HF" },

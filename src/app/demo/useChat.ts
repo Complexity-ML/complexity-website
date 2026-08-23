@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { Mode, Message } from "./config";
-import { ENDPOINTS, MAINTENANCE, MODEL_NAMES } from "./config";
+import { DEFAULT_MODE, ENDPOINTS, MAINTENANCE, MODEL_NAMES } from "./config";
 import { DEFAULT_SAMPLING_PARAMS, type SamplingParams } from "./sampling";
 import { useEndpointHealth } from "./useEndpointHealth";
 import { useExpertActivity } from "./useExpertActivity";
@@ -67,8 +67,8 @@ function newConversationCacheId(): string {
   return `conversation-${crypto.randomUUID()}`;
 }
 
-function getBaseUrl(): string {
-  return ENDPOINTS["TR-MoE"].replace(/\/+$/, "");
+function getBaseUrl(mode: Mode): string {
+  return ENDPOINTS[mode].replace(/\/+$/, "");
 }
 
 /** Parse an SSE stream and yield text chunks */
@@ -103,7 +103,7 @@ async function* readSSE(response: Response): AsyncGenerator<SSEChunk> {
 }
 
 export function useChat() {
-  const mode: Mode = "TR-MoE";
+  const [mode, setMode] = useState<Mode>(DEFAULT_MODE);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -127,7 +127,8 @@ export function useChat() {
   const conversationCacheIdRef = useRef(newConversationCacheId());
   const hasTokenStats = tokenStats !== null;
   const expertActivity = useExpertActivity(
-    mode === "TR-MoE" && (streaming || hasTokenStats),
+    ENDPOINTS[mode],
+    streaming || hasTokenStats,
   );
 
   useEffect(() => {
@@ -195,7 +196,7 @@ export function useChat() {
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
-    const base = getBaseUrl();
+    const base = getBaseUrl(mode);
 
     try {
       let modelPrompt = text;
@@ -379,6 +380,7 @@ export function useChat() {
 
   return {
     mode,
+    setMode,
     messages,
     input,
     setInput,

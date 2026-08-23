@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { Mode, Message } from "./config";
+import { DEFAULT_MODE } from "./config";
 
 export interface Conversation {
   id: string;
@@ -14,6 +15,10 @@ export interface Conversation {
 }
 
 const MAX_CONVERSATIONS = 10;
+
+function normalizeMode(value: unknown): Mode {
+  return value === "TR-MoE-v1" || value === "TR-MoE-v2" ? value : DEFAULT_MODE;
+}
 
 function generateTitle(messages: Message[]): string {
   const first = messages.find((m) => m.role === "user");
@@ -45,7 +50,7 @@ export function useConversations(userId?: string) {
             data.conversations.map((c: Record<string, unknown>) => ({
               id: c.id,
               title: c.title,
-              mode: "TR-MoE" as Mode,
+              mode: normalizeMode(c.mode),
               messages: [], // loaded on select
               messagesLoaded: false,
               createdAt: new Date(c.createdAt as string).getTime(),

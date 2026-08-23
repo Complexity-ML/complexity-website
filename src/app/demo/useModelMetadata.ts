@@ -7,7 +7,7 @@ import { ENDPOINTS, MODEL_NAMES } from "./config";
 interface PublicModelMetadata {
   id: string;
   parameter_count: number;
-  architecture?: "token-routed" | "dense";
+  architecture?: string;
   quantization?: string;
 }
 
@@ -37,28 +37,34 @@ async function readModel(endpoint: string): Promise<PublicModelMetadata | null> 
 }
 
 export function useModelMetadata() {
-  const [model, setModel] = useState<PublicModelMetadata | null>(null);
+  const [models, setModels] = useState<Partial<Record<Mode, PublicModelMetadata>>>({});
 
   useEffect(() => {
     let disposed = false;
-    void readModel(ENDPOINTS["TR-MoE"]).then((loadedModel) => {
-      if (!disposed) setModel(loadedModel);
-    }).catch(() => {
-      // A sleeping or maintained Space keeps the stable model ID fallback.
-    });
+    for (const [mode, endpoint] of Object.entries(ENDPOINTS) as [Mode, string][]) {
+      void readModel(endpoint).then((loadedModel) => {
+        if (!disposed && loadedModel) {
+          setModels((current) => ({ ...current, [mode]: loadedModel }));
+        }
+      }).catch(() => {
+        // A sleeping or maintained Space keeps the stable model ID fallback.
+      });
+    }
     return () => {
       disposed = true;
     };
   }, []);
 
   const labels = useMemo<Record<Mode, string>>(() => {
-    const routed = model
-      ? `${MODEL_NAMES["TR-MoE"]} · ${formatParameterCount(model.parameter_count)}`
-      : MODEL_NAMES["TR-MoE"];
     return {
-      "TR-MoE": routed,
+      "TR-MoE-v2": models["TR-MoE-v2"]
+        ? `${MODEL_NAMES["TR-MoE-v2"]} · ${formatParameterCount(models["TR-MoE-v2"].parameter_count)}`
+        : MODEL_NAMES["TR-MoE-v2"],
+      "TR-MoE-v1": models["TR-MoE-v1"]
+        ? `${MODEL_NAMES["TR-MoE-v1"]} · ${formatParameterCount(models["TR-MoE-v1"].parameter_count)}`
+        : MODEL_NAMES["TR-MoE-v1"],
     };
-  }, [model]);
+  }, [models]);
 
-  return { model, labels };
+  return { models, labels };
 }

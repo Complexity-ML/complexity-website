@@ -1,4 +1,6 @@
-export type Mode = "TR-MoE";
+export type Mode = "TR-MoE-v2" | "TR-MoE-v1";
+
+export const DEFAULT_MODE: Mode = "TR-MoE-v2";
 
 export const AGENT_MODE_ENABLED = process.env.NEXT_PUBLIC_AGENT_MODE_ENABLED === "true";
 
@@ -14,31 +16,36 @@ export interface SuggestionGroup {
 }
 
 export const MAINTENANCE: Partial<Record<Mode, string>> = {
-  "TR-MoE": process.env.NEXT_PUBLIC_TR_HASH_TINY_MAINTENANCE || undefined,
+  "TR-MoE-v2": process.env.NEXT_PUBLIC_TR_HASH_TINY_V2_MAINTENANCE || undefined,
+  "TR-MoE-v1": process.env.NEXT_PUBLIC_TR_HASH_TINY_MAINTENANCE || undefined,
 };
 
-const ROUTED_ENDPOINT = process.env.NEXT_PUBLIC_TR_HASH_TINY_API_URL || "https://pacific-i64-tr-hash-tiny.hf.space";
-
 export const ENDPOINTS: Record<Mode, string> = {
-  "TR-MoE": ROUTED_ENDPOINT,
+  "TR-MoE-v2": process.env.NEXT_PUBLIC_TR_HASH_TINY_V2_API_URL
+    || "https://pacific-i64-tr-hash-tiny-v2.hf.space",
+  "TR-MoE-v1": process.env.NEXT_PUBLIC_TR_HASH_TINY_API_URL
+    || "https://pacific-i64-tr-hash-tiny.hf.space",
 };
 
 export const MODEL_NAMES: Record<Mode, string> = {
-  "TR-MoE": "TR-HASH MoE 200M · Full SFT",
+  "TR-MoE-v2": "TR-HASH MoE 200M · Full SFT v2",
+  "TR-MoE-v1": "TR-HASH MoE 200M · Full SFT v1",
 };
 
 export const DESCRIPTIONS: Record<Mode, string> = {
-  "TR-MoE":
-    "A 201.2M-parameter TR-HASH MoE instruction model with deterministic token-ID top-2 routing, fully fine-tuned for three SFT v2 epochs over 300,000 examples from the ≈162B-token source checkpoint.",
+  "TR-MoE-v2":
+    "The promoted 32,004-token full-SFT v2 checkpoint, trained directly from the refinement model on the audited 500K unified mixture.",
+  "TR-MoE-v1":
+    "The previous 32,000-token full-SFT checkpoint, retained as a public reference and rollback target.",
 };
 
 export const FOOTERS: Record<Mode, string> = {
-  "TR-MoE": "TR-HASH MoE 200M · Full-parameter SFT · TR-Hash-i64",
+  "TR-MoE-v2": "TR-HASH MoE 200M · Full SFT v2 · 32,004 tokens · TR-Hash-i64",
+  "TR-MoE-v1": "TR-HASH MoE 200M · Full SFT v1 · 32,000 tokens · TR-Hash-i64",
 };
 
-export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
-  "TR-MoE": [
-    {
+const COMMON_SUGGESTIONS: SuggestionGroup[] = [
+  {
       label: "science",
       prompts: [
         "Machine learning is a branch of artificial intelligence that",
@@ -48,8 +55,8 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
         "DNA stands for deoxyribonucleic acid and is responsible for",
         "The theory of relativity was developed by",
       ],
-    },
-    {
+  },
+  {
       label: "general",
       prompts: [
         "The meaning of life is",
@@ -59,8 +66,8 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
         "The internet was originally developed in the",
         "A computer program is a set of instructions that",
       ],
-    },
-    {
+  },
+  {
       label: "functions",
       prompts: [
         "Write a fibonacci function in Python",
@@ -96,8 +103,8 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
         "Write a function to convert a list of integers to a list of strings",
         "Write a function to count occurrences of an element in a list",
       ],
-    },
-    {
+  },
+  {
       label: "classes & scripts",
       prompts: [
         "Write a Python script that makes an HTTP request using the requests library",
@@ -106,8 +113,8 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
         "Write a Python class to represent a stack with push and pop methods",
         "Write a Python class to represent a student with name and grades",
       ],
-    },
-    {
+  },
+  {
       label: "chat",
       prompts: [
         "Hello, how are you?",
@@ -121,8 +128,8 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
         "What are the seasons of the year?",
         "Describe a beautiful sunset",
       ],
-    },
-    {
+  },
+  {
       label: "fun time",
       prompts: [
         "Tell me a short story",
@@ -136,6 +143,10 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
         "Explain how the internet works",
         "Why do we dream?",
       ],
-    },
-  ],
+  },
+];
+
+export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
+  "TR-MoE-v2": COMMON_SUGGESTIONS,
+  "TR-MoE-v1": COMMON_SUGGESTIONS,
 };

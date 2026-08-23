@@ -8,11 +8,11 @@ import { Badge } from "@/components/ui/badge";
 const projects = [
   {
     title: "TR-HASH MoE 200M",
-    kicker: "Released full-parameter SFT",
-    description: "Try the 201.2M assistant trained through a 130B-token base run, a 32.07B-token refinement and three full-parameter SFT v2 epochs over 300,000 examples. The published epoch-3 checkpoint reaches 69.10% normalized PIQA and 47.29% Combined ARC.",
-    tags: ["201.2M parameters", "69.10% PIQA", "47.29% Combined ARC"],
+    kicker: "Released full-parameter SFT v2",
+    description: "Compare the new 32,004-token SFT v2 with the previous 32,000-token assistant. V2 was trained directly from the refinement checkpoint on the audited 500K unified mixture; epoch 2 was promoted as the best generation and format-control compromise.",
+    tags: ["201.2M parameters", "69.04% PIQA norm", "46.39% Combined ARC"],
     href: "/ai-lab",
-    source: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT",
+    source: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT-v2",
     icon: Network,
     tone: "emerald",
     featured: true,

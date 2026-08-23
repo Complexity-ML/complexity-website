@@ -6,18 +6,25 @@ import type { Mode } from "./config";
 import { DESCRIPTIONS, SUGGESTIONS } from "./config";
 
 const MODE_TITLES: Record<Mode, string> = {
-  "TR-MoE": "Chat with TR-HASH MoE",
+  "TR-MoE-v2": "Chat with TR-HASH MoE SFT v2",
+  "TR-MoE-v1": "Chat with TR-HASH MoE SFT v1",
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
-  "TR-MoE": "Public chat inference from the 201.2M TR-HASH MoE full-parameter SFT release. Answers remain experimental.",
+  "TR-MoE-v2": "Public chat inference from the promoted 32,004-token full-SFT v2 release. Answers remain experimental.",
+  "TR-MoE-v1": "Public chat inference from the previous 32,000-token full-SFT release. Answers remain experimental.",
 };
 
 const proof: Record<Mode, Array<{ icon: typeof Route; label: string; value: string }>> = {
-  "TR-MoE": [
+  "TR-MoE-v2": [
     { icon: Route, label: "routing", value: "token-ID hash top-2" },
     { icon: Scale, label: "scaling", value: "201.2M / ≈162B source tokens" },
-    { icon: Zap, label: "serving", value: "TR-Hash-i64 · Linux CPU" },
+    { icon: Zap, label: "serving", value: "32,004 tokens · TR-Hash-i64" },
+  ],
+  "TR-MoE-v1": [
+    { icon: Route, label: "routing", value: "token-ID hash top-2" },
+    { icon: Scale, label: "scaling", value: "201.2M / ≈162B source tokens" },
+    { icon: Zap, label: "serving", value: "32,000 tokens · TR-Hash-i64" },
   ],
 };
 

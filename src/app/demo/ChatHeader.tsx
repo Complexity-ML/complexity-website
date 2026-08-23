@@ -13,7 +13,8 @@ import { MODEL_NAMES, MAINTENANCE } from "./config";
 import LogoMark from "@/components/LogoMark";
 
 const MODE_META = {
-  "TR-MoE": { label: "TR-HASH MoE 200M", detail: "full SFT · hash top-2", icon: Network },
+  "TR-MoE-v2": { label: "TR-HASH MoE 200M v2", detail: "32,004-token full SFT", icon: Network },
+  "TR-MoE-v1": { label: "TR-HASH MoE 200M v1", detail: "32,000-token previous SFT", icon: Network },
 } satisfies Record<Mode, { label: string; detail: string; icon: typeof Network }>;
 
 interface ChatHeaderProps {
@@ -58,7 +59,7 @@ export function ChatHeader({
         </div>
 
         <div className="scrollbar-none mx-auto flex min-w-0 items-center gap-1 overflow-x-auto rounded-xl border border-white/[0.07] bg-black/20 p-1">
-          {(["TR-MoE"] as Mode[]).map((m) => {
+          {(["TR-MoE-v2", "TR-MoE-v1"] as Mode[]).map((m) => {
             const meta = MODE_META[m];
             const Icon = meta.icon;
             const active = mode === m;

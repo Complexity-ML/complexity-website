@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ENDPOINTS } from "./config";
-
 export interface ExpertActivityData {
   num_experts: number;
   num_layers: number;
@@ -22,11 +20,10 @@ export interface ExpertActivityData {
   } | null;
 }
 
-const EXPERTS_ENDPOINT = `${ENDPOINTS["TR-MoE"].replace(/\/+$/, "")}/v1/experts`;
 const EXPERT_POLL_INTERVAL_MS = 1_000;
 
 /** Poll the routed model telemetry only while a visible generation needs it. */
-export function useExpertActivity(enabled: boolean): ExpertActivityData | null {
+export function useExpertActivity(endpoint: string, enabled: boolean): ExpertActivityData | null {
   const [activity, setActivity] = useState<ExpertActivityData | null>(null);
 
   useEffect(() => {
@@ -41,7 +38,10 @@ export function useExpertActivity(enabled: boolean): ExpertActivityData | null {
       if (requestInFlight) return;
       requestInFlight = true;
       try {
-        const response = await fetch(EXPERTS_ENDPOINT, { cache: "no-store" });
+        const response = await fetch(
+          `${endpoint.replace(/\/+$/, "")}/v1/experts`,
+          { cache: "no-store" },
+        );
         if (response.ok && !cancelled) {
           setActivity(await response.json() as ExpertActivityData);
         }
@@ -58,7 +58,7 @@ export function useExpertActivity(enabled: boolean): ExpertActivityData | null {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [enabled]);
+  }, [enabled, endpoint]);
 
   return activity;
 }

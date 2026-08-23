@@ -66,7 +66,7 @@ export const ChatMessage = memo(function ChatMessage({
               <CopyButton copied={copied} onClick={copyMessage} />
             </div>
           )}
-          {!isUser && mode === "TR-MoE" && expertActivity && (
+          {!isUser && mode.startsWith("TR-MoE") && expertActivity && (
             <ExpertActivation activity={expertActivity} streaming={streaming} />
           )}
           {isUser && (

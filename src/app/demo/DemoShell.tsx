@@ -31,7 +31,7 @@ import {
   type ActivityLogEvent,
 } from "@/components/ai-lab";
 
-const MODES: Mode[] = ["TR-MoE"];
+const MODES: Mode[] = ["TR-MoE-v2", "TR-MoE-v1"];
 type LeftPanel = "chats" | "prompts" | "agent" | "logs";
 type RightPanel = "model" | "metrics" | "results";
 
@@ -56,7 +56,6 @@ function shortTitle(value: string) {
 
 export function DemoShell() {
   const { data: session } = useSession();
-  const initialMode: Mode = "TR-MoE";
   const userId = (session?.user as Record<string, unknown> | undefined)?.id as string | undefined;
 
   const chat = useChat();
@@ -64,7 +63,7 @@ export function DemoShell() {
   const sourceAgent = useSourceAgent(AGENT_MODE_ENABLED);
   const { labels: modelLabels } = useModelMetadata();
 
-  const activeMode = initialMode;
+  const activeMode = chat.mode;
   const [leftPanel, setLeftPanel] = useState<LeftPanel | null>(null);
   const [rightPanel, setRightPanel] = useState<RightPanel | null>(null);
   const mainRef = useRef<HTMLElement>(null);
@@ -202,7 +201,18 @@ export function DemoShell() {
   const handleSelectConvo = useCallback((id: string | null) => {
     if (chat.streaming || chat.loading) chat.stopGeneration();
     chat.loadMessages([]);
+    const selected = convos.conversations.find((conversation) => conversation.id === id);
+    if (selected) chat.setMode(selected.mode);
     convos.selectConversation(id);
+  }, [chat, convos]);
+
+  const handleModelSelection = useCallback((mode: Mode) => {
+    if (mode === chat.mode) return;
+    if (chat.streaming || chat.loading) chat.stopGeneration();
+    chat.clearChat();
+    chat.setMode(mode);
+    convos.selectConversation(null);
+    inputRef.current?.focus();
   }, [chat, convos]);
 
   const handleClear = useCallback(() => {
@@ -401,16 +411,24 @@ export function DemoShell() {
             <p className="mb-3 font-mono text-[8px] uppercase tracking-[0.16em] text-[#718096]">Active model</p>
             <div className="mb-6 space-y-1.5">
               {MODES.map((mode) => (
-                <div
+                <button
                   key={mode}
-                  className="flex w-full items-center justify-between rounded-lg border border-violet-400/50 bg-violet-400/10 px-3 py-2.5 text-left text-[10px] text-violet-100"
+                  type="button"
+                  onClick={() => handleModelSelection(mode)}
+                  className={`flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-[10px] transition-colors ${
+                    mode === activeMode
+                      ? "border-violet-400/50 bg-violet-400/10 text-violet-100"
+                      : "border-[#2c3a50] bg-[#222d3f] text-[#aebbd0] hover:border-[#40516d] hover:bg-[#29364a]"
+                  }`}
                 >
                   <span>
                     {modelLabels[mode]}
                     {MAINTENANCE[mode] && <small className="ml-2 text-amber-300">maintenance</small>}
                   </span>
-                  <span className="size-1.5 rounded-full bg-violet-300" />
-                </div>
+                  <span className={`size-1.5 rounded-full ${
+                    mode === activeMode ? "bg-violet-300" : "bg-[#53647c]"
+                  }`} />
+                </button>
               ))}
             </div>
             <p className="mb-4 font-mono text-[8px] uppercase tracking-[0.16em] text-[#718096]">Generation</p>
