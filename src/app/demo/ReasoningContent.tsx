@@ -14,8 +14,18 @@ export interface ReasoningEnvelope {
   thinking: boolean;
 }
 
-const ENVELOPE_TAG_RE = /(<\/?(?:think|final)>)/gi;
-const ENVELOPE_TAGS = ["<think>", "</think>", "<final>", "</final>"];
+const ENVELOPE_TAG_RE = /(<\/?(?:think|final)>|<\|(?:think|final)_(?:start|end)\|>)/gi;
+const ENVELOPE_TAGS = [
+  "<|think_start|>",
+  "<|think_end|>",
+  "<|final_start|>",
+  "<|final_end|>",
+  // Legacy text envelopes remain readable in saved conversations.
+  "<think>",
+  "</think>",
+  "<final>",
+  "</final>",
+];
 
 function holdTrailingTagFragment(content: string): string {
   const lower = content.toLowerCase();
@@ -40,25 +50,25 @@ export function parseReasoningEnvelope(content: string): ReasoningEnvelope {
 
   for (const part of parts) {
     const tag = part.toLowerCase();
-    if (tag === "<think>") {
+    if (tag === "<think>" || tag === "<|think_start|>") {
       hasEnvelope = true;
       state = "think";
       thinking = true;
       continue;
     }
-    if (tag === "</think>") {
+    if (tag === "</think>" || tag === "<|think_end|>") {
       hasEnvelope = true;
       state = "plain";
       thinking = false;
       continue;
     }
-    if (tag === "<final>") {
+    if (tag === "<final>" || tag === "<|final_start|>") {
       hasEnvelope = true;
       state = "final";
       thinking = false;
       continue;
     }
-    if (tag === "</final>") {
+    if (tag === "</final>" || tag === "<|final_end|>") {
       hasEnvelope = true;
       state = "plain";
       thinking = false;
