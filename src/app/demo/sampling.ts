@@ -19,8 +19,4 @@ export const DEFAULT_SAMPLING_PARAMS: SamplingParams = {
 
 export const DEFAULT_V2_SAMPLING_PARAMS: SamplingParams = {
   ...DEFAULT_SAMPLING_PARAMS,
-  // The 32,004-token checkpoint occasionally leaks a short template-like
-  // suffix at stochastic temperatures. Greedy decode is stable by default;
-  // users can still raise the slider for exploratory generations.
-  temperature: 0,
 };
