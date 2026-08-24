@@ -244,14 +244,9 @@ export function DemoShell() {
 
   const handlePromptSelection = useCallback((prompt: string) => {
     setLeftPanel(null);
-    if (!convos.activeId) {
-      if (convos.isFull) return;
-      convos.createConversation(chat.mode);
-    }
-    chat.sendMessage(prompt, {
-      research: AGENT_MODE_ENABLED && sourceAgent.subagentEnabled,
-    });
-  }, [chat, convos, sourceAgent.subagentEnabled]);
+    chat.setInput(prompt);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }, [chat]);
 
   const inputValue = chat.input;
   const messageCount = chat.messages.length;
@@ -297,7 +292,7 @@ export function DemoShell() {
 
         {leftPanel === "prompts" && (
           <AILabPanel eyebrow="inference" title="Prompts" onClose={() => setLeftPanel(null)}>
-            <p className="mb-3 font-mono text-[8px] uppercase tracking-[0.16em] text-[#718096]">Suggested prompts</p>
+            <p className="mb-3 font-mono text-[8px] uppercase tracking-[0.16em] text-[#718096]">Click to copy into the prompt box</p>
             <div className="space-y-2">
               {suggestions.map((suggestion) => (
                 <button
@@ -379,6 +374,31 @@ export function DemoShell() {
                   {publicLabel}
                 </span>
               </div>
+
+              {messageCount === 0 && (
+                <section className="mb-8 rounded-2xl border border-[#40516d] bg-[#1b2433]/88 p-4 shadow-[0_18px_44px_rgba(0,0,0,.18)] backdrop-blur-xl">
+                  <div className="mb-3 flex items-end justify-between gap-4">
+                    <div>
+                      <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-violet-300/70">Demo prompts</p>
+                      <p className="mt-1.5 text-[10px] text-[#9aa8bc]">Choose an example to copy it into the prompt box.</p>
+                    </div>
+                    <WandSparkles className="size-4 shrink-0 text-violet-300/55" />
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {suggestions.map((suggestion) => (
+                      <button
+                        key={`${suggestion.label}-${suggestion.prompt}`}
+                        type="button"
+                        onClick={() => handlePromptSelection(suggestion.prompt)}
+                        className="rounded-xl border border-[#2c3a50] bg-[#222d3f] p-3 text-left transition-all hover:-translate-y-0.5 hover:border-violet-400/45 hover:bg-[#29364a]"
+                      >
+                        <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-violet-300/65">{suggestion.label}</span>
+                        <span className="mt-1.5 block text-[10px] leading-4 text-[#cbd6e5]">{suggestion.prompt}</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               <div className="space-y-8">
                 {chat.messages.map((message, index) => (
