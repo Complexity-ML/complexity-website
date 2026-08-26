@@ -4,7 +4,6 @@ import {
   Bot,
   Braces,
   Download,
-  ExternalLink,
   Github,
   MessagesSquare,
   Play,
@@ -262,35 +261,6 @@ export default function LaboAIPage() {
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{feature.text}</p>
               </article>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-4 py-14 sm:px-6 sm:py-28">
-        <div className="site-shell grid items-center gap-10 lg:grid-cols-[0.72fr_1.28fr]">
-          <div>
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-violet-300">Demo</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">From a prompt to a running graph.</h2>
-            <p className="mt-5 leading-relaxed text-muted-foreground">
-              Watch Ask LABO construct a compact GPT-like QA architecture, wire compatible ports, arrange it, generate PyTorch and execute it locally.
-            </p>
-            <Button variant="link" className="mt-4 h-auto p-0 text-violet-300" asChild>
-              <a href="https://youtu.be/Fv_PP0xiTj0" target="_blank" rel="noopener noreferrer">
-                Open on YouTube <ExternalLink className="size-3.5" />
-              </a>
-            </Button>
-          </div>
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl">
-            <div className="aspect-video">
-              <iframe
-                className="size-full"
-                src="https://www.youtube-nocookie.com/embed/Fv_PP0xiTj0?rel=0"
-                title="LABO AI agent demo"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-              />
-            </div>
           </div>
         </div>
       </section>
