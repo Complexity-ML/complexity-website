@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowUpRight, Box, CheckCircle2, Network, ScanSearch } from "lucide-react";
+import { ArrowUpRight, BookOpen, Box, CheckCircle2, Network, ScanSearch } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navigation from "@/components/Navigation";
 import SectionHeading from "@/components/SectionHeading";
@@ -19,6 +19,7 @@ type Model = {
   kicker: string;
   stats: { value: string; label: string }[];
   description: string[];
+  paper?: { title: string; doi: string; href: string };
   links: ModelLink[];
 };
 
@@ -41,6 +42,11 @@ const models: Model[] = [
       { value: "≈162B", label: "source-token exposure" },
       { value: "69.10%", label: "PIQA acc_norm (SFT epoch 3)" },
     ],
+    paper: {
+      title: "Deterministic multi-hash routing supports long-horizon training in a compact language model",
+      doi: "10.21203/rs.3.rs-10788774/v1",
+      href: "https://doi.org/10.21203/rs.3.rs-10788774/v1",
+    },
     description: [
       "The base pretraining run completed its 130B-token replay schedule. A fresh-optimizer full-parameter refinement then reached step 8,156 / 17,802, adding approximately 32.07B unique-token exposures before it was intentionally stopped; the refinement release is therefore an evaluated intermediate checkpoint, not a completed 70B pass.",
       "The released assistant is the 32,000-token full-parameter SFT trained directly from the refinement checkpoint for three epochs on the audited 300K mixture. Epoch 3 is published at the repository root and reaches 68.01% PIQA accuracy and 69.10% normalized accuracy.",
@@ -48,7 +54,6 @@ const models: Model[] = [
     ],
     links: [
       { label: "Try the 200M chat", href: "/ai-lab?model=v1" },
-      { label: "Read the preprint", href: "https://doi.org/10.21203/rs.3.rs-10788774/v1" },
       { label: "Model weights", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT" },
       { label: "Code", href: "https://github.com/Complexity-ML/complexity-framework" },
       { label: "Combined ARC benchmark", href: "/#benchmark" },
@@ -150,6 +155,27 @@ export default function ModelsPage() {
                     </Badge>
                   )}
                 </div>
+
+                {model.paper && (
+                  <a
+                    href={model.paper.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group mt-6 flex items-center justify-between gap-5 rounded-xl border border-violet-300/25 bg-violet-400/[0.09] p-4 transition-colors hover:border-violet-200/50 hover:bg-violet-400/[0.14] sm:p-5"
+                  >
+                    <div className="flex min-w-0 items-start gap-3.5">
+                      <span className="grid size-10 shrink-0 place-items-center rounded-lg border border-violet-300/25 bg-violet-300/[0.09] text-violet-100">
+                        <BookOpen className="size-4.5" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-violet-200">Official preprint</p>
+                        <p className="mt-1 text-sm font-medium leading-5 text-white/88 sm:text-base">{model.paper.title}</p>
+                        <p className="mt-2 truncate font-mono text-[10px] text-violet-200/75 sm:text-xs">DOI {model.paper.doi}</p>
+                      </div>
+                    </div>
+                    <ArrowUpRight className="size-5 shrink-0 text-violet-200/60 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-violet-100" />
+                  </a>
+                )}
 
                 <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
                   {model.stats.map((stat) => (
