@@ -37,21 +37,6 @@ const papers: Paper[] = [
 }`,
   },
   {
-    id: "200m",
-    badge: "Release paper · 2026",
-    title: "TR-Hash 200M: Multi-Hash Token Routing Across 162B Token Exposures and Full-Parameter SFT",
-    description:
-      "The complete 201.2M release record: multi-hash architecture, 130B replay pretraining, the interrupted 32.07B full-parameter refinement, three full-SFT epochs, held-out loss, PIQA checkpoint selection, artifacts and limitations.",
-    href: "/papers/tr-hash-200m-multi-hash-routing.pdf",
-    citation: `@misc{peyriguere2026trhash200m,
-  title={TR-Hash 200M: Multi-Hash Token Routing Across 162B Token Exposures and Full-Parameter SFT},
-  author={Boris Peyriguere},
-  note={Release paper},
-  year={2026},
-  url={https://www.complexity-ai.fr/papers/tr-hash-200m-multi-hash-routing.pdf}
-}`,
-  },
-  {
     id: "vision-v8",
     badge: "Public report · 2026",
     title: "TR-Hash Vision: Deterministic Spatial-Token Routing for a Compact Object Detector",
