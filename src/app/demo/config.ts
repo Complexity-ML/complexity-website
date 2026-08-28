@@ -1,6 +1,6 @@
 export type Mode = "TR-MoE-v2" | "TR-MoE-v1";
 
-export const DEFAULT_MODE: Mode = "TR-MoE-v2";
+export const DEFAULT_MODE: Mode = "TR-MoE-v1";
 
 export function parseMode(value: string | null | undefined): Mode | null {
   if (value === "v2" || value === "TR-MoE-v2") return "TR-MoE-v2";
@@ -44,9 +44,9 @@ export const MODEL_NAMES: Record<Mode, string> = {
 
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE-v2":
-    "The promoted 32,004-token full-SFT v2 checkpoint, trained directly from the refinement model on the audited 500K unified mixture.",
+    "The experimental 32,004-token full-SFT v2 checkpoint, available for direct comparison.",
   "TR-MoE-v1":
-    "The previous 32,000-token full-SFT checkpoint, retained as a public reference and rollback target.",
+    "The released 32,000-token full-SFT checkpoint cited by the public preprint.",
 };
 
 export const FOOTERS: Record<Mode, string> = {

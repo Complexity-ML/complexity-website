@@ -12,6 +12,8 @@ type Paper = {
   description: string;
   href: string;
   citation: string;
+  modelHref?: string;
+  codeHref?: string;
 };
 
 const papers: Paper[] = [
@@ -22,11 +24,14 @@ const papers: Paper[] = [
     description:
       "Research Square preprint describing deterministic multi-hash routing, long-horizon training and the compact TR-HASH language-model experiments.",
     href: "https://doi.org/10.21203/rs.3.rs-10788774/v1",
-    citation: `@article{peyriguere2026deterministic,
+    modelHref: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT",
+    codeHref: "https://github.com/Complexity-ML/complexity-framework",
+    citation: `@article{Peyriguere_2026,
   title={Deterministic multi-hash routing supports long-horizon training in a compact language model},
-  author={Boris Peyriguere},
+  author={Peyriguere, Boris},
   year={2026},
-  publisher={Research Square},
+  month={Aug},
+  publisher={Springer Science and Business Media LLC},
   doi={10.21203/rs.3.rs-10788774/v1},
   url={https://doi.org/10.21203/rs.3.rs-10788774/v1}
 }`,
@@ -98,6 +103,22 @@ function PaperCard({ paper }: { paper: Paper }) {
                 <ArrowUpRight className="size-4" />
               </a>
             </Button>
+            {paper.modelHref && (
+              <Button variant="outline" className="border-white/12 bg-white/[0.03]" asChild>
+                <a href={paper.modelHref} target="_blank" rel="noopener noreferrer">
+                  Model weights
+                  <ArrowUpRight className="size-4" />
+                </a>
+              </Button>
+            )}
+            {paper.codeHref && (
+              <Button variant="outline" className="border-white/12 bg-white/[0.03]" asChild>
+                <a href={paper.codeHref} target="_blank" rel="noopener noreferrer">
+                  Code
+                  <ArrowUpRight className="size-4" />
+                </a>
+              </Button>
+            )}
           </div>
         </div>
       </div>

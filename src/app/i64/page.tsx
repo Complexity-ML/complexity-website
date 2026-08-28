@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 const stats = [
   { value: "201.2M", label: "trainable parameters" },
   { value: "≈162B", label: "source-token exposure" },
-  { value: "68.01 / 69.10%", label: "PIQA acc / acc_norm · SFT v2 epoch 3" },
+  { value: "68.01 / 69.10%", label: "PIQA acc / acc_norm · SFT epoch 3" },
   { value: "16", label: "persisted layer route tables" },
 ];
 
@@ -60,7 +60,7 @@ export default function I64Page() {
               <span className="mt-3 block bg-gradient-to-r from-white via-sky-200 to-emerald-200 bg-clip-text text-transparent">Context stays shared.</span>
             </h1>
             <p className="mx-auto mt-8 max-w-3xl text-pretty text-base leading-8 text-white/50 sm:text-lg">
-              The released 201.2M-parameter model uses a shared SwiGLU path plus deterministic multi-hash top-2 residual experts in each of its 16 layers. Its full-SFT v2 epoch-3 checkpoint scores 68.01% PIQA accuracy, 69.10% normalized accuracy and 47.29% Combined ARC.
+              The released 201.2M-parameter model uses a shared SwiGLU path plus deterministic multi-hash top-2 residual experts in each of its 16 layers. Its cited full-SFT epoch-3 checkpoint scores 68.01% PIQA accuracy, 69.10% normalized accuracy and 47.29% Combined ARC.
             </p>
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
               <Button size="lg" className="h-12 bg-white px-6 text-black hover:bg-white/85" asChild>
@@ -69,8 +69,13 @@ export default function I64Page() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="h-12 border-white/12 bg-white/[0.03] px-6" asChild>
-                <a href="/papers/tr-hash-200m-multi-hash-routing.pdf" target="_blank" rel="noopener noreferrer">
-                  <BookOpen className="size-4" /> Read the 200M paper
+                <a href="https://doi.org/10.21203/rs.3.rs-10788774/v1" target="_blank" rel="noopener noreferrer">
+                  <BookOpen className="size-4" /> Read the preprint
+                </a>
+              </Button>
+              <Button size="lg" variant="outline" className="h-12 border-white/12 bg-white/[0.03] px-6" asChild>
+                <a href="https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT" target="_blank" rel="noopener noreferrer">
+                  <Boxes className="size-4" /> Model weights
                 </a>
               </Button>
               <Button size="lg" variant="outline" className="h-12 border-white/12 bg-white/[0.03] px-6" asChild>

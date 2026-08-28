@@ -11,8 +11,8 @@ const MODE_TITLES: Record<Mode, string> = {
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
-  "TR-MoE-v2": "Public chat inference from the promoted 32,004-token full-SFT v2 release. Answers remain experimental.",
-  "TR-MoE-v1": "Public chat inference from the previous 32,000-token full-SFT release. Answers remain experimental.",
+  "TR-MoE-v2": "Public chat inference from the experimental 32,004-token full-SFT v2 checkpoint. Answers remain experimental.",
+  "TR-MoE-v1": "Public chat inference from the released 32,000-token full-SFT checkpoint cited by the preprint. Answers remain experimental.",
 };
 
 const proof: Record<Mode, Array<{ icon: typeof Route; label: string; value: string }>> = {
