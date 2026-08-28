@@ -11,6 +11,7 @@ type Paper = {
   title: string;
   description: string;
   href: string;
+  doi?: string;
   citation: string;
   modelHref?: string;
   codeHref?: string;
@@ -24,6 +25,7 @@ const papers: Paper[] = [
     description:
       "Research Square preprint describing deterministic multi-hash routing, long-horizon training and the compact TR-HASH language-model experiments.",
     href: "https://doi.org/10.21203/rs.3.rs-10788774/v1",
+    doi: "10.21203/rs.3.rs-10788774/v1",
     modelHref: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-SFT",
     codeHref: "https://github.com/Complexity-ML/complexity-framework",
     citation: `@article{Peyriguere_2026,
@@ -76,15 +78,22 @@ function PaperCard({ paper }: { paper: Paper }) {
           <p className="mt-5 max-w-3xl text-sm leading-7 text-white/48 sm:text-base">
             {paper.description}
           </p>
+          {paper.doi && (
+            <a
+              href={paper.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-flex max-w-full items-center gap-2 rounded-lg border border-violet-300/25 bg-violet-400/[0.08] px-3.5 py-2 font-mono text-[10px] text-violet-100 transition-colors hover:border-violet-200/45 hover:bg-violet-400/[0.13] sm:text-xs"
+            >
+              <span className="font-bold uppercase tracking-[0.16em] text-violet-200">DOI</span>
+              <span className="truncate">{paper.doi}</span>
+              <ArrowUpRight className="size-3.5 shrink-0" />
+            </a>
+          )}
           <div className="mt-8 flex flex-wrap gap-3">
-            {paper.id === "200m" && (
-              <Button className="bg-white text-black hover:bg-white/85" asChild>
-                <a href="/ai-lab">Try the 200M chat</a>
-              </Button>
-            )}
-            <Button variant={paper.id === "200m" ? "outline" : "default"} className={paper.id === "200m" ? "border-white/12 bg-white/[0.03]" : "bg-white text-black hover:bg-white/85"} asChild>
+            <Button className="bg-white text-black hover:bg-white/85" asChild>
               <a href={paper.href} target="_blank" rel="noopener noreferrer">
-                {paper.id === "tr-hash-preprint" ? "Read preprint" : "Read report"}
+                {paper.id === "tr-hash-preprint" ? "Open official preprint" : "Read report"}
                 <ArrowUpRight className="size-4" />
               </a>
             </Button>

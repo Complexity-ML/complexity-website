@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Github, Route, Scale, Terminal, Zap } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookOpen, Github, Route, Scale, Terminal, Zap } from "lucide-react";
 import { FaDiscord } from "react-icons/fa6";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,16 @@ export default function Hero() {
               <span className="mr-2 size-1.5 rounded-full bg-emerald-300" />
               Open research
             </Badge>
+            <a
+              href="https://doi.org/10.21203/rs.3.rs-10788774/v1"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-violet-300/30 bg-violet-400/[0.11] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-violet-100 transition-colors hover:border-violet-200/55 hover:bg-violet-400/[0.17]"
+            >
+              <BookOpen className="size-3.5" />
+              Official preprint · DOI 10.21203/rs.3.rs-10788774/v1
+              <ArrowUpRight className="size-3" />
+            </a>
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30">Paris · 2026</span>
           </div>
 
@@ -61,12 +71,12 @@ export default function Hero() {
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" className="h-12 border-white/12 bg-white/[0.035] px-6" asChild>
-              <Link href="/models">
+            <Button size="lg" variant="outline" className="h-12 border-violet-300/30 bg-violet-400/[0.09] px-6 text-violet-100 hover:bg-violet-400/[0.15]" asChild>
+              <a href="https://doi.org/10.21203/rs.3.rs-10788774/v1" target="_blank" rel="noopener noreferrer">
                 <BookOpen className="size-4" />
-                Read the research
-                <ArrowRight className="size-4" />
-              </Link>
+                Read the official preprint
+                <ArrowUpRight className="size-4" />
+              </a>
             </Button>
             <Button size="lg" variant="outline" className="h-12 border-white/12 bg-white/[0.035] px-6" asChild>
               <a href="/labo-ai">Explore LABO AI</a>
