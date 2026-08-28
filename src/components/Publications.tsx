@@ -16,6 +16,22 @@ type Paper = {
 
 const papers: Paper[] = [
   {
+    id: "tr-hash-preprint",
+    badge: "Preprint · 2026",
+    title: "Deterministic multi-hash routing supports long-horizon training in a compact language model",
+    description:
+      "Research Square preprint describing deterministic multi-hash routing, long-horizon training and the compact TR-HASH language-model experiments.",
+    href: "https://doi.org/10.21203/rs.3.rs-10788774/v1",
+    citation: `@article{peyriguere2026deterministic,
+  title={Deterministic multi-hash routing supports long-horizon training in a compact language model},
+  author={Boris Peyriguere},
+  year={2026},
+  publisher={Research Square},
+  doi={10.21203/rs.3.rs-10788774/v1},
+  url={https://doi.org/10.21203/rs.3.rs-10788774/v1}
+}`,
+  },
+  {
     id: "200m",
     badge: "Release paper · 2026",
     title: "TR-Hash 200M: Multi-Hash Token Routing Across 162B Token Exposures and Full-Parameter SFT",
@@ -78,7 +94,7 @@ function PaperCard({ paper }: { paper: Paper }) {
             )}
             <Button variant={paper.id === "200m" ? "outline" : "default"} className={paper.id === "200m" ? "border-white/12 bg-white/[0.03]" : "bg-white text-black hover:bg-white/85"} asChild>
               <a href={paper.href} target="_blank" rel="noopener noreferrer">
-                Read report
+                {paper.id === "tr-hash-preprint" ? "Read preprint" : "Read report"}
                 <ArrowUpRight className="size-4" />
               </a>
             </Button>
