@@ -535,7 +535,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
             throw new Error("The TR-HASH knowledge base contains no relevant passage.");
           }
 
-          toolResult = `Retrieved passages:\n${search.context}`;
+          toolResult = `Retrieved passage. Copy names and numeric values exactly:\n${search.context}`;
           setResearchEvents((events) => events.map((event) => (
             event.id === searchEvent.id
               ? {

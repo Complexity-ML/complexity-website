@@ -21,7 +21,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const matches = searchKnowledgeBase(query);
+  // This 100M checkpoint is more faithful with one tightly ranked passage
+  // than with several overlapping chunks in its 2,048-token context window.
+  const matches = searchKnowledgeBase(query, 1);
   return NextResponse.json({
     status: matches.length ? "ready" : "empty",
     matches: matches.map(({ id, title, score }) => ({ id, title, score })),
