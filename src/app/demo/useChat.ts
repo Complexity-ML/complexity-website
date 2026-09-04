@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { Mode, Message } from "./config";
 import {
+  CALCULATOR_SYSTEM_PROMPT,
+  CALCULATOR_TOOL,
   DEFAULT_MODE,
   ENDPOINTS,
   MAINTENANCE,
@@ -72,6 +74,45 @@ interface ResearchResponse {
   }>;
   context: string;
   error?: string;
+}
+
+interface ApiMessage {
+  role: "system" | "user" | "assistant" | "tool";
+  content: string;
+}
+
+interface ToolCallResponse {
+  function?: {
+    name?: string;
+    arguments?: string;
+  };
+}
+
+interface ChatCompletionResponse {
+  choices?: Array<{
+    message?: {
+      content?: string | null;
+      tool_calls?: ToolCallResponse[];
+    };
+    finish_reason?: string;
+  }>;
+  usage?: {
+    completion_tokens?: number;
+  };
+  context_metrics?: ContextMetrics;
+}
+
+interface CalculatorResponse {
+  expression?: string;
+  result?: string;
+  error?: string;
+}
+
+function shouldOfferCalculator(text: string): boolean {
+  if (!/\d/.test(text)) return false;
+  const explicitRequest = /\b(?:calculat(?:e|or|rice)?|compute|arithmetic|math|calcul(?:e|er|ez)?|combien)\b/i;
+  const arithmeticExpression = /\d(?:[\d\s().]*)(?:\*\*|[+\-*/%^×÷])(?:[\d\s().]*?)\d/;
+  return explicitRequest.test(text) || arithmeticExpression.test(text);
 }
 
 function newConversationCacheId(): string {
@@ -323,15 +364,125 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         setMessages(nextMessages);
       };
 
-      const conversationMessages: Array<{
-        role: "system" | "user" | "assistant";
-        content: string;
-      }> = newMessages.map(({ role, content }) => ({ role, content }));
+      const conversationMessages: ApiMessage[] = newMessages.map(({ role, content }) => ({ role, content }));
       conversationMessages[conversationMessages.length - 1] = { role: "user", content: modelPrompt };
-      const systemPrompt = SYSTEM_PROMPTS[mode];
-      const chatMessages = systemPrompt
-        ? [{ role: "system" as const, content: systemPrompt }, ...conversationMessages]
+      const calculatorEnabled = mode === "TR-MoE-v2"
+        && !options.research
+        && shouldOfferCalculator(text);
+      const systemPrompt = calculatorEnabled
+        ? CALCULATOR_SYSTEM_PROMPT
+        : SYSTEM_PROMPTS[mode];
+      let chatMessages: ApiMessage[] = systemPrompt
+        ? [{ role: "system", content: systemPrompt }, ...conversationMessages]
         : conversationMessages;
+
+      const completionBody = (requestMessages: ApiMessage[], stream: boolean) => ({
+        messages: requestMessages,
+        max_tokens: params.maxTokens,
+        temperature: params.temperature,
+        top_k: params.topK,
+        top_p: params.topP,
+        repetition_penalty: params.repetitionPenalty,
+        frequency_penalty: params.frequencyPenalty,
+        user: conversationCacheIdRef.current,
+        stream,
+      });
+
+      // The Agentic model first gets a non-streaming turn so the i64 server
+      // can parse its native tool-call envelope into OpenAI-compatible
+      // tool_calls. If it asks for the calculator, execute it locally and
+      // continue generation with a native tool-result message.
+      if (calculatorEnabled) {
+        const planningResponse = await fetch(`${base}/v1/chat/completions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...completionBody(chatMessages, false),
+            temperature: 0,
+            top_k: 0,
+            top_p: 1,
+            repetition_penalty: 1,
+            frequency_penalty: 0,
+            tools: [CALCULATOR_TOOL],
+            tool_choice: "auto",
+          }),
+          signal: controller.signal,
+        });
+
+        if (!planningResponse.ok) {
+          const detail = (await planningResponse.text()).slice(0, 300).trim();
+          throw new Error(
+            `${MODEL_NAMES[mode]} unavailable (HTTP ${planningResponse.status})${detail ? `: ${detail}` : ""}`,
+          );
+        }
+
+        const planning = await planningResponse.json() as ChatCompletionResponse;
+        const choice = planning.choices?.[0];
+        const toolCall = choice?.message?.tool_calls?.find(
+          (call) => call.function?.name === "calculator",
+        );
+        if (planning.context_metrics) setContextMetrics(planning.context_metrics);
+
+        if (!toolCall) {
+          assistantContent = choice?.message?.content ?? "";
+          tokenCountRef.current = planning.usage?.completion_tokens ?? 0;
+          publishAssistantContent(assistantContent);
+          const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
+          setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
+          setStreaming(false);
+          setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
+          abortControllerRef.current = null;
+          return;
+        }
+
+        let expression: unknown;
+        try {
+          const toolArguments = JSON.parse(toolCall.function?.arguments ?? "{}");
+          expression = toolArguments.expression;
+        } catch {
+          throw new Error("The model returned invalid calculator arguments.");
+        }
+        if (typeof expression !== "string") {
+          throw new Error("The model did not provide a calculator expression.");
+        }
+
+        const calculatorEvent: ResearchActivityEvent = {
+          id: `calculator-${Date.now()}`,
+          label: `Calculator · ${expression}`,
+          detail: "Evaluating the arithmetic expression…",
+          active: true,
+        };
+        setResearchEvents((events) => [calculatorEvent, ...events]);
+        const calculatorResponse = await fetch("/api/tools/calculator", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ expression }),
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        const calculation = await calculatorResponse.json() as CalculatorResponse;
+        if (!calculatorResponse.ok || typeof calculation.result !== "string") {
+          throw new Error(calculation.error || "The calculator could not evaluate the expression.");
+        }
+
+        setResearchEvents((events) => events.map((event) => (
+          event.id === calculatorEvent.id
+            ? { ...event, detail: `Result · ${calculation.result}`, active: false }
+            : event
+        )));
+
+        const rawToolCall = choice?.message?.content
+          || `<|tool_call_start|>${JSON.stringify({ name: "calculator", arguments: { expression } })}<|tool_call_end|>`;
+        chatMessages = [
+          ...chatMessages,
+          { role: "assistant", content: rawToolCall },
+          {
+            role: "tool",
+            content: `Exact calculator result: ${calculation.result}`,
+          },
+        ];
+        tokenCountRef.current = planning.usage?.completion_tokens ?? 0;
+      }
 
       // The deployed model is instruction/chat tuned. Send the full
       // conversation through the server-side chat template instead of
@@ -339,17 +490,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
       const response = await fetch(`${base}/v1/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: chatMessages,
-          max_tokens: params.maxTokens,
-          temperature: params.temperature,
-          top_k: params.topK,
-          top_p: params.topP,
-          repetition_penalty: params.repetitionPenalty,
-          frequency_penalty: params.frequencyPenalty,
-          user: conversationCacheIdRef.current,
-          stream: true,
-        }),
+        body: JSON.stringify(completionBody(chatMessages, true)),
         signal: controller.signal,
       });
 

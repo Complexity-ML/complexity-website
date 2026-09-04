@@ -47,9 +47,39 @@ export const SYSTEM_PROMPTS: Partial<Record<Mode, string>> = {
     "You are a helpful, precise assistant.",
     "Follow the user's requested language, format, and length exactly.",
     "Answer directly and do not repeat yourself.",
-    "Use internal thinking when it helps. If tools are available and useful, call them; otherwise answer directly.",
+    "Use internal thinking when it helps.",
   ].join(" "),
 };
+
+export const CALCULATOR_SYSTEM_PROMPT = [
+  "You are an agent. Think only when useful and use a tool whenever it is required.",
+  "Available tools:\n[{\"function\":{\"description\":\"Evaluate an arithmetic expression exactly.\",\"name\":\"calculator\",\"parameters\":{\"properties\":{\"expression\":{\"description\":\"Arithmetic expression to evaluate.\",\"type\":\"string\"}},\"required\":[\"expression\"],\"type\":\"object\"},\"return\":{\"description\":\"Exact numeric result.\",\"type\":\"string\"}},\"type\":\"function\"}]",
+  "Follow the user's requested language, format, and length exactly.",
+  "Answer directly and do not repeat yourself.",
+].join(" ");
+
+export const CALCULATOR_TOOL = {
+  type: "function",
+  function: {
+    name: "calculator",
+    description: "Evaluate a mathematical arithmetic expression exactly.",
+    parameters: {
+      type: "object",
+      properties: {
+        expression: {
+          type: "string",
+          description: "Arithmetic using numbers, parentheses, +, -, *, /, %, and ^.",
+        },
+      },
+      required: ["expression"],
+      additionalProperties: false,
+    },
+    return: {
+      description: "Exact numeric result.",
+      type: "string",
+    },
+  },
+} as const;
 
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE-v2":
@@ -90,6 +120,15 @@ const COMMON_SUGGESTIONS: SuggestionGroup[] = [
 ];
 
 export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
-  "TR-MoE-v2": COMMON_SUGGESTIONS,
+  "TR-MoE-v2": [
+    {
+      label: "calculator",
+      prompts: [
+        "Use the calculator to compute 927 × 43. Give only the result.",
+        "Use the calculator to compute (17 × 24 - 85) ÷ 17. Explain the result in one sentence.",
+      ],
+    },
+    ...COMMON_SUGGESTIONS,
+  ],
   "TR-MoE-v1": COMMON_SUGGESTIONS,
 };
