@@ -11,14 +11,16 @@ export interface KnowledgeMatch extends KnowledgeDocument {
 
 export const KNOWLEDGE_DOCUMENTS: KnowledgeDocument[] = [
   {
-    id: "agentic-100m-architecture",
-    title: "TR-HASH MoE 100M Agentic SFT architecture",
-    content: [
-      "The public Agentic SFT model contains exactly 100,366,720 trainable parameters.",
-      "It has 10 transformer layers, four stored routed experts, top-2 expert activation, and a shared expert.",
-      "TR-HASH routes tokens deterministically from token IDs through multiple hashes.",
-    ].join(" "),
-    keywords: ["100M", "parameters", "architecture", "layers", "experts", "MoE", "top-2", "routing"],
+    id: "agentic-100m-parameters",
+    title: "TR-HASH 100M Agentic SFT parameter count",
+    content: "The public Agentic SFT model contains exactly 100,366,720 trainable parameters.",
+    keywords: ["100M", "parameter", "parameters", "parameter count", "model size"],
+  },
+  {
+    id: "agentic-100m-routing",
+    title: "TR-HASH 100M Agentic routing architecture",
+    content: "The model has 10 transformer layers, four stored routed experts, top-2 expert activation, and one shared expert. TR-HASH routes tokens deterministically from token IDs through multiple hashes.",
+    keywords: ["100M", "architecture", "layers", "experts", "MoE", "top-2", "routing", "shared expert"],
   },
   {
     id: "agentic-100m-sft",

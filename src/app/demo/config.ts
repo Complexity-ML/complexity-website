@@ -84,8 +84,7 @@ export const CALCULATOR_TOOL = {
 export const KNOWLEDGE_SEARCH_SYSTEM_PROMPT = [
   "You are an agent. Think only when useful and use a tool whenever it is required.",
   "Available tools:\n[{\"function\":{\"description\":\"Search the TR-HASH knowledge base for relevant facts.\",\"name\":\"search_knowledge_base\",\"parameters\":{\"properties\":{\"query\":{\"description\":\"Question or keywords to search for.\",\"type\":\"string\"}},\"required\":[\"query\"],\"type\":\"object\"},\"return\":{\"description\":\"Relevant passages from the knowledge base.\",\"type\":\"string\"}},\"type\":\"function\"}]",
-  "Follow the user's requested language and answer only from retrieved passages.",
-  "If the passages do not contain the answer, say that the knowledge base does not contain it.",
+  "Follow the user's requested language and answer only from the retrieved passage.",
 ].join(" ");
 
 export const KNOWLEDGE_SEARCH_TOOL = {
@@ -161,7 +160,7 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
     {
       label: "knowledge",
       prompts: [
-        "How many parameters and experts does the TR-HASH 100M Agentic model have?",
+        "How many trainable parameters does the TR-HASH 100M Agentic model have?",
         "Which scorer produced the published 200M PIQA scores?",
       ],
     },

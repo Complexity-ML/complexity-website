@@ -523,7 +523,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           const searchResponse = await fetch("/api/tools/knowledge-search", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query }),
+            body: JSON.stringify({ query: `${text}\n${query}` }),
             cache: "no-store",
             signal: controller.signal,
           });
@@ -535,7 +535,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
             throw new Error("The TR-HASH knowledge base contains no relevant passage.");
           }
 
-          toolResult = `Retrieved passage. Copy names and numeric values exactly:\n${search.context}`;
+          toolResult = search.context;
           setResearchEvents((events) => events.map((event) => (
             event.id === searchEvent.id
               ? {
