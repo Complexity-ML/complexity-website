@@ -449,12 +449,12 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
 
         const planning = await planningResponse.json() as ChatCompletionResponse;
         const choice = planning.choices?.[0];
-        const toolCall = choice?.message?.tool_calls?.find(
+        const parsedToolCall = choice?.message?.tool_calls?.find(
           (call) => call.function?.name === activeTool.name,
         );
         if (planning.context_metrics) setContextMetrics(planning.context_metrics);
 
-        if (!toolCall) {
+        if (!parsedToolCall && activeTool.name !== "search_knowledge_base") {
           assistantContent = choice?.message?.content ?? "";
           tokenCountRef.current = planning.usage?.completion_tokens ?? 0;
           publishAssistantContent(assistantContent);
@@ -465,6 +465,13 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           abortControllerRef.current = null;
           return;
         }
+
+        const toolCall = parsedToolCall ?? {
+          function: {
+            name: "search_knowledge_base",
+            arguments: JSON.stringify({ query: text }),
+          },
+        };
 
         let toolArguments: Record<string, unknown>;
         try {
@@ -547,8 +554,10 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           )));
         }
 
-        const rawToolCall = choice?.message?.content
-          || `<|tool_call_start|>${JSON.stringify({ name: activeTool.name, arguments: toolArguments })}<|tool_call_end|>`;
+        const canonicalToolCall = `<|tool_call_start|>${JSON.stringify({ name: activeTool.name, arguments: toolArguments })}<|tool_call_end|>`;
+        const rawToolCall = parsedToolCall
+          ? choice?.message?.content || canonicalToolCall
+          : canonicalToolCall;
         chatMessages = [
           ...chatMessages,
           { role: "assistant", content: rawToolCall },
