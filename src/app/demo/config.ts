@@ -81,15 +81,45 @@ export const CALCULATOR_TOOL = {
   },
 } as const;
 
+export const KNOWLEDGE_SEARCH_SYSTEM_PROMPT = [
+  "You are an agent. Think only when useful and use a tool whenever it is required.",
+  "Available tools:\n[{\"function\":{\"description\":\"Search the TR-HASH knowledge base for relevant facts.\",\"name\":\"search_knowledge_base\",\"parameters\":{\"properties\":{\"query\":{\"description\":\"Question or keywords to search for.\",\"type\":\"string\"}},\"required\":[\"query\"],\"type\":\"object\"},\"return\":{\"description\":\"Relevant passages from the knowledge base.\",\"type\":\"string\"}},\"type\":\"function\"}]",
+  "Follow the user's requested language and answer only from retrieved passages.",
+  "If the passages do not contain the answer, say that the knowledge base does not contain it.",
+].join(" ");
+
+export const KNOWLEDGE_SEARCH_TOOL = {
+  type: "function",
+  function: {
+    name: "search_knowledge_base",
+    description: "Search the TR-HASH knowledge base for relevant facts.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Question or keywords to search for.",
+        },
+      },
+      required: ["query"],
+      additionalProperties: false,
+    },
+    return: {
+      description: "Relevant passages from the knowledge base.",
+      type: "string",
+    },
+  },
+} as const;
+
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE-v2":
-    "The released 100.4M-parameter Agentic SFT checkpoint, trained for three epochs on 200,000 examples with its native 32K tokenizer.",
+    "The released 100.4M-parameter Agentic SFT checkpoint, trained for three epochs on 200,000 examples with its native 32K-vocabulary tokenizer.",
   "TR-MoE-v1":
     "The released 32,000-token full-SFT checkpoint cited by the public preprint.",
 };
 
 export const FOOTERS: Record<Mode, string> = {
-  "TR-MoE-v2": "TR-HASH MoE 100M · Agentic SFT · 32K context · TR-Hash-i64",
+  "TR-MoE-v2": "TR-HASH MoE 100M · Agentic SFT · 2,048-token context · 32K vocabulary · TR-Hash-i64",
   "TR-MoE-v1": "TR-HASH MoE 200M · Full SFT v1 · 32,000 tokens · TR-Hash-i64",
 };
 
@@ -126,6 +156,13 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
       prompts: [
         "Use the calculator to compute 927 × 43. Give only the result.",
         "Use the calculator to compute (17 × 24 - 85) ÷ 17. Explain the result in one sentence.",
+      ],
+    },
+    {
+      label: "knowledge",
+      prompts: [
+        "How many parameters and experts does the TR-HASH 100M Agentic model have?",
+        "Which scorer produced the published 200M PIQA scores?",
       ],
     },
     ...COMMON_SUGGESTIONS,

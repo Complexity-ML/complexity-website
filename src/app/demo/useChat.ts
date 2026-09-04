@@ -9,6 +9,8 @@ import {
   ENDPOINTS,
   MAINTENANCE,
   MODEL_NAMES,
+  KNOWLEDGE_SEARCH_SYSTEM_PROMPT,
+  KNOWLEDGE_SEARCH_TOOL,
   SYSTEM_PROMPTS,
   modeQueryValue,
 } from "./config";
@@ -108,11 +110,29 @@ interface CalculatorResponse {
   error?: string;
 }
 
+interface KnowledgeSearchResponse {
+  status?: "ready" | "empty";
+  matches?: Array<{
+    id: string;
+    title: string;
+    score: number;
+  }>;
+  context?: string;
+  error?: string;
+}
+
 function shouldOfferCalculator(text: string): boolean {
   if (!/\d/.test(text)) return false;
   const explicitRequest = /\b(?:calculat(?:e|or|rice)?|compute|arithmetic|math|calcul(?:e|er|ez)?|combien)\b/i;
   const arithmeticExpression = /\d(?:[\d\s().]*)(?:\*\*|[+\-*/%^×÷])(?:[\d\s().]*?)\d/;
   return explicitRequest.test(text) || arithmeticExpression.test(text);
+}
+
+function shouldOfferKnowledgeSearch(text: string): boolean {
+  const explicitDomain = /\b(?:tr[- ]?hash|piqa|agentic|acc_norm|lm[- ]eval|mlx)\b/i;
+  const modelReference = /\b(?:100m|200m|model|modele|checkpoint|sft|moe)\b/i;
+  const factRequest = /\b(?:parameter|parameters|parametre|parametres|expert|experts|layer|layers|couche|couches|tokenizer|tokeniseur|architecture|refinement|raffinement|scorer|score|evaluation|eval|training|entrainement|precision|quantization)\b/i;
+  return explicitDomain.test(text) || (modelReference.test(text) && factRequest.test(text));
 }
 
 function newConversationCacheId(): string {
@@ -369,9 +389,20 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
       const calculatorEnabled = mode === "TR-MoE-v2"
         && !options.research
         && shouldOfferCalculator(text);
+      const knowledgeSearchEnabled = mode === "TR-MoE-v2"
+        && !options.research
+        && !calculatorEnabled
+        && shouldOfferKnowledgeSearch(text);
+      const activeTool = calculatorEnabled
+        ? { name: "calculator", definition: CALCULATOR_TOOL }
+        : knowledgeSearchEnabled
+          ? { name: "search_knowledge_base", definition: KNOWLEDGE_SEARCH_TOOL }
+          : null;
       const systemPrompt = calculatorEnabled
         ? CALCULATOR_SYSTEM_PROMPT
-        : SYSTEM_PROMPTS[mode];
+        : knowledgeSearchEnabled
+          ? KNOWLEDGE_SEARCH_SYSTEM_PROMPT
+          : SYSTEM_PROMPTS[mode];
       let chatMessages: ApiMessage[] = systemPrompt
         ? [{ role: "system", content: systemPrompt }, ...conversationMessages]
         : conversationMessages;
@@ -388,11 +419,11 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         stream,
       });
 
-      // The Agentic model first gets a non-streaming turn so the i64 server
+      // Tool-aware Agentic requests first get a non-streaming turn so i64
       // can parse its native tool-call envelope into OpenAI-compatible
-      // tool_calls. If it asks for the calculator, execute it locally and
-      // continue generation with a native tool-result message.
-      if (calculatorEnabled) {
+      // tool_calls. Execute the selected local tool, then continue generation
+      // with a native tool-result message.
+      if (activeTool) {
         const planningResponse = await fetch(`${base}/v1/chat/completions`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -403,7 +434,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
             top_p: 1,
             repetition_penalty: 1,
             frequency_penalty: 0,
-            tools: [CALCULATOR_TOOL],
+            tools: [activeTool.definition],
             tool_choice: "auto",
           }),
           signal: controller.signal,
@@ -419,7 +450,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         const planning = await planningResponse.json() as ChatCompletionResponse;
         const choice = planning.choices?.[0];
         const toolCall = choice?.message?.tool_calls?.find(
-          (call) => call.function?.name === "calculator",
+          (call) => call.function?.name === activeTool.name,
         );
         if (planning.context_metrics) setContextMetrics(planning.context_metrics);
 
@@ -435,51 +466,93 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           return;
         }
 
-        let expression: unknown;
+        let toolArguments: Record<string, unknown>;
         try {
-          const toolArguments = JSON.parse(toolCall.function?.arguments ?? "{}");
-          expression = toolArguments.expression;
+          const parsed = JSON.parse(toolCall.function?.arguments ?? "{}");
+          if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error();
+          toolArguments = parsed as Record<string, unknown>;
         } catch {
-          throw new Error("The model returned invalid calculator arguments.");
-        }
-        if (typeof expression !== "string") {
-          throw new Error("The model did not provide a calculator expression.");
+          throw new Error(`The model returned invalid ${activeTool.name} arguments.`);
         }
 
-        const calculatorEvent: ResearchActivityEvent = {
-          id: `calculator-${Date.now()}`,
-          label: `Calculator · ${expression}`,
-          detail: "Evaluating the arithmetic expression…",
-          active: true,
-        };
-        setResearchEvents((events) => [calculatorEvent, ...events]);
-        const calculatorResponse = await fetch("/api/tools/calculator", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ expression }),
-          cache: "no-store",
-          signal: controller.signal,
-        });
-        const calculation = await calculatorResponse.json() as CalculatorResponse;
-        if (!calculatorResponse.ok || typeof calculation.result !== "string") {
-          throw new Error(calculation.error || "The calculator could not evaluate the expression.");
-        }
+        let toolResult: string;
+        if (activeTool.name === "calculator") {
+          const expression = toolArguments.expression;
+          if (typeof expression !== "string") {
+            throw new Error("The model did not provide a calculator expression.");
+          }
 
-        setResearchEvents((events) => events.map((event) => (
-          event.id === calculatorEvent.id
-            ? { ...event, detail: `Result · ${calculation.result}`, active: false }
-            : event
-        )));
+          const calculatorEvent: ResearchActivityEvent = {
+            id: `calculator-${Date.now()}`,
+            label: `Calculator · ${expression}`,
+            detail: "Evaluating the arithmetic expression…",
+            active: true,
+          };
+          setResearchEvents((events) => [calculatorEvent, ...events]);
+          const calculatorResponse = await fetch("/api/tools/calculator", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ expression }),
+            cache: "no-store",
+            signal: controller.signal,
+          });
+          const calculation = await calculatorResponse.json() as CalculatorResponse;
+          if (!calculatorResponse.ok || typeof calculation.result !== "string") {
+            throw new Error(calculation.error || "The calculator could not evaluate the expression.");
+          }
+
+          toolResult = `Exact calculator result: ${calculation.result}`;
+          setResearchEvents((events) => events.map((event) => (
+            event.id === calculatorEvent.id
+              ? { ...event, detail: `Result · ${calculation.result}`, active: false }
+              : event
+          )));
+        } else {
+          const query = toolArguments.query;
+          if (typeof query !== "string") {
+            throw new Error("The model did not provide a knowledge-base query.");
+          }
+
+          const searchEvent: ResearchActivityEvent = {
+            id: `knowledge-search-${Date.now()}`,
+            label: `Knowledge search · ${query}`,
+            detail: "Retrieving relevant TR-HASH passages…",
+            active: true,
+          };
+          setResearchEvents((events) => [searchEvent, ...events]);
+          const searchResponse = await fetch("/api/tools/knowledge-search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query }),
+            cache: "no-store",
+            signal: controller.signal,
+          });
+          const search = await searchResponse.json() as KnowledgeSearchResponse;
+          if (!searchResponse.ok) {
+            throw new Error(search.error || "The knowledge search is unavailable.");
+          }
+          if (search.status !== "ready" || !search.context || !search.matches?.length) {
+            throw new Error("The TR-HASH knowledge base contains no relevant passage.");
+          }
+
+          toolResult = `Retrieved passages:\n${search.context}`;
+          setResearchEvents((events) => events.map((event) => (
+            event.id === searchEvent.id
+              ? {
+                ...event,
+                detail: `${search.matches!.length} passage${search.matches!.length === 1 ? "" : "s"} · ${search.matches!.map((match) => match.title).join(" · ")}`,
+                active: false,
+              }
+              : event
+          )));
+        }
 
         const rawToolCall = choice?.message?.content
-          || `<|tool_call_start|>${JSON.stringify({ name: "calculator", arguments: { expression } })}<|tool_call_end|>`;
+          || `<|tool_call_start|>${JSON.stringify({ name: activeTool.name, arguments: toolArguments })}<|tool_call_end|>`;
         chatMessages = [
           ...chatMessages,
           { role: "assistant", content: rawToolCall },
-          {
-            role: "tool",
-            content: `Exact calculator result: ${calculation.result}`,
-          },
+          { role: "tool", content: toolResult },
         ];
         tokenCountRef.current = planning.usage?.completion_tokens ?? 0;
       }
