@@ -13,7 +13,7 @@ import { MODEL_NAMES, MAINTENANCE } from "./config";
 import LogoMark from "@/components/LogoMark";
 
 const MODE_META = {
-  "TR-MoE-v2": { label: "TR-HASH MoE 200M v2", detail: "32,004-token experimental SFT", icon: Network },
+  "TR-MoE-v2": { label: "TR-HASH MoE 100M Agentic", detail: "100.4M · 32K Agentic SFT", icon: Network },
   "TR-MoE-v1": { label: "TR-HASH MoE 200M v1", detail: "32,000-token released SFT", icon: Network },
 } satisfies Record<Mode, { label: string; detail: string; icon: typeof Network }>;
 

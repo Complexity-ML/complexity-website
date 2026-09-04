@@ -26,36 +26,36 @@ export interface SuggestionGroup {
 }
 
 export const MAINTENANCE: Partial<Record<Mode, string>> = {
-  "TR-MoE-v2": process.env.NEXT_PUBLIC_TR_HASH_TINY_V2_MAINTENANCE || undefined,
+  "TR-MoE-v2": process.env.NEXT_PUBLIC_TR_HASH_100M_AGENTIC_MAINTENANCE || undefined,
   "TR-MoE-v1": process.env.NEXT_PUBLIC_TR_HASH_TINY_MAINTENANCE || undefined,
 };
 
 export const ENDPOINTS: Record<Mode, string> = {
-  "TR-MoE-v2": process.env.NEXT_PUBLIC_TR_HASH_TINY_V2_API_URL
-    || "https://pacific-i64-tr-hash-tiny-v2.hf.space",
+  "TR-MoE-v2": process.env.NEXT_PUBLIC_TR_HASH_100M_AGENTIC_API_URL
+    || "https://pacific-i64-tr-hash-100m-agentic.hf.space",
   "TR-MoE-v1": process.env.NEXT_PUBLIC_TR_HASH_TINY_API_URL
     || "https://pacific-i64-tr-hash-tiny.hf.space",
 };
 
 export const MODEL_NAMES: Record<Mode, string> = {
-  "TR-MoE-v2": "TR-HASH MoE 200M · Full SFT v2",
+  "TR-MoE-v2": "TR-HASH MoE 100M · Agentic SFT",
   "TR-MoE-v1": "TR-HASH MoE 200M · Full SFT v1",
 };
 
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE-v2":
-    "The experimental 32,004-token full-SFT v2 checkpoint, available for direct comparison.",
+    "The released 100.4M-parameter Agentic SFT checkpoint, trained for three epochs on 200,000 examples with its native 32K tokenizer.",
   "TR-MoE-v1":
     "The released 32,000-token full-SFT checkpoint cited by the public preprint.",
 };
 
 export const FOOTERS: Record<Mode, string> = {
-  "TR-MoE-v2": "TR-HASH MoE 200M · Full SFT v2 · 32,004 tokens · TR-Hash-i64",
+  "TR-MoE-v2": "TR-HASH MoE 100M · Agentic SFT · 32K context · TR-Hash-i64",
   "TR-MoE-v1": "TR-HASH MoE 200M · Full SFT v1 · 32,000 tokens · TR-Hash-i64",
 };
 
 // Keep the public picker intentionally small. These prompts produce concise,
-// factual answers on the stable v1 demo and remain useful smoke tests for v2.
+// factual answers on both public checkpoints.
 const COMMON_SUGGESTIONS: SuggestionGroup[] = [
   {
     label: "AI basics",

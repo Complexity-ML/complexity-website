@@ -3,23 +3,23 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight, GitCompareArrows, Route, Scale, Zap } from "lucide-react";
 import type { Mode } from "./config";
-import { DESCRIPTIONS, SUGGESTIONS } from "./config";
+import { DESCRIPTIONS, MODEL_NAMES, SUGGESTIONS } from "./config";
 
 const MODE_TITLES: Record<Mode, string> = {
-  "TR-MoE-v2": "Chat with TR-HASH MoE SFT v2",
+  "TR-MoE-v2": "Chat with TR-HASH MoE 100M Agentic SFT",
   "TR-MoE-v1": "Chat with TR-HASH MoE SFT v1",
 };
 
 const MODE_DISCLAIMERS: Record<Mode, string> = {
-  "TR-MoE-v2": "Public chat inference from the experimental 32,004-token full-SFT v2 checkpoint. Answers remain experimental.",
+  "TR-MoE-v2": "Public chat inference from the released 100M Agentic SFT checkpoint. Answers remain experimental.",
   "TR-MoE-v1": "Public chat inference from the released 32,000-token full-SFT checkpoint cited by the preprint. Answers remain experimental.",
 };
 
 const proof: Record<Mode, Array<{ icon: typeof Route; label: string; value: string }>> = {
   "TR-MoE-v2": [
     { icon: Route, label: "routing", value: "token-ID hash top-2" },
-    { icon: Scale, label: "scaling", value: "201.2M / ≈162B source tokens" },
-    { icon: Zap, label: "serving", value: "32,004 tokens · TR-Hash-i64" },
+    { icon: Scale, label: "training", value: "100.4M / 200K SFT examples" },
+    { icon: Zap, label: "serving", value: "32K context · TR-Hash-i64" },
   ],
   "TR-MoE-v1": [
     { icon: Route, label: "routing", value: "token-ID hash top-2" },
@@ -49,7 +49,7 @@ export function WelcomeScreen({
         <div>
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/[0.055] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-emerald-200">
             <GitCompareArrows className="size-3.5" />
-            {mode}
+            {MODEL_NAMES[mode]}
           </div>
           <h2 className="max-w-xl text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
             {MODE_TITLES[mode]}
