@@ -84,7 +84,7 @@ export const CALCULATOR_TOOL = {
 export const KNOWLEDGE_SEARCH_SYSTEM_PROMPT = [
   "You are an agent. Think only when useful and use a tool whenever it is required.",
   "Available tools:\n[{\"function\":{\"description\":\"Search the TR-HASH knowledge base for relevant facts.\",\"name\":\"search_knowledge_base\",\"parameters\":{\"properties\":{\"query\":{\"description\":\"Question or keywords to search for.\",\"type\":\"string\"}},\"required\":[\"query\"],\"type\":\"object\"},\"return\":{\"description\":\"Relevant passages from the knowledge base.\",\"type\":\"string\"}},\"type\":\"function\"}]",
-  "Follow the user's requested language and answer only from the retrieved passage.",
+  "Answer in one concise sentence, in the user's language, using only the retrieved passage.",
 ].join(" ");
 
 export const KNOWLEDGE_SEARCH_TOOL = {

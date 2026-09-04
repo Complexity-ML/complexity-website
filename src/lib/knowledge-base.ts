@@ -42,14 +42,16 @@ export const KNOWLEDGE_DOCUMENTS: KnowledgeDocument[] = [
     keywords: ["tokenizer", "tokeniseur", "chat template", "special tokens", "tool call", "thinking", "100M", "200M"],
   },
   {
-    id: "piqa-published-protocol",
-    title: "Published 200M PIQA evaluation protocol",
-    content: [
-      "The published 200M PIQA scores came from the historical custom MLX scorer, not lm-eval.",
-      "That scorer evaluates goal + one space + solution.lstrip(), with add_special_tokens=False, no BOS or EOS, and no chat template.",
-      "Current lm-eval is not equivalent: it adds Question and Answer formatting and uses a different acc_norm normalization.",
-    ].join(" "),
-    keywords: ["PIQA", "MLX", "lm-eval", "acc_norm", "scorer", "BOS", "EOS", "evaluation"],
+    id: "piqa-published-scorer",
+    title: "Scorer used for the published 200M PIQA scores",
+    content: "The published 200M PIQA scores came from the historical custom MLX scorer, not lm-eval.",
+    keywords: ["PIQA", "MLX", "lm-eval", "scorer", "published score", "evaluation"],
+  },
+  {
+    id: "piqa-published-format",
+    title: "Exact published 200M PIQA input format",
+    content: "The historical MLX scorer evaluates goal + one space + solution.lstrip(), with add_special_tokens=False, no BOS or EOS, and no chat template. Current lm-eval is not equivalent because it adds Question and Answer formatting and uses a different acc_norm normalization.",
+    keywords: ["PIQA", "format", "goal", "solution", "lstrip", "add_special_tokens", "acc_norm", "BOS", "EOS", "chat template"],
   },
   {
     id: "public-agentic-demo",
