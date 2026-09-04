@@ -42,6 +42,15 @@ export const MODEL_NAMES: Record<Mode, string> = {
   "TR-MoE-v1": "TR-HASH MoE 200M · Full SFT v1",
 };
 
+export const SYSTEM_PROMPTS: Partial<Record<Mode, string>> = {
+  "TR-MoE-v2": [
+    "You are a helpful, precise assistant.",
+    "Follow the user's requested language, format, and length exactly.",
+    "Answer directly and do not repeat yourself.",
+    "Use internal thinking when it helps. If tools are available and useful, call them; otherwise answer directly.",
+  ].join(" "),
+};
+
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE-v2":
     "The released 100.4M-parameter Agentic SFT checkpoint, trained for three epochs on 200,000 examples with its native 32K tokenizer.",

@@ -2,7 +2,14 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { Mode, Message } from "./config";
-import { DEFAULT_MODE, ENDPOINTS, MAINTENANCE, MODEL_NAMES, modeQueryValue } from "./config";
+import {
+  DEFAULT_MODE,
+  ENDPOINTS,
+  MAINTENANCE,
+  MODEL_NAMES,
+  SYSTEM_PROMPTS,
+  modeQueryValue,
+} from "./config";
 import {
   DEFAULT_SAMPLING_PARAMS,
   DEFAULT_V2_SAMPLING_PARAMS,
@@ -316,11 +323,15 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         setMessages(nextMessages);
       };
 
-      const chatMessages: Array<{
+      const conversationMessages: Array<{
         role: "system" | "user" | "assistant";
         content: string;
       }> = newMessages.map(({ role, content }) => ({ role, content }));
-      chatMessages[chatMessages.length - 1] = { role: "user", content: modelPrompt };
+      conversationMessages[conversationMessages.length - 1] = { role: "user", content: modelPrompt };
+      const systemPrompt = SYSTEM_PROMPTS[mode];
+      const chatMessages = systemPrompt
+        ? [{ role: "system" as const, content: systemPrompt }, ...conversationMessages]
+        : conversationMessages;
 
       // The deployed model is instruction/chat tuned. Send the full
       // conversation through the server-side chat template instead of
