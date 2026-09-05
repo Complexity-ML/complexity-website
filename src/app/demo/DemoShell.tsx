@@ -199,8 +199,7 @@ export function DemoShell() {
   }, [chat.messages.length, chat.streaming, streamedContentLength]);
 
   const handleSend = useCallback(() => {
-    if (!convos.activeId && chat.input.trim()) {
-      if (convos.isFull) return;
+    if (!convos.activeId && chat.input.trim() && !convos.isFull) {
       convos.createConversation(chat.mode);
     }
     chat.sendMessage(undefined, {
