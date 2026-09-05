@@ -155,19 +155,7 @@ function formatDateTimeAnswer(dateTime: Required<Omit<DateTimeResponse, "error">
     : `Paris: ${paris}. UTC: ${utc}.`;
 }
 
-function resolveCalculatorExpression(text: string, proposed: string): string {
-  const workshop = text.match(
-    /\b(\d+(?:\.\d+)?)\s+boxes?\s+of\s+(\d+(?:\.\d+)?)\s+parts?.*?\bremoves?\s+(\d+(?:\.\d+)?)\s+parts?\b/i,
-  );
-  if (workshop) return `${workshop[1]} * ${workshop[2]} - ${workshop[3]}`;
-
-  const frenchBatch = text.match(
-    /\b(\d+(?:[.,]\d+)?)\s+bo[iî]tes?\s+de\s+(\d+(?:[.,]\d+)?)\s+pi[eè]ces?.*?\bretire\s+(\d+(?:[.,]\d+)?)\s+pi[eè]ces?\b/i,
-  );
-  if (frenchBatch) {
-    return `${frenchBatch[1].replace(",", ".")} * ${frenchBatch[2].replace(",", ".")} - ${frenchBatch[3].replace(",", ".")}`;
-  }
-
+function normalizeCalculatorExpression(proposed: string): string {
   return proposed
     .replace(/\\(?:times|cdot)/g, "*")
     .replace(/\\div/g, "/")
@@ -175,37 +163,6 @@ function resolveCalculatorExpression(text: string, proposed: string): string {
     .replace(/÷/g, "/")
     .replace(/[−–—]/g, "-")
     .replace(/\*\*/g, "^");
-}
-
-function extractExplicitCalculatorExpression(text: string): string | null {
-  const structured = resolveCalculatorExpression(text, "");
-  if (structured) return structured;
-
-  const candidate = text
-    .match(/[()\d.,\s+\-*/%^×÷·−–—]+/g)
-    ?.map((part) => part.trim())
-    .filter((part) => /\d/.test(part) && /[+\-*/%^×÷·−–—]/.test(part))
-    .sort((left, right) => right.length - left.length)[0];
-  return candidate ? resolveCalculatorExpression(text, candidate) : null;
-}
-
-function resolveChainedCalculatorExpression(text: string, toolResult: string): string | null {
-  const parameterCount = toolResult.match(/\b(?:exactly\s+)?([\d,._ ]+)\s+trainable parameters?\b/i)?.[1]
-    ?.replace(/[,._ ]/g, "");
-  if (!parameterCount || !/^\d+$/.test(parameterCount)) return null;
-
-  const bytesPerParameter = /\b(?:fp32|32[- ]?bit)\b/i.test(text) ? 4
-    : /\b(?:fp16|bf16|16[- ]?bit)\b/i.test(text) ? 2
-      : /\b(?:int8|8[- ]?bit)\b/i.test(text) ? 1
-        : null;
-  if (!bytesPerParameter) return null;
-
-  const divisor = /\bgib\b/i.test(text) ? 1_073_741_824
-    : /\bmib\b/i.test(text) ? 1_048_576
-      : /\bgb\b/i.test(text) ? 1_000_000_000
-        : /\bmb\b/i.test(text) ? 1_000_000
-          : 1;
-  return `${parameterCount} * ${bytesPerParameter} / ${divisor}`;
 }
 
 function requestedTimezone(text: string): string {
@@ -590,7 +547,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
             ...completionBody(planningMessages, true),
             max_tokens: Math.min(
               params.maxTokens,
-              activeTool.name === "calculator" ? 160 : 96,
+              activeTool.name === "calculator" ? 512 : 96,
             ),
             temperature: 0,
             top_k: 0,
@@ -644,21 +601,10 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           context_metrics: planningContextMetrics,
         };
         const choice = planning.choices?.[0];
-        let parsedToolCall = streamedToolCall;
+        const parsedToolCall = streamedToolCall;
 
         if (!parsedToolCall && activeTool.name === "calculator") {
-          const previousToolResult = [...chatMessages].reverse().find((message) => message.role === "tool")?.content;
-          const fallbackExpression = previousToolResult
-            ? resolveChainedCalculatorExpression(text, previousToolResult)
-            : extractExplicitCalculatorExpression(text);
-          if (fallbackExpression) {
-            parsedToolCall = {
-              function: {
-                name: "calculator",
-                arguments: JSON.stringify({ expression: fallbackExpression }),
-              },
-            };
-          } else if (routedTools.length > 1) {
+          if (routedTools.length > 1) {
             throw new Error("The model did not produce a valid chained calculator call.");
           } else {
             assistantContent = extractPlanningReasoning(choice?.message?.content)
@@ -713,7 +659,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           if (typeof proposedExpression !== "string") {
             throw new Error("The model did not provide a calculator expression.");
           }
-          const expression = resolveCalculatorExpression(text, proposedExpression);
+          const expression = normalizeCalculatorExpression(proposedExpression);
           toolArguments = { expression };
           const callSignature = `${activeTool.name}:${JSON.stringify(toolArguments)}`;
           if (seenToolCalls.has(callSignature)) throw new Error("A repeated tool call was blocked.");
