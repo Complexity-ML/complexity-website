@@ -278,6 +278,9 @@ function requestedResponseStyle(text: string): ResponseStyleName | null {
   if (/\b(?:show|send|give|display|montre|affiche|envoie|donne).{0,24}\b(?:smiley|emoji|emoticon|[eé]motic[oô]ne)\b/i.test(text)) {
     return "explicit_emoji";
   }
+  if (/\b(?:reason(?:ing)?|deduc(?:e|tion)|logic|step by step|explain (?:briefly )?(?:why|your reasoning)|raisonn(?:e|ement)|d[eé]duis|explique (?:bri[eè]vement )?(?:pourquoi|ton raisonnement))\b/i.test(text)) {
+    return "reasoning";
+  }
   const strictOutput = /\b(?:json|yaml|code|table|only|exactly|strict|formal|professional|sans emoji|no emoji|one sentence|two sentences|une phrase|deux phrases)\b/i;
   return strictOutput.test(text) ? null : "emoji";
 }
@@ -290,6 +293,14 @@ function explicitEmojiResponse(text: string): string | null {
   if (/\b(?:love|heart|amour|coeur|cœur)\b/i.test(text)) return "❤️";
   if (/\b(?:laugh|rire|dr[oô]le)\b/i.test(text)) return "😂";
   return "🙂";
+}
+
+function greetingResponse(text: string): string | null {
+  const greeting = text.trim().match(/^(hello|hi|hey|bonjour|salut|coucou)[!?.\s]*$/i)?.[1]?.toLowerCase();
+  if (!greeting) return null;
+  return /^(?:bonjour|salut|coucou)$/.test(greeting)
+    ? "Bonjour ! Comment puis-je vous aider ? 🙂"
+    : "Hello! How can I help? 🙂";
 }
 
 function getActiveTool(name: AgentToolName) {
@@ -547,9 +558,11 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         setMessages(nextMessages);
       };
 
-      const emojiResponse = mode === "TR-MoE-v2" ? explicitEmojiResponse(text) : null;
-      if (emojiResponse) {
-        assistantContent = `<|final_start|>${emojiResponse}<|final_end|>`;
+      const directResponse = mode === "TR-MoE-v2"
+        ? explicitEmojiResponse(text) ?? greetingResponse(text)
+        : null;
+      if (directResponse) {
+        assistantContent = `<|final_start|>${directResponse}<|final_end|>`;
         publishAssistantContent(assistantContent);
         const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
         setTokenStats({ tokens: 0, elapsed: finalElapsed, streaming: false });

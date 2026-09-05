@@ -51,7 +51,7 @@ export const SYSTEM_PROMPTS: Partial<Record<Mode, string>> = {
   ].join(" "),
 };
 
-export type ResponseStyleName = "emoji" | "explicit_emoji";
+export type ResponseStyleName = "emoji" | "explicit_emoji" | "reasoning";
 
 // Optional style modules stay outside the base prompt. The request router
 // selects at most one row, and strict/tool requests receive none.
@@ -60,6 +60,7 @@ export const RESPONSE_STYLE_PROMPT_MATRIX: ReadonlyArray<
 > = [
   ["emoji", ["Use at most one relevant emoji when it feels natural."]],
   ["explicit_emoji", ["The user explicitly requested a smiley or emoji. Reply with exactly one fitting Unicode emoji and no other text."]],
+  ["reasoning", ["Use the optional thinking envelope for this multi-step problem. Then give a concise final answer without repeating the reasoning."]],
 ];
 
 export function getResponseStylePrompt(name: ResponseStyleName): string {
@@ -218,6 +219,13 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
       prompts: [
         "What is 927 × 43? Give only the result.",
         "A workshop packs 17 boxes of 24 parts, then removes 85 parts. How many parts remain?",
+      ],
+    },
+    {
+      label: "reasoning",
+      prompts: [
+        "Paul is taller than Lea. Lea is taller than Sam. Nina is taller than Paul. Who is the shortest? Explain your reasoning briefly.",
+        "All zorps are blue. No blue object is heavy. Can a zorp be heavy? Explain your reasoning briefly.",
       ],
     },
     {
