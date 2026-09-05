@@ -89,6 +89,8 @@ class ArithmeticParser {
 export function evaluateArithmetic(expression: string): string {
   const trimmed = expression
     .trim()
+    .replace(/\\(?:times|cdot)/g, "*")
+    .replace(/\\div/g, "/")
     .replace(/[×·]/g, "*")
     .replace(/÷/g, "/")
     .replace(/[−–—]/g, "-")

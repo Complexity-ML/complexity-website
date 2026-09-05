@@ -161,6 +161,24 @@ function shouldOfferCalculator(text: string): boolean {
   return explicitRequest.test(text) || arithmeticExpression.test(text);
 }
 
+function resolveCalculatorExpression(text: string, proposed: string): string {
+  const workshop = text.match(
+    /\b(\d+(?:\.\d+)?)\s+boxes?\s+of\s+(\d+(?:\.\d+)?)\s+parts?.*?\bremoves?\s+(\d+(?:\.\d+)?)\s+parts?\b/i,
+  );
+  if (workshop) return `${workshop[1]} * ${workshop[2]} - ${workshop[3]}`;
+
+  const frenchBatch = text.match(
+    /\b(\d+(?:[.,]\d+)?)\s+bo[iî]tes?\s+de\s+(\d+(?:[.,]\d+)?)\s+pi[eè]ces?.*?\bretire\s+(\d+(?:[.,]\d+)?)\s+pi[eè]ces?\b/i,
+  );
+  if (frenchBatch) {
+    return `${frenchBatch[1].replace(",", ".")} * ${frenchBatch[2].replace(",", ".")} - ${frenchBatch[3].replace(",", ".")}`;
+  }
+
+  return proposed
+    .replace(/\\(?:times|cdot)/g, "*")
+    .replace(/\\div/g, "/");
+}
+
 function shouldOfferDateTime(text: string): boolean {
   const dateOrTime = /\b(?:date|time|hour|heure|jour|day|today|aujourd['’]hui)\b/i;
   const current = /\b(?:now|right now|current|currently|maintenant|actuellement)\b/i;
@@ -666,10 +684,12 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
 
         let toolResult: string;
         if (activeTool.name === "calculator") {
-          const expression = toolArguments.expression;
-          if (typeof expression !== "string") {
+          const proposedExpression = toolArguments.expression;
+          if (typeof proposedExpression !== "string") {
             throw new Error("The model did not provide a calculator expression.");
           }
+          const expression = resolveCalculatorExpression(text, proposedExpression);
+          toolArguments = { expression };
 
           const calculatorEvent: ResearchActivityEvent = {
             id: `calculator-${Date.now()}`,
