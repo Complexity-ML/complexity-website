@@ -22,6 +22,7 @@ import {
 } from "./sampling";
 import { useEndpointHealth } from "./useEndpointHealth";
 import { useExpertActivity } from "./useExpertActivity";
+import { routeDemoAgentTool } from "@/lib/demo-tool-router";
 
 export interface TokenStats {
   tokens: number;
@@ -154,16 +155,6 @@ function formatDateTimeAnswer(dateTime: Required<Omit<DateTimeResponse, "error">
     : `Paris: ${paris}. UTC: ${utc}.`;
 }
 
-function shouldOfferCalculator(text: string): boolean {
-  const numbers = text.match(/\d+(?:[.,]\d+)?/g) ?? [];
-  if (numbers.length === 0) return false;
-  const explicitRequest = /\b(?:calculat(?:e|or|rice)?|compute|arithmetic|math|calcul(?:e|er|ez)?|combien)\b/i;
-  const arithmeticExpression = /\d(?:[\d\s().]*)(?:\*\*|[+\-*/%^×÷])(?:[\d\s().]*?)\d/;
-  const wordProblem = numbers.length >= 2
-    && /\b(?:times|multipl(?:y|ied)|plus|minus|subtract|remove[sd]?|boxes?|parts?|remain|fois|ajoute|retire|soustrait)\b/i.test(text);
-  return explicitRequest.test(text) || arithmeticExpression.test(text) || wordProblem;
-}
-
 function resolveCalculatorExpression(text: string, proposed: string): string {
   const workshop = text.match(
     /\b(\d+(?:\.\d+)?)\s+boxes?\s+of\s+(\d+(?:\.\d+)?)\s+parts?.*?\bremoves?\s+(\d+(?:\.\d+)?)\s+parts?\b/i,
@@ -180,15 +171,6 @@ function resolveCalculatorExpression(text: string, proposed: string): string {
   return proposed
     .replace(/\\(?:times|cdot)/g, "*")
     .replace(/\\div/g, "/");
-}
-
-function shouldOfferDateTime(text: string): boolean {
-  const dateOrTime = /\b(?:date|time|hour|heure|jour|day|today|aujourd['’]hui)\b/i;
-  const current = /\b(?:now|right now|current|currently|maintenant|actuellement)\b/i;
-  const directQuestion = /\b(?:what time|what date|quelle heure|quel jour|quelle date|heure est-il)\b/i;
-  const timezone = /\b(?:utc|gmt|paris|time ?zone|fuseau horaire)\b/i;
-  return directQuestion.test(text)
-    || (dateOrTime.test(text) && (current.test(text) || timezone.test(text)));
 }
 
 function requestedTimezone(text: string): string {
@@ -276,13 +258,6 @@ function parseStreamedToolCall(
 function shouldOfferEmojiStyle(text: string): boolean {
   const strictOutput = /\b(?:json|yaml|code|table|only|exactly|strict|formal|professional|sans emoji|no emoji|one sentence|two sentences|une phrase|deux phrases)\b/i;
   return !strictOutput.test(text);
-}
-
-function shouldOfferKnowledgeSearch(text: string): boolean {
-  const explicitDomain = /\b(?:tr[- ]?hash|piqa|agentic|acc_norm|lm[- ]eval|mlx)\b/i;
-  const modelReference = /\b(?:100m|200m|model|modele|checkpoint|sft|moe)\b/i;
-  const factRequest = /\b(?:parameter|parameters|parametre|parametres|expert|experts|layer|layers|couche|couches|tokenizer|tokeniseur|architecture|refinement|raffinement|scorer|score|evaluation|eval|training|entrainement|precision|quantization)\b/i;
-  return explicitDomain.test(text) || (modelReference.test(text) && factRequest.test(text));
 }
 
 function newConversationCacheId(): string {
@@ -536,23 +511,14 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
 
       const conversationMessages: ApiMessage[] = newMessages.map(({ role, content }) => ({ role, content }));
       conversationMessages[conversationMessages.length - 1] = { role: "user", content: modelPrompt };
-      const knowledgeSearchEnabled = mode === "TR-MoE-v2"
-        && !options.research
-        && shouldOfferKnowledgeSearch(text);
-      const calculatorEnabled = mode === "TR-MoE-v2"
-        && !options.research
-        && !knowledgeSearchEnabled
-        && shouldOfferCalculator(text);
-      const dateTimeEnabled = mode === "TR-MoE-v2"
-        && !options.research
-        && !calculatorEnabled
-        && !knowledgeSearchEnabled
-        && shouldOfferDateTime(text);
-      const activeTool = calculatorEnabled
+      const routedTool = mode === "TR-MoE-v2" && !options.research
+        ? routeDemoAgentTool(text)
+        : null;
+      const activeTool = routedTool === "calculator"
         ? { name: "calculator" as const, definition: CALCULATOR_TOOL }
-        : knowledgeSearchEnabled
+        : routedTool === "search_knowledge_base"
           ? { name: "search_knowledge_base" as const, definition: KNOWLEDGE_SEARCH_TOOL }
-          : dateTimeEnabled
+          : routedTool === "date_time"
             ? { name: "date_time" as const, definition: DATE_TIME_TOOL }
             : null;
       const baseSystemPrompt = SYSTEM_PROMPTS[mode];
