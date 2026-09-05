@@ -275,14 +275,10 @@ function parseStreamedToolCall(
 }
 
 function requestedResponseStyle(text: string): ResponseStyleName | null {
-  if (/\b(?:show|send|give|display|montre|affiche|envoie|donne).{0,24}\b(?:smiley|emoji|emoticon|[eé]motic[oô]ne)\b/i.test(text)) {
-    return "explicit_emoji";
-  }
   if (/\b(?:reason(?:ing)?|deduc(?:e|tion)|logic|step by step|explain (?:briefly )?(?:why|your reasoning)|raisonn(?:e|ement)|d[eé]duis|explique (?:bri[eè]vement )?(?:pourquoi|ton raisonnement))\b/i.test(text)) {
     return "reasoning";
   }
-  const strictOutput = /\b(?:json|yaml|code|table|only|exactly|strict|formal|professional|sans emoji|no emoji|one sentence|two sentences|une phrase|deux phrases)\b/i;
-  return strictOutput.test(text) ? null : "emoji";
+  return null;
 }
 
 function explicitEmojiResponse(text: string): string | null {
@@ -606,8 +602,8 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
       for (let toolIndex = 0; toolIndex < routedTools.length; toolIndex++) {
         const activeTool = getActiveTool(routedTools[toolIndex]);
         const isLastTool = toolIndex === routedTools.length - 1;
-        const toolSystemPrompt = getToolSystemPrompt(activeTool.name);
-        finalSystemPrompt = toolSystemPrompt;
+        const toolSystemPrompt = getToolSystemPrompt(activeTool.name, "plan");
+        finalSystemPrompt = getToolSystemPrompt(activeTool.name, "final");
         const planningMessages: ApiMessage[] = [
           { role: "system", content: toolSystemPrompt },
           ...chatMessages,

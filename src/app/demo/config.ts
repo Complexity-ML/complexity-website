@@ -43,23 +43,16 @@ export const MODEL_NAMES: Record<Mode, string> = {
 };
 
 export const SYSTEM_PROMPTS: Partial<Record<Mode, string>> = {
-  "TR-MoE-v2": [
-    "You are a helpful, precise assistant.",
-    "Follow the user's requested language, format, and length exactly.",
-    "Answer directly and do not repeat yourself.",
-    "Use internal thinking when it helps.",
-  ].join(" "),
+  "TR-MoE-v2": "Answer directly and briefly in the user's language and requested format.",
 };
 
-export type ResponseStyleName = "emoji" | "explicit_emoji" | "reasoning";
+export type ResponseStyleName = "reasoning";
 
 // Optional style modules stay outside the base prompt. The request router
 // selects at most one row, and strict/tool requests receive none.
 export const RESPONSE_STYLE_PROMPT_MATRIX: ReadonlyArray<
   readonly [ResponseStyleName, readonly string[]]
 > = [
-  ["emoji", ["Use at most one relevant emoji when it feels natural."]],
-  ["explicit_emoji", ["The user explicitly requested a smiley or emoji. Reply with exactly one fitting Unicode emoji and no other text."]],
   ["reasoning", ["Use the optional thinking envelope for this multi-step problem. Then give a concise final answer without repeating the reasoning."]],
 ];
 
@@ -138,40 +131,49 @@ export const DATE_TIME_TOOL = {
 } as const;
 
 export type AgentToolName = "calculator" | "search_knowledge_base" | "date_time";
+export type ToolPromptPhase = "plan" | "final";
 
-// Two-dimensional prompt table: one row per selected tool, with only the
-// phases that tool needs. General chat receives none of these instructions.
+// V-shaped prompt cascade: route into one tool row for planning, then converge
+// on its short final contract without repeating the tool schema.
 export const TOOL_SYSTEM_PROMPT_MATRIX: ReadonlyArray<
-  readonly [AgentToolName, readonly string[]]
+  readonly [AgentToolName, Readonly<Record<ToolPromptPhase, readonly string[]>>]
 > = [
   [
     "calculator",
-    [
-      'For arithmetic, call calculator immediately. Use exact values from prior tool results when present. Copy the complete expression: "A times B" -> "A * B"; "A plus B" -> "A + B"; "subtract B from A" -> "A - B". Do not calculate mentally.',
-      'Available tools:\n[{"function":{"description":"Evaluate arithmetic.","name":"calculator","parameters":{"properties":{"expression":{"type":"string"}},"required":["expression"],"type":"object"}},"type":"function"}]',
-    ],
+    {
+      plan: [
+        'Call calculator immediately. Use exact values from prior tool results. Copy the complete arithmetic expression and do not calculate mentally.',
+        'Available tools:\n[{"function":{"description":"Evaluate arithmetic.","name":"calculator","parameters":{"properties":{"expression":{"type":"string"}},"required":["expression"],"type":"object"}},"type":"function"}]',
+      ],
+      final: ["Return the exact calculator result briefly in the user's requested format."],
+    },
   ],
   [
     "search_knowledge_base",
-    [
-      "Call search_knowledge_base when the answer requires a TR-HASH fact. Use the user's complete question as query.",
-      'Available tools:\n[{"function":{"description":"Search the TR-HASH knowledge base for relevant facts.","name":"search_knowledge_base","parameters":{"properties":{"query":{"type":"string"}},"required":["query"],"type":"object"}},"type":"function"}]',
-      "After the tool result, answer in the user's language using only the retrieved passage.",
-    ],
+    {
+      plan: [
+        "Call search_knowledge_base with the user's complete question.",
+        'Available tools:\n[{"function":{"description":"Search the TR-HASH knowledge base for relevant facts.","name":"search_knowledge_base","parameters":{"properties":{"query":{"type":"string"}},"required":["query"],"type":"object"}},"type":"function"}]',
+      ],
+      final: ["Answer directly and briefly in the user's language using only the retrieved passage."],
+    },
   ],
   [
     "date_time",
-    [
-      "For a current date or time question, call date_time immediately. Do not explain first. Use Europe/Paris when no time zone is specified.",
-      'Available tools:\n[{"function":{"description":"Get the current date and time.","name":"date_time","parameters":{"properties":{"timezone":{"type":"string"}},"type":"object"}},"type":"function"}]',
-    ],
+    {
+      plan: [
+        "Call date_time immediately. Use Europe/Paris when no time zone is specified.",
+        'Available tools:\n[{"function":{"description":"Get the current date and time.","name":"date_time","parameters":{"properties":{"timezone":{"type":"string"}},"type":"object"}},"type":"function"}]',
+      ],
+      final: ["Return the exact date and time briefly in the user's requested format."],
+    },
   ],
 ];
 
-export function getToolSystemPrompt(name: AgentToolName): string {
+export function getToolSystemPrompt(name: AgentToolName, phase: ToolPromptPhase = "plan"): string {
   const row = TOOL_SYSTEM_PROMPT_MATRIX.find(([toolName]) => toolName === name);
   if (!row) throw new Error(`Missing system prompt for tool: ${name}`);
-  return row[1].join("\n");
+  return row[1][phase].join("\n");
 }
 
 export const DESCRIPTIONS: Record<Mode, string> = {
