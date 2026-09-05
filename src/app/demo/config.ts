@@ -126,7 +126,7 @@ export const TOOL_SYSTEM_PROMPT_MATRIX: ReadonlyArray<
     "calculator",
     {
       plan: [
-        "Translate the entire problem into one expression, including every addition or removal. Use only digits, parentheses, decimal dots, and + - * / % ^. Then call calculator immediately; do not calculate mentally.",
+        'Translate the whole problem before calling calculator. Example: "3 boxes of 4, then remove 2" means {"expression":"3*4-2"}. Include every operation and use only digits, parentheses, decimal dots, and + - * / % ^.',
         'Available tools:\n[{"function":{"description":"Evaluate arithmetic.","name":"calculator","parameters":{"properties":{"expression":{"type":"string"}},"required":["expression"],"type":"object"}},"type":"function"}]',
       ],
       final: ["Return the exact calculator result briefly in the user's requested format."],
