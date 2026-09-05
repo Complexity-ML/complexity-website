@@ -155,10 +155,13 @@ function formatDateTimeAnswer(dateTime: Required<Omit<DateTimeResponse, "error">
 }
 
 function shouldOfferCalculator(text: string): boolean {
-  if (!/\d/.test(text)) return false;
-  const explicitRequest = /\b(?:calculat(?:e|or|rice)?|compute|arithmetic|math|calcul(?:e|er|ez)?|combien|how many)\b/i;
+  const numbers = text.match(/\d+(?:[.,]\d+)?/g) ?? [];
+  if (numbers.length === 0) return false;
+  const explicitRequest = /\b(?:calculat(?:e|or|rice)?|compute|arithmetic|math|calcul(?:e|er|ez)?|combien)\b/i;
   const arithmeticExpression = /\d(?:[\d\s().]*)(?:\*\*|[+\-*/%^×÷])(?:[\d\s().]*?)\d/;
-  return explicitRequest.test(text) || arithmeticExpression.test(text);
+  const wordProblem = numbers.length >= 2
+    && /\b(?:times|multipl(?:y|ied)|plus|minus|subtract|remove[sd]?|boxes?|parts?|remain|fois|ajoute|retire|soustrait)\b/i.test(text);
+  return explicitRequest.test(text) || arithmeticExpression.test(text) || wordProblem;
 }
 
 function resolveCalculatorExpression(text: string, proposed: string): string {
@@ -533,13 +536,13 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
 
       const conversationMessages: ApiMessage[] = newMessages.map(({ role, content }) => ({ role, content }));
       conversationMessages[conversationMessages.length - 1] = { role: "user", content: modelPrompt };
-      const calculatorEnabled = mode === "TR-MoE-v2"
-        && !options.research
-        && shouldOfferCalculator(text);
       const knowledgeSearchEnabled = mode === "TR-MoE-v2"
         && !options.research
-        && !calculatorEnabled
         && shouldOfferKnowledgeSearch(text);
+      const calculatorEnabled = mode === "TR-MoE-v2"
+        && !options.research
+        && !knowledgeSearchEnabled
+        && shouldOfferCalculator(text);
       const dateTimeEnabled = mode === "TR-MoE-v2"
         && !options.research
         && !calculatorEnabled
