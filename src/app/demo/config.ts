@@ -51,6 +51,22 @@ export const SYSTEM_PROMPTS: Partial<Record<Mode, string>> = {
   ].join(" "),
 };
 
+export type ResponseStyleName = "emoji";
+
+// Optional style modules stay outside the base prompt. The request router
+// selects at most one row, and strict/tool requests receive none.
+export const RESPONSE_STYLE_PROMPT_MATRIX: ReadonlyArray<
+  readonly [ResponseStyleName, readonly string[]]
+> = [
+  ["emoji", ["Use at most one relevant emoji when it feels natural."]],
+];
+
+export function getResponseStylePrompt(name: ResponseStyleName): string {
+  const row = RESPONSE_STYLE_PROMPT_MATRIX.find(([styleName]) => styleName === name);
+  if (!row) throw new Error(`Missing response style prompt: ${name}`);
+  return row[1].join("\n");
+}
+
 export const CALCULATOR_TOOL = {
   type: "function",
   function: {
@@ -97,7 +113,29 @@ export const KNOWLEDGE_SEARCH_TOOL = {
   },
 } as const;
 
-export type AgentToolName = "calculator" | "search_knowledge_base";
+export const DATE_TIME_TOOL = {
+  type: "function",
+  function: {
+    name: "date_time",
+    description: "Get the current date and time in UTC, Europe/Paris, and a requested IANA time zone.",
+    parameters: {
+      type: "object",
+      properties: {
+        timezone: {
+          type: "string",
+          description: "IANA time zone. Use Europe/Paris for Paris and UTC for UTC.",
+        },
+      },
+      additionalProperties: false,
+    },
+    return: {
+      description: "The same current instant formatted in UTC, Europe/Paris, and the requested time zone.",
+      type: "object",
+    },
+  },
+} as const;
+
+export type AgentToolName = "calculator" | "search_knowledge_base" | "date_time";
 
 // Two-dimensional prompt table: one row per selected tool, with only the
 // phases that tool needs. General chat receives none of these instructions.
@@ -107,7 +145,7 @@ export const TOOL_SYSTEM_PROMPT_MATRIX: ReadonlyArray<
   [
     "calculator",
     [
-      'For arithmetic, call calculator immediately. Copy the complete expression: "A times B" -> "A * B"; "A plus B" -> "A + B"; "subtract B from A" -> "A - B". Do not calculate mentally. After a tool result, copy it exactly.',
+      'For arithmetic, call calculator immediately. Copy the complete expression: "A times B" -> "A * B"; "A plus B" -> "A + B"; "subtract B from A" -> "A - B". Do not calculate mentally.',
       'Available tools:\n[{"function":{"description":"Evaluate arithmetic.","name":"calculator","parameters":{"properties":{"expression":{"type":"string"}},"required":["expression"],"type":"object"}},"type":"function"}]',
     ],
   ],
@@ -117,6 +155,13 @@ export const TOOL_SYSTEM_PROMPT_MATRIX: ReadonlyArray<
       "Call search_knowledge_base when the answer requires a TR-HASH fact. Use the user's complete question as query.",
       'Available tools:\n[{"function":{"description":"Search the TR-HASH knowledge base for relevant facts.","name":"search_knowledge_base","parameters":{"properties":{"query":{"type":"string"}},"required":["query"],"type":"object"}},"type":"function"}]',
       "After the tool result, answer in the user's language using only the retrieved passage.",
+    ],
+  ],
+  [
+    "date_time",
+    [
+      "For a current date or time question, call date_time immediately. Do not explain first. Use Europe/Paris when no time zone is specified.",
+      'Available tools:\n[{"function":{"description":"Get the current date and time.","name":"date_time","parameters":{"properties":{"timezone":{"type":"string"}},"type":"object"}},"type":"function"}]',
     ],
   ],
 ];
@@ -170,8 +215,15 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
     {
       label: "calculator",
       prompts: [
-        "Use the calculator to compute 927 × 43. Give only the result.",
-        "Use the calculator to compute (17 × 24 - 85) ÷ 17. Explain the result in one sentence.",
+        "What is 927 × 43? Give only the result.",
+        "A workshop packs 17 boxes of 24 parts, then removes 85 parts. How many parts remain?",
+      ],
+    },
+    {
+      label: "date & time",
+      prompts: [
+        "What time is it in Paris right now? Include UTC.",
+        "Quelle date et quelle heure est-il actuellement à Paris et en UTC ?",
       ],
     },
     {

@@ -4,12 +4,14 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import type { Mode, Message } from "./config";
 import {
   CALCULATOR_TOOL,
+  DATE_TIME_TOOL,
   DEFAULT_MODE,
   ENDPOINTS,
   MAINTENANCE,
   MODEL_NAMES,
   KNOWLEDGE_SEARCH_TOOL,
   SYSTEM_PROMPTS,
+  getResponseStylePrompt,
   getToolSystemPrompt,
   modeQueryValue,
 } from "./config";
@@ -120,11 +122,75 @@ interface KnowledgeSearchResponse {
   error?: string;
 }
 
+interface DateTimeResponse {
+  instant_utc?: string;
+  utc?: DateTimeValue;
+  paris?: DateTimeValue;
+  requested?: DateTimeValue;
+  error?: string;
+}
+
+interface DateTimeValue {
+  timezone: string;
+  date: string;
+  time: string;
+  weekday: string;
+  utc_offset: string;
+}
+
+function formatDateTimeAnswer(dateTime: Required<Omit<DateTimeResponse, "error">>, text: string): string {
+  const instant = new Date(dateTime.instant_utc);
+  const french = /\b(?:quelle?|heure|actuellement|maintenant|aujourd['’]hui)\b/i.test(text);
+  const locale = french ? "fr-FR" : "en-GB";
+  const format = (timezone: string) => new Intl.DateTimeFormat(locale, {
+    timeZone: timezone,
+    dateStyle: "full",
+    timeStyle: "medium",
+  }).format(instant);
+  const paris = `${format("Europe/Paris")} (${dateTime.paris.utc_offset})`;
+  const utc = `${format("UTC")} (${dateTime.utc.utc_offset})`;
+  return french
+    ? `À Paris : ${paris}. En UTC : ${utc}.`
+    : `Paris: ${paris}. UTC: ${utc}.`;
+}
+
 function shouldOfferCalculator(text: string): boolean {
   if (!/\d/.test(text)) return false;
-  const explicitRequest = /\b(?:calculat(?:e|or|rice)?|compute|arithmetic|math|calcul(?:e|er|ez)?|combien)\b/i;
+  const explicitRequest = /\b(?:calculat(?:e|or|rice)?|compute|arithmetic|math|calcul(?:e|er|ez)?|combien|how many)\b/i;
   const arithmeticExpression = /\d(?:[\d\s().]*)(?:\*\*|[+\-*/%^×÷])(?:[\d\s().]*?)\d/;
   return explicitRequest.test(text) || arithmeticExpression.test(text);
+}
+
+function shouldOfferDateTime(text: string): boolean {
+  const dateOrTime = /\b(?:date|time|hour|heure|jour|day|today|aujourd['’]hui)\b/i;
+  const current = /\b(?:now|right now|current|currently|maintenant|actuellement)\b/i;
+  const directQuestion = /\b(?:what time|what date|quelle heure|quel jour|quelle date|heure est-il)\b/i;
+  const timezone = /\b(?:utc|gmt|paris|time ?zone|fuseau horaire)\b/i;
+  return directQuestion.test(text)
+    || (dateOrTime.test(text) && (current.test(text) || timezone.test(text)));
+}
+
+function requestedTimezone(text: string): string {
+  const explicitIana = text.match(/\b[A-Za-z]+\/[A-Za-z_+-]+\b/)?.[0];
+  if (explicitIana) return explicitIana;
+  if (/\bparis\b/i.test(text)) return "Europe/Paris";
+  if (/\b(?:utc|gmt)\b/i.test(text)) return "UTC";
+  return "Europe/Paris";
+}
+
+function extractPlanningReasoning(content: string | null | undefined): string {
+  if (!content) return "";
+  const startTag = "<|think_start|>";
+  const endTag = "<|think_end|>";
+  const start = content.indexOf(startTag);
+  const end = content.indexOf(endTag, start + startTag.length);
+  if (start < 0 || end < 0) return "";
+  return content.slice(start, end + endTag.length);
+}
+
+function shouldOfferEmojiStyle(text: string): boolean {
+  const strictOutput = /\b(?:json|yaml|code|table|only|exactly|strict|formal|professional|sans emoji|no emoji|one sentence|two sentences|une phrase|deux phrases)\b/i;
+  return !strictOutput.test(text);
 }
 
 function shouldOfferKnowledgeSearch(text: string): boolean {
@@ -392,14 +458,24 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         && !options.research
         && !calculatorEnabled
         && shouldOfferKnowledgeSearch(text);
+      const dateTimeEnabled = mode === "TR-MoE-v2"
+        && !options.research
+        && !calculatorEnabled
+        && !knowledgeSearchEnabled
+        && shouldOfferDateTime(text);
       const activeTool = calculatorEnabled
         ? { name: "calculator" as const, definition: CALCULATOR_TOOL }
         : knowledgeSearchEnabled
           ? { name: "search_knowledge_base" as const, definition: KNOWLEDGE_SEARCH_TOOL }
-          : null;
+          : dateTimeEnabled
+            ? { name: "date_time" as const, definition: DATE_TIME_TOOL }
+            : null;
+      const baseSystemPrompt = SYSTEM_PROMPTS[mode];
       const systemPrompt = activeTool
         ? getToolSystemPrompt(activeTool.name)
-        : SYSTEM_PROMPTS[mode];
+        : mode === "TR-MoE-v2" && baseSystemPrompt && shouldOfferEmojiStyle(text)
+          ? `${baseSystemPrompt}\n${getResponseStylePrompt("emoji")}`
+          : baseSystemPrompt;
       let chatMessages: ApiMessage[] = systemPrompt
         ? [{ role: "system", content: systemPrompt }, ...conversationMessages]
         : conversationMessages;
@@ -451,7 +527,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         );
         if (planning.context_metrics) setContextMetrics(planning.context_metrics);
 
-        if (!parsedToolCall && activeTool.name !== "search_knowledge_base") {
+        if (!parsedToolCall && activeTool.name === "calculator") {
           assistantContent = choice?.message?.content ?? "";
           tokenCountRef.current = planning.usage?.completion_tokens ?? 0;
           publishAssistantContent(assistantContent);
@@ -463,12 +539,25 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           return;
         }
 
-        const toolCall = parsedToolCall ?? {
-          function: {
-            name: "search_knowledge_base",
-            arguments: JSON.stringify({ query: text }),
-          },
-        };
+        const toolCall = parsedToolCall ?? (activeTool.name === "search_knowledge_base"
+          ? {
+            function: {
+              name: "search_knowledge_base",
+              arguments: JSON.stringify({ query: text }),
+            },
+          }
+          : {
+            function: {
+              name: "date_time",
+              arguments: JSON.stringify({ timezone: "Europe/Paris" }),
+            },
+          });
+
+        const planningReasoning = extractPlanningReasoning(choice?.message?.content);
+        if (planningReasoning) {
+          assistantContent = planningReasoning;
+          publishAssistantContent(assistantContent);
+        }
 
         let toolArguments: Record<string, unknown>;
         try {
@@ -505,13 +594,25 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
             throw new Error(calculation.error || "The calculator could not evaluate the expression.");
           }
 
-          toolResult = `Exact calculator result: ${calculation.result}`;
           setResearchEvents((events) => events.map((event) => (
             event.id === calculatorEvent.id
               ? { ...event, detail: `Result · ${calculation.result}`, active: false }
               : event
           )));
-        } else {
+
+          assistantContent = `${planningReasoning}<|final_start|>${calculation.result}<|final_end|>`;
+          publishAssistantContent(assistantContent);
+          const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
+          setTokenStats({
+            tokens: planning.usage?.completion_tokens ?? 0,
+            elapsed: finalElapsed,
+            streaming: false,
+          });
+          setStreaming(false);
+          setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
+          abortControllerRef.current = null;
+          return;
+        } else if (activeTool.name === "search_knowledge_base") {
           const query = toolArguments.query;
           if (typeof query !== "string") {
             throw new Error("The model did not provide a knowledge-base query.");
@@ -549,6 +650,66 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
               }
               : event
           )));
+        } else {
+          // The model chooses whether to call the tool; the runtime resolves
+          // the requested zone from the user's words so a tiny model cannot
+          // silently substitute an unrelated zone in otherwise valid JSON.
+          const timezone = requestedTimezone(text);
+          toolArguments = { timezone };
+          const dateTimeEvent: ResearchActivityEvent = {
+            id: `date-time-${Date.now()}`,
+            label: `Date & time · ${timezone}`,
+            detail: "Reading the current instant…",
+            active: true,
+          };
+          setResearchEvents((events) => [dateTimeEvent, ...events]);
+          const dateTimeResponse = await fetch("/api/tools/date-time", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ timezone }),
+            cache: "no-store",
+            signal: controller.signal,
+          });
+          const dateTime = await dateTimeResponse.json() as DateTimeResponse;
+          if (
+            !dateTimeResponse.ok
+            || !dateTime.instant_utc
+            || !dateTime.utc
+            || !dateTime.paris
+            || !dateTime.requested
+          ) {
+            throw new Error(dateTime.error || "The date and time tool is unavailable.");
+          }
+
+          toolResult = JSON.stringify(dateTime);
+          setResearchEvents((events) => events.map((event) => (
+            event.id === dateTimeEvent.id
+              ? {
+                ...event,
+                detail: `${dateTime.requested!.date} · ${dateTime.requested!.time} · ${dateTime.requested!.utc_offset}`,
+                active: false,
+              }
+              : event
+          )));
+
+          const exactAnswer = formatDateTimeAnswer({
+            instant_utc: dateTime.instant_utc,
+            utc: dateTime.utc,
+            paris: dateTime.paris,
+            requested: dateTime.requested,
+          }, text);
+          assistantContent = `${planningReasoning}<|final_start|>${exactAnswer}<|final_end|>`;
+          publishAssistantContent(assistantContent);
+          const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
+          setTokenStats({
+            tokens: planning.usage?.completion_tokens ?? 0,
+            elapsed: finalElapsed,
+            streaming: false,
+          });
+          setStreaming(false);
+          setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
+          abortControllerRef.current = null;
+          return;
         }
 
         const canonicalToolCall = `<|tool_call_start|>${JSON.stringify({ name: activeTool.name, arguments: toolArguments })}<|tool_call_end|>`;
