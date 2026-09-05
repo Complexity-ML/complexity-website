@@ -274,24 +274,6 @@ function parseStreamedToolCall(
   }
 }
 
-function explicitEmojiResponse(text: string): string | null {
-  if (!/\b(?:show|send|give|display|montre|affiche|envoie|donne).{0,24}\b(?:smiley|emoji|emoticon|[eé]motic[oô]ne)\b/i.test(text)) {
-    return null;
-  }
-  if (/\b(?:sad|triste|cry|pleure)\b/i.test(text)) return "😢";
-  if (/\b(?:love|heart|amour|coeur|cœur)\b/i.test(text)) return "❤️";
-  if (/\b(?:laugh|rire|dr[oô]le)\b/i.test(text)) return "😂";
-  return "🙂";
-}
-
-function greetingResponse(text: string): string | null {
-  const greeting = text.trim().match(/^(hello|hi|hey|bonjour|salut|coucou)[!?.\s]*$/i)?.[1]?.toLowerCase();
-  if (!greeting) return null;
-  return /^(?:bonjour|salut|coucou)$/.test(greeting)
-    ? "Bonjour ! Comment puis-je vous aider ? 🙂"
-    : "Hello! How can I help? 🙂";
-}
-
 function getActiveTool(name: AgentToolName) {
   if (name === "calculator") return { name, definition: CALCULATOR_TOOL };
   if (name === "search_knowledge_base") return { name, definition: KNOWLEDGE_SEARCH_TOOL };
@@ -528,10 +510,11 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
       messagesRef.current = initialAssistantMessages;
       setMessages(initialAssistantMessages);
 
-      const publishAssistantContent = (content: string) => {
+      const publishAssistantContent = (content: string, replace = false) => {
         const previous = messagesRef.current[messagesRef.current.length - 1];
         if (
-          previous?.role === "assistant"
+          !replace
+          && previous?.role === "assistant"
           && previous.createdAt === assistantCreatedAt
           && previous.content.length > content.length
         ) {
@@ -545,19 +528,6 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         messagesRef.current = nextMessages;
         setMessages(nextMessages);
       };
-
-      const directResponse = mode === "TR-MoE-v2"
-        ? explicitEmojiResponse(text) ?? greetingResponse(text)
-        : null;
-      if (directResponse) {
-        assistantContent = `<|final_start|>${directResponse}<|final_end|>`;
-        publishAssistantContent(assistantContent);
-        const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
-        setTokenStats({ tokens: 0, elapsed: finalElapsed, streaming: false });
-        setStreaming(false);
-        abortControllerRef.current = null;
-        return;
-      }
 
       const conversationMessages: ApiMessage[] = newMessages.map(({ role, content }) => ({ role, content }));
       conversationMessages[conversationMessages.length - 1] = { role: "user", content: modelPrompt };
@@ -765,7 +735,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
                 : /\b(?:bytes?|octets?)\b/i.test(text) ? " bytes"
                   : "";
             assistantContent = `${toolReasoning}<|final_start|>${calculation.result}${unit}<|final_end|>`;
-            publishAssistantContent(assistantContent);
+            publishAssistantContent(assistantContent, true);
             const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
             setTokenStats({ tokens: completedToolTokens, elapsed: finalElapsed, streaming: false });
             setStreaming(false);
@@ -819,7 +789,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
             const passage = search.passage?.trim();
             if (!passage) throw new Error("The retrieved TR-HASH passage is empty.");
             assistantContent = `${toolReasoning}<|final_start|>${passage}<|final_end|>`;
-            publishAssistantContent(assistantContent);
+            publishAssistantContent(assistantContent, true);
             const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
             setTokenStats({ tokens: completedToolTokens, elapsed: finalElapsed, streaming: false });
             setStreaming(false);
@@ -880,7 +850,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
               requested: dateTime.requested,
             }, text);
             assistantContent = `${toolReasoning}<|final_start|>${exactAnswer}<|final_end|>`;
-            publishAssistantContent(assistantContent);
+            publishAssistantContent(assistantContent, true);
             const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
             setTokenStats({ tokens: completedToolTokens, elapsed: finalElapsed, streaming: false });
             setStreaming(false);
