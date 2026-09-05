@@ -1,0 +1,44 @@
+{
+  "model": "AETHORIA-AI/TR-HASH-MoE-100M-70B-Agentic-SFT",
+  "model_revision": "4c425df646f6e336a70b2c91ce0320f5acacd417",
+  "precision": "float16",
+  "zero_shot": true,
+  "scoring": "causal_choice_loglikelihood",
+  "chat_template_applied": false,
+  "max_length": 2048,
+  "benchmarks": {
+    "arc_easy": {
+      "examples": 2376,
+      "correct": 1187,
+      "accuracy": 0.49957912457912457,
+      "correct_length_normalized": 1061,
+      "length_normalized_accuracy": 0.44654882154882153
+    },
+    "arc_challenge": {
+      "examples": 1172,
+      "correct": 268,
+      "accuracy": 0.22866894197952217,
+      "correct_length_normalized": 298,
+      "length_normalized_accuracy": 0.25426621160409557
+    },
+    "arc_combined": {
+      "examples": 3548,
+      "correct": 1455,
+      "accuracy": 0.41009019165727173,
+      "correct_length_normalized": 1359,
+      "length_normalized_accuracy": 0.383032694475761
+    },
+    "hellaswag": {
+      "examples": 10042,
+      "correct": 3052,
+      "accuracy": 0.30392352121091415,
+      "correct_length_normalized": 3269,
+      "length_normalized_accuracy": 0.3255327623979287
+    }
+  },
+  "notes": [
+    "ARC Combined is the micro-average over every ARC-Easy and ARC-Challenge test example.",
+    "No chat template or special tokens were applied during causal-choice scoring.",
+    "GSM8K was evaluated separately as an unpublished internal generative probe and is intentionally absent from this report."
+  ]
+}

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowUpRight, BookOpen, Box, CheckCircle2, Network, ScanSearch } from "lucide-react";
+import { ArrowUpRight, BookOpen, Bot, Box, CheckCircle2, Network, ScanSearch } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navigation from "@/components/Navigation";
 import SectionHeading from "@/components/SectionHeading";
@@ -13,7 +13,7 @@ type ModelLink = { label: string; href: string };
 type Model = {
   id: string;
   icon: typeof ScanSearch;
-  tone: "cyan" | "amber" | "violet";
+  tone: "cyan" | "amber" | "emerald" | "violet";
   status?: string;
   name: string;
   kicker: string;
@@ -26,6 +26,7 @@ type Model = {
 const tones: Record<Model["tone"], { border: string; bg: string; text: string; statText: string }> = {
   cyan: { border: "border-cyan-400/20", bg: "bg-cyan-400/[0.04]", text: "text-cyan-200", statText: "text-cyan-100" },
   amber: { border: "border-amber-400/20", bg: "bg-amber-400/[0.04]", text: "text-amber-200", statText: "text-amber-100" },
+  emerald: { border: "border-emerald-400/20", bg: "bg-emerald-400/[0.04]", text: "text-emerald-200", statText: "text-emerald-100" },
   violet: { border: "border-violet-400/20", bg: "bg-violet-400/[0.04]", text: "text-violet-200", statText: "text-violet-100" },
 };
 
@@ -61,6 +62,38 @@ const models: Model[] = [
       { label: "≈162B refinement", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-200M-160B-Refinement" },
       { label: "Live demo", href: "https://huggingface.co/spaces/Pacific-i64/TR-hash-tiny" },
       { label: "Interactive paper", href: "https://huggingface.co/spaces/Pacific-i64/Token-Routing-Interactive-Paper" },
+    ],
+  },
+  {
+    id: "100m-agentic",
+    icon: Bot,
+    tone: "emerald",
+    status: "Released · Agentic SFT live",
+    name: "TR-HASH MoE 100M Agentic",
+    kicker: "125B pretraining lineage → refinement checkpoint → full SFT",
+    stats: [
+      { value: "100.4M", label: "parameters" },
+      { value: "65.13%", label: "PIQA accuracy (direct-final)" },
+      { value: "49.96%", label: "ARC-Easy accuracy" },
+      { value: "22.87%", label: "ARC-Challenge accuracy" },
+      { value: "41.01%", label: "Combined ARC accuracy" },
+      { value: "30.39%", label: "HellaSwag accuracy" },
+    ],
+    description: [
+      "The released assistant contains exactly 100,366,720 parameters and starts from token_pack_014_213622 in the public 100M Agentic refinement archive. It preserves deterministic top-2 token-ID routing across four experts, a shared SwiGLU path, 10 transformer layers and causal GQA.",
+      "Full-parameter instruction tuning ran for three epochs on 200,000 training examples, with 10,000 held-out examples and exact PIQA decontamination. The run uses the model's native 32K Agentic tokenizer and chat boundaries with a 2,048-token sequence length. Its supervised targets cover direct final answers and tool calls; they do not contain synthetic thinking traces.",
+      "The selected step 9,429 reduced matched validation loss from 1.876376 to 1.283129, a 31.62% relative reduction. On the complete public zero-shot splits, causal-choice scoring reaches 49.96% ARC-Easy, 22.87% ARC-Challenge, 41.01% Combined ARC and 30.39% HellaSwag accuracy. The complete 1,838-example PIQA validation split uses the separate Agentic direct-final protocol and reaches 65.13% accuracy.",
+    ],
+    links: [
+      { label: "Try the 100M Agentic chat", href: "/ai-lab?model=v2" },
+      { label: "Model weights", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-100M-70B-Agentic-SFT" },
+      { label: "Refinement archive", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-100M-70B-Agentic-Refinement" },
+      { label: "125B pretrain", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-MoE-100M-125B-Agentic-Pretraining" },
+      { label: "Agentic tokenizer", href: "https://huggingface.co/AETHORIA-AI/TR-HASH-Tokenizer-32K-Agentic" },
+      { label: "SFT dataset", href: "https://huggingface.co/datasets/AETHORIA-AI/TR-HASH-Agentic-SFT-32K-21K" },
+      { label: "Benchmark report", href: "/reports/tr-hash-100m-agentic-sft-zero-shot.json" },
+      { label: "Code", href: "https://github.com/Complexity-ML/complexity-framework" },
+      { label: "Live demo", href: "https://huggingface.co/spaces/Pacific-i64/TR-HASH-100M-Agentic" },
     ],
   },
   {
@@ -119,8 +152,8 @@ export default function ModelsPage() {
         <div className="site-shell relative z-10">
           <SectionHeading
             eyebrow="Model releases"
-            title="Three generations, tracked honestly."
-            description="Every checkpoint below ships with the numbers that actually happened — including interrupted runs and experiments that did not pass promotion. Compact vision, the first end-to-end pretrain, and the released 200M full-SFT lineage."
+            title="Four releases, tracked honestly."
+            description="Every checkpoint below ships with the numbers that actually happened — including interrupted runs and experiments that did not pass promotion. The released 200M and 100M Agentic assistants, compact vision, and the first end-to-end pretrain."
           />
         </div>
       </section>

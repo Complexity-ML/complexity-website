@@ -3,12 +3,12 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Models — Complexity ML",
   description:
-    "TR-HASH Vision v8, the 492.1M/20B-token first pretrain, and the released TR-HASH MoE 200M full-SFT lineage — every checkpoint with its real numbers.",
-  keywords: ["TR-Hash", "model releases", "MoE", "object detection", "Complexity ML"],
+    "The released TR-HASH MoE 200M and 100M Agentic assistants, TR-HASH Vision v8, and the 492.1M/20B-token first pretrain — every checkpoint with its real numbers.",
+  keywords: ["TR-Hash", "model releases", "MoE", "Agentic SFT", "object detection", "Complexity ML"],
   openGraph: {
     title: "Models — Complexity ML",
     description:
-      "TR-HASH Vision v8, the 492.1M/20B-token first pretrain, and the released TR-HASH MoE 200M full-SFT lineage.",
+      "The released TR-HASH MoE 200M and 100M Agentic assistants, TR-HASH Vision v8, and the 492.1M/20B-token first pretrain.",
     url: "https://www.complexity-ai.fr/models",
     siteName: "Complexity ML",
     type: "website",
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Models — Complexity ML",
     description:
-      "TR-HASH Vision v8, the 492.1M/20B-token first pretrain, and the released TR-HASH MoE 200M full-SFT lineage.",
+      "The released TR-HASH MoE 200M and 100M Agentic assistants, TR-HASH Vision v8, and the 492.1M/20B-token first pretrain.",
   },
   alternates: {
     canonical: "https://www.complexity-ai.fr/models",
