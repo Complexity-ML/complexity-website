@@ -689,7 +689,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
             },
           });
 
-        const planningReasoning = extractPlanningReasoning(choice?.message?.content);
+        const planningReasoning = visiblePlanningReasoning(choice?.message?.content ?? "");
         if (planningReasoning) {
           toolReasoning += planningReasoning;
           assistantContent = toolReasoning;
