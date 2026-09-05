@@ -188,6 +188,70 @@ function extractPlanningReasoning(content: string | null | undefined): string {
   return content.slice(start, end + endTag.length);
 }
 
+function visiblePlanningReasoning(content: string): string {
+  const startTag = "<|think_start|>";
+  const endTag = "<|think_end|>";
+  const start = content.indexOf(startTag);
+  if (start < 0) return "";
+  const end = content.indexOf(endTag, start + startTag.length);
+  return end < 0
+    ? content.slice(start)
+    : content.slice(start, end + endTag.length);
+}
+
+function firstJsonObject(content: string): string | null {
+  const start = content.indexOf("{");
+  if (start < 0) return null;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let index = start; index < content.length; index++) {
+    const char = content[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"') inString = true;
+    else if (char === "{") depth++;
+    else if (char === "}") {
+      depth--;
+      if (depth === 0) return content.slice(start, index + 1);
+    }
+  }
+  return null;
+}
+
+function parseStreamedToolCall(
+  content: string,
+  expectedName: string,
+): ToolCallResponse | null {
+  const thinkEnd = content.lastIndexOf("<|think_end|>");
+  const toolStart = content.lastIndexOf("<|tool_call_start|>");
+  const payload = toolStart >= 0
+    ? content.slice(toolStart + "<|tool_call_start|>".length)
+    : thinkEnd >= 0
+      ? content.slice(thinkEnd + "<|think_end|>".length)
+      : content;
+  const json = firstJsonObject(payload);
+  if (!json) return null;
+  try {
+    const parsed = JSON.parse(json) as { name?: unknown; arguments?: unknown };
+    if (parsed.name !== expectedName || !parsed.arguments || typeof parsed.arguments !== "object") {
+      return null;
+    }
+    return {
+      function: {
+        name: expectedName,
+        arguments: JSON.stringify(parsed.arguments),
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
 function shouldOfferEmojiStyle(text: string): boolean {
   const strictOutput = /\b(?:json|yaml|code|table|only|exactly|strict|formal|professional|sans emoji|no emoji|one sentence|two sentences|une phrase|deux phrases)\b/i;
   return !strictOutput.test(text);
@@ -501,7 +565,8 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            ...completionBody(chatMessages, false),
+            ...completionBody(chatMessages, true),
+            max_tokens: Math.min(params.maxTokens, 256),
             temperature: 0,
             top_k: 0,
             top_p: 1,
@@ -520,15 +585,46 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           );
         }
 
-        const planning = await planningResponse.json() as ChatCompletionResponse;
+        let planningContent = "";
+        let planningTokens = 0;
+        let planningContextMetrics: ContextMetrics | undefined;
+        for await (const chunk of readSSE(planningResponse)) {
+          if (controller.signal.aborted) break;
+          if (chunk.contextMetrics) {
+            planningContextMetrics = chunk.contextMetrics;
+            setContextMetrics(chunk.contextMetrics);
+          }
+          if (!chunk.content) continue;
+          planningContent += chunk.content;
+          planningTokens++;
+          const visibleReasoning = visiblePlanningReasoning(planningContent);
+          if (visibleReasoning) {
+            assistantContent = visibleReasoning;
+            tokenCountRef.current = planningTokens;
+            const elapsed = (performance.now() - streamStartRef.current) / 1000;
+            setTokenStats({ tokens: planningTokens, elapsed, streaming: true });
+            publishAssistantContent(visibleReasoning);
+          }
+        }
+
+        const streamedToolCall = parseStreamedToolCall(planningContent, activeTool.name);
+        const planning: ChatCompletionResponse = {
+          choices: [{
+            message: {
+              content: planningContent,
+              tool_calls: streamedToolCall ? [streamedToolCall] : [],
+            },
+          }],
+          usage: { completion_tokens: planningTokens },
+          context_metrics: planningContextMetrics,
+        };
         const choice = planning.choices?.[0];
-        const parsedToolCall = choice?.message?.tool_calls?.find(
-          (call) => call.function?.name === activeTool.name,
-        );
-        if (planning.context_metrics) setContextMetrics(planning.context_metrics);
+        const parsedToolCall = streamedToolCall;
 
         if (!parsedToolCall && activeTool.name === "calculator") {
-          assistantContent = choice?.message?.content ?? "";
+          assistantContent = extractPlanningReasoning(choice?.message?.content)
+            || choice?.message?.content
+            || "";
           tokenCountRef.current = planning.usage?.completion_tokens ?? 0;
           publishAssistantContent(assistantContent);
           const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
