@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import type { AgentToolName, Mode, Message, ResponseStyleName } from "./config";
+import type { AgentToolName, Mode, Message } from "./config";
 import {
   CALCULATOR_TOOL,
   DATE_TIME_TOOL,
@@ -11,7 +11,6 @@ import {
   MODEL_NAMES,
   KNOWLEDGE_SEARCH_TOOL,
   SYSTEM_PROMPTS,
-  getResponseStylePrompt,
   getToolSystemPrompt,
   modeQueryValue,
 } from "./config";
@@ -274,13 +273,6 @@ function parseStreamedToolCall(
   }
 }
 
-function requestedResponseStyle(text: string): ResponseStyleName | null {
-  if (/\b(?:reason(?:ing)?|deduc(?:e|tion)|logic|step by step|explain (?:briefly )?(?:why|your reasoning)|raisonn(?:e|ement)|d[eé]duis|explique (?:bri[eè]vement )?(?:pourquoi|ton raisonnement))\b/i.test(text)) {
-    return "reasoning";
-  }
-  return null;
-}
-
 function explicitEmojiResponse(text: string): string | null {
   if (!/\b(?:show|send|give|display|montre|affiche|envoie|donne).{0,24}\b(?:smiley|emoji|emoticon|[eé]motic[oô]ne)\b/i.test(text)) {
     return null;
@@ -371,10 +363,9 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
   // from the conversation that was just closed.
   const messagesRef = useRef<Message[]>([]);
   const conversationCacheIdRef = useRef(newConversationCacheId());
-  const hasTokenStats = tokenStats !== null;
   const expertActivity = useExpertActivity(
     ENDPOINTS[mode],
-    streaming || hasTokenStats,
+    streaming,
   );
 
   useEffect(() => {
@@ -573,12 +564,9 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         ? routeDemoAgentTools(text)
         : [];
       const baseSystemPrompt = SYSTEM_PROMPTS[mode];
-      const responseStyle = mode === "TR-MoE-v2" ? requestedResponseStyle(text) : null;
       let finalSystemPrompt = routedTools.length > 0
         ? undefined
-        : baseSystemPrompt && responseStyle
-          ? `${baseSystemPrompt}\n${getResponseStylePrompt(responseStyle)}`
-          : baseSystemPrompt;
+        : baseSystemPrompt;
       let chatMessages: ApiMessage[] = conversationMessages;
 
       const completionBody = (requestMessages: ApiMessage[], stream: boolean) => ({

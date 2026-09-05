@@ -27,13 +27,11 @@ export function useExpertActivity(endpoint: string, enabled: boolean): ExpertAct
   const [activity, setActivity] = useState<ExpertActivityData | null>(null);
 
   useEffect(() => {
-    if (!enabled) {
-      setActivity(null);
-      return;
-    }
+    if (!enabled) return;
 
     let cancelled = false;
     let requestInFlight = false;
+    setActivity(null);
     const load = async () => {
       if (requestInFlight) return;
       requestInFlight = true;

@@ -46,22 +46,6 @@ export const SYSTEM_PROMPTS: Partial<Record<Mode, string>> = {
   "TR-MoE-v2": "Answer directly and briefly in the user's language and requested format.",
 };
 
-export type ResponseStyleName = "reasoning";
-
-// Optional style modules stay outside the base prompt. The request router
-// selects at most one row, and strict/tool requests receive none.
-export const RESPONSE_STYLE_PROMPT_MATRIX: ReadonlyArray<
-  readonly [ResponseStyleName, readonly string[]]
-> = [
-  ["reasoning", ["Use the optional thinking envelope for this multi-step problem. Then give a concise final answer without repeating the reasoning."]],
-];
-
-export function getResponseStylePrompt(name: ResponseStyleName): string {
-  const row = RESPONSE_STYLE_PROMPT_MATRIX.find(([styleName]) => styleName === name);
-  if (!row) throw new Error(`Missing response style prompt: ${name}`);
-  return row[1].join("\n");
-}
-
 export const CALCULATOR_TOOL = {
   type: "function",
   function: {
@@ -221,13 +205,6 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
       prompts: [
         "What is 927 × 43? Give only the result.",
         "A workshop packs 17 boxes of 24 parts, then removes 85 parts. How many parts remain?",
-      ],
-    },
-    {
-      label: "reasoning",
-      prompts: [
-        "Paul is taller than Lea. Lea is taller than Sam. Nina is taller than Paul. Who is the shortest? Explain your reasoning briefly.",
-        "All zorps are blue. No blue object is heavy. Can a zorp be heavy? Explain your reasoning briefly.",
       ],
     },
     {
