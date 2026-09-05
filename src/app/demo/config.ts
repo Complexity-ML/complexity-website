@@ -51,7 +51,7 @@ export const SYSTEM_PROMPTS: Partial<Record<Mode, string>> = {
   ].join(" "),
 };
 
-export type ResponseStyleName = "emoji";
+export type ResponseStyleName = "emoji" | "explicit_emoji";
 
 // Optional style modules stay outside the base prompt. The request router
 // selects at most one row, and strict/tool requests receive none.
@@ -59,6 +59,7 @@ export const RESPONSE_STYLE_PROMPT_MATRIX: ReadonlyArray<
   readonly [ResponseStyleName, readonly string[]]
 > = [
   ["emoji", ["Use at most one relevant emoji when it feels natural."]],
+  ["explicit_emoji", ["The user explicitly requested a smiley or emoji. Reply with exactly one fitting Unicode emoji and no other text."]],
 ];
 
 export function getResponseStylePrompt(name: ResponseStyleName): string {
@@ -145,7 +146,7 @@ export const TOOL_SYSTEM_PROMPT_MATRIX: ReadonlyArray<
   [
     "calculator",
     [
-      'For arithmetic, call calculator immediately. Copy the complete expression: "A times B" -> "A * B"; "A plus B" -> "A + B"; "subtract B from A" -> "A - B". Do not calculate mentally.',
+      'For arithmetic, call calculator immediately. Use exact values from prior tool results when present. Copy the complete expression: "A times B" -> "A * B"; "A plus B" -> "A + B"; "subtract B from A" -> "A - B". Do not calculate mentally.',
       'Available tools:\n[{"function":{"description":"Evaluate arithmetic.","name":"calculator","parameters":{"properties":{"expression":{"type":"string"}},"required":["expression"],"type":"object"}},"type":"function"}]',
     ],
   ],
@@ -230,7 +231,7 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
       label: "knowledge",
       prompts: [
         "How many trainable parameters does the TR-HASH 100M Agentic model have?",
-        "Which scorer produced the published 200M PIQA scores?",
+        "How much memory do the TR-HASH 100M Agentic model's trainable parameters require in FP16, in MiB?",
       ],
     },
     ...COMMON_SUGGESTIONS,

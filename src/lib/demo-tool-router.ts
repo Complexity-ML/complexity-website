@@ -26,13 +26,27 @@ function isCalculatorRequest(text: string): boolean {
   return explicit.test(text) || symbolic.test(text) || (numbers >= 2 && wordOperation.test(text));
 }
 
+function isKnowledgeCalculationRequest(text: string): boolean {
+  const conversion = /\b(?:memory|storage|size|bytes?|bits?|kib|mib|gib|kb|mb|gb|fp16|fp32|int8|percentage|percent|ratio|difference|convert|conversion|m[eé]moire|stockage|octets?|taille|pourcentage|rapport|diff[eé]rence|convertir)\b/i;
+  return isKnowledgeRequest(text) && conversion.test(text);
+}
+
 /**
  * Pick one narrow tool from strong intent evidence. Ambiguous requests stay in
  * ordinary chat instead of exposing a possibly unrelated tool schema.
  */
 export function routeDemoAgentTool(text: string): DemoAgentTool | null {
-  if (isKnowledgeRequest(text)) return "search_knowledge_base";
-  if (isCurrentDateTimeRequest(text)) return "date_time";
-  if (isCalculatorRequest(text)) return "calculator";
-  return null;
+  return routeDemoAgentTools(text)[0] ?? null;
+}
+
+/**
+ * Return a short ordered plan. Each step is still exposed to the model alone,
+ * keeping the system prompt small while allowing one result to feed the next.
+ */
+export function routeDemoAgentTools(text: string): DemoAgentTool[] {
+  const tools: DemoAgentTool[] = [];
+  if (isKnowledgeRequest(text)) tools.push("search_knowledge_base");
+  if (isCurrentDateTimeRequest(text)) tools.push("date_time");
+  if (isCalculatorRequest(text) || isKnowledgeCalculationRequest(text)) tools.push("calculator");
+  return tools.slice(0, 3);
 }

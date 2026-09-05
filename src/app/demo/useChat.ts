@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import type { Mode, Message } from "./config";
+import type { AgentToolName, Mode, Message, ResponseStyleName } from "./config";
 import {
   CALCULATOR_TOOL,
   DATE_TIME_TOOL,
@@ -22,7 +22,7 @@ import {
 } from "./sampling";
 import { useEndpointHealth } from "./useEndpointHealth";
 import { useExpertActivity } from "./useExpertActivity";
-import { routeDemoAgentTool } from "@/lib/demo-tool-router";
+import { routeDemoAgentTools } from "@/lib/demo-tool-router";
 
 export interface TokenStats {
   tokens: number;
@@ -255,9 +255,18 @@ function parseStreamedToolCall(
   }
 }
 
-function shouldOfferEmojiStyle(text: string): boolean {
+function requestedResponseStyle(text: string): ResponseStyleName | null {
+  if (/\b(?:show|send|give|display|montre|affiche|envoie|donne).{0,24}\b(?:smiley|emoji|emoticon|[eé]motic[oô]ne)\b/i.test(text)) {
+    return "explicit_emoji";
+  }
   const strictOutput = /\b(?:json|yaml|code|table|only|exactly|strict|formal|professional|sans emoji|no emoji|one sentence|two sentences|une phrase|deux phrases)\b/i;
-  return !strictOutput.test(text);
+  return strictOutput.test(text) ? null : "emoji";
+}
+
+function getActiveTool(name: AgentToolName) {
+  if (name === "calculator") return { name, definition: CALCULATOR_TOOL };
+  if (name === "search_knowledge_base") return { name, definition: KNOWLEDGE_SEARCH_TOOL };
+  return { name, definition: DATE_TIME_TOOL };
 }
 
 function newConversationCacheId(): string {
@@ -511,25 +520,17 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
 
       const conversationMessages: ApiMessage[] = newMessages.map(({ role, content }) => ({ role, content }));
       conversationMessages[conversationMessages.length - 1] = { role: "user", content: modelPrompt };
-      const routedTool = mode === "TR-MoE-v2" && !options.research
-        ? routeDemoAgentTool(text)
-        : null;
-      const activeTool = routedTool === "calculator"
-        ? { name: "calculator" as const, definition: CALCULATOR_TOOL }
-        : routedTool === "search_knowledge_base"
-          ? { name: "search_knowledge_base" as const, definition: KNOWLEDGE_SEARCH_TOOL }
-          : routedTool === "date_time"
-            ? { name: "date_time" as const, definition: DATE_TIME_TOOL }
-            : null;
+      const routedTools = mode === "TR-MoE-v2" && !options.research
+        ? routeDemoAgentTools(text)
+        : [];
       const baseSystemPrompt = SYSTEM_PROMPTS[mode];
-      const systemPrompt = activeTool
-        ? getToolSystemPrompt(activeTool.name)
-        : mode === "TR-MoE-v2" && baseSystemPrompt && shouldOfferEmojiStyle(text)
-          ? `${baseSystemPrompt}\n${getResponseStylePrompt("emoji")}`
+      const responseStyle = mode === "TR-MoE-v2" ? requestedResponseStyle(text) : null;
+      let finalSystemPrompt = routedTools.length > 0
+        ? undefined
+        : baseSystemPrompt && responseStyle
+          ? `${baseSystemPrompt}\n${getResponseStylePrompt(responseStyle)}`
           : baseSystemPrompt;
-      let chatMessages: ApiMessage[] = systemPrompt
-        ? [{ role: "system", content: systemPrompt }, ...conversationMessages]
-        : conversationMessages;
+      let chatMessages: ApiMessage[] = conversationMessages;
 
       const completionBody = (requestMessages: ApiMessage[], stream: boolean) => ({
         messages: requestMessages,
@@ -543,16 +544,26 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         stream,
       });
 
-      // Tool-aware Agentic requests first get a non-streaming turn so i64
-      // can parse its native tool-call envelope into OpenAI-compatible
-      // tool_calls. Execute the selected local tool, then continue generation
-      // with a native tool-result message.
-      if (activeTool) {
+      // Execute a bounded plan one tool at a time. Only the current tool row is
+      // present in the system prompt, so chaining does not overload the 100M
+      // model with every schema at once.
+      const seenToolCalls = new Set<string>();
+      let completedToolTokens = 0;
+      let toolReasoning = "";
+      for (let toolIndex = 0; toolIndex < routedTools.length; toolIndex++) {
+        const activeTool = getActiveTool(routedTools[toolIndex]);
+        const isLastTool = toolIndex === routedTools.length - 1;
+        const toolSystemPrompt = getToolSystemPrompt(activeTool.name);
+        finalSystemPrompt = toolSystemPrompt;
+        const planningMessages: ApiMessage[] = [
+          { role: "system", content: toolSystemPrompt },
+          ...chatMessages,
+        ];
         const planningResponse = await fetch(`${base}/v1/chat/completions`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            ...completionBody(chatMessages, true),
+            ...completionBody(planningMessages, true),
             max_tokens: Math.min(params.maxTokens, 256),
             temperature: 0,
             top_k: 0,
@@ -586,11 +597,11 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           planningTokens++;
           const visibleReasoning = visiblePlanningReasoning(planningContent);
           if (visibleReasoning) {
-            assistantContent = visibleReasoning;
-            tokenCountRef.current = planningTokens;
+            assistantContent = `${toolReasoning}${visibleReasoning}`;
+            tokenCountRef.current = completedToolTokens + planningTokens;
             const elapsed = (performance.now() - streamStartRef.current) / 1000;
-            setTokenStats({ tokens: planningTokens, elapsed, streaming: true });
-            publishAssistantContent(visibleReasoning);
+            setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
+            publishAssistantContent(assistantContent);
           }
         }
 
@@ -609,6 +620,9 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         const parsedToolCall = streamedToolCall;
 
         if (!parsedToolCall && activeTool.name === "calculator") {
+          if (routedTools.length > 1) {
+            throw new Error("The model did not produce the chained calculator call.");
+          }
           assistantContent = extractPlanningReasoning(choice?.message?.content)
             || choice?.message?.content
             || "";
@@ -638,9 +652,12 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
 
         const planningReasoning = extractPlanningReasoning(choice?.message?.content);
         if (planningReasoning) {
-          assistantContent = planningReasoning;
+          toolReasoning += planningReasoning;
+          assistantContent = toolReasoning;
           publishAssistantContent(assistantContent);
         }
+        completedToolTokens += planningTokens;
+        tokenCountRef.current = completedToolTokens;
 
         let toolArguments: Record<string, unknown>;
         try {
@@ -659,6 +676,9 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           }
           const expression = resolveCalculatorExpression(text, proposedExpression);
           toolArguments = { expression };
+          const callSignature = `${activeTool.name}:${JSON.stringify(toolArguments)}`;
+          if (seenToolCalls.has(callSignature)) throw new Error("A repeated tool call was blocked.");
+          seenToolCalls.add(callSignature);
 
           const calculatorEvent: ResearchActivityEvent = {
             id: `calculator-${Date.now()}`,
@@ -678,6 +698,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           if (!calculatorResponse.ok || typeof calculation.result !== "string") {
             throw new Error(calculation.error || "The calculator could not evaluate the expression.");
           }
+          toolResult = calculation.result;
 
           setResearchEvents((events) => events.map((event) => (
             event.id === calculatorEvent.id
@@ -685,23 +706,28 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
               : event
           )));
 
-          assistantContent = `${planningReasoning}<|final_start|>${calculation.result}<|final_end|>`;
-          publishAssistantContent(assistantContent);
-          const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
-          setTokenStats({
-            tokens: planning.usage?.completion_tokens ?? 0,
-            elapsed: finalElapsed,
-            streaming: false,
-          });
-          setStreaming(false);
-          setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
-          abortControllerRef.current = null;
-          return;
+          if (isLastTool) {
+            const unit = /\bmib\b/i.test(text) ? " MiB"
+              : /\bgib\b/i.test(text) ? " GiB"
+                : /\b(?:bytes?|octets?)\b/i.test(text) ? " bytes"
+                  : "";
+            assistantContent = `${toolReasoning}<|final_start|>${calculation.result}${unit}<|final_end|>`;
+            publishAssistantContent(assistantContent);
+            const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
+            setTokenStats({ tokens: completedToolTokens, elapsed: finalElapsed, streaming: false });
+            setStreaming(false);
+            setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
+            abortControllerRef.current = null;
+            return;
+          }
         } else if (activeTool.name === "search_knowledge_base") {
           const query = toolArguments.query;
           if (typeof query !== "string") {
             throw new Error("The model did not provide a knowledge-base query.");
           }
+          const callSignature = `${activeTool.name}:${JSON.stringify({ query })}`;
+          if (seenToolCalls.has(callSignature)) throw new Error("A repeated tool call was blocked.");
+          seenToolCalls.add(callSignature);
 
           const searchEvent: ResearchActivityEvent = {
             id: `knowledge-search-${Date.now()}`,
@@ -741,6 +767,9 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           // silently substitute an unrelated zone in otherwise valid JSON.
           const timezone = requestedTimezone(text);
           toolArguments = { timezone };
+          const callSignature = `${activeTool.name}:${JSON.stringify(toolArguments)}`;
+          if (seenToolCalls.has(callSignature)) throw new Error("A repeated tool call was blocked.");
+          seenToolCalls.add(callSignature);
           const dateTimeEvent: ResearchActivityEvent = {
             id: `date-time-${Date.now()}`,
             label: `Date & time · ${timezone}`,
@@ -777,24 +806,22 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
               : event
           )));
 
-          const exactAnswer = formatDateTimeAnswer({
-            instant_utc: dateTime.instant_utc,
-            utc: dateTime.utc,
-            paris: dateTime.paris,
-            requested: dateTime.requested,
-          }, text);
-          assistantContent = `${planningReasoning}<|final_start|>${exactAnswer}<|final_end|>`;
-          publishAssistantContent(assistantContent);
-          const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
-          setTokenStats({
-            tokens: planning.usage?.completion_tokens ?? 0,
-            elapsed: finalElapsed,
-            streaming: false,
-          });
-          setStreaming(false);
-          setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
-          abortControllerRef.current = null;
-          return;
+          if (isLastTool) {
+            const exactAnswer = formatDateTimeAnswer({
+              instant_utc: dateTime.instant_utc,
+              utc: dateTime.utc,
+              paris: dateTime.paris,
+              requested: dateTime.requested,
+            }, text);
+            assistantContent = `${toolReasoning}<|final_start|>${exactAnswer}<|final_end|>`;
+            publishAssistantContent(assistantContent);
+            const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
+            setTokenStats({ tokens: completedToolTokens, elapsed: finalElapsed, streaming: false });
+            setStreaming(false);
+            setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
+            abortControllerRef.current = null;
+            return;
+          }
         }
 
         const canonicalToolCall = `<|tool_call_start|>${JSON.stringify({ name: activeTool.name, arguments: toolArguments })}<|tool_call_end|>`;
@@ -806,16 +833,18 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           { role: "assistant", content: rawToolCall },
           { role: "tool", content: toolResult },
         ];
-        tokenCountRef.current = planning.usage?.completion_tokens ?? 0;
       }
 
       // The deployed model is instruction/chat tuned. Send the full
       // conversation through the server-side chat template instead of
       // treating the latest user message as an unformatted base completion.
+      const finalChatMessages: ApiMessage[] = finalSystemPrompt
+        ? [{ role: "system", content: finalSystemPrompt }, ...chatMessages]
+        : chatMessages;
       const response = await fetch(`${base}/v1/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(completionBody(chatMessages, true)),
+        body: JSON.stringify(completionBody(finalChatMessages, true)),
         signal: controller.signal,
       });
 
