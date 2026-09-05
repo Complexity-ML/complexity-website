@@ -173,6 +173,25 @@ function resolveCalculatorExpression(text: string, proposed: string): string {
     .replace(/\\div/g, "/");
 }
 
+function resolveChainedCalculatorExpression(text: string, toolResult: string): string | null {
+  const parameterCount = toolResult.match(/\b(?:exactly\s+)?([\d,._ ]+)\s+trainable parameters?\b/i)?.[1]
+    ?.replace(/[,._ ]/g, "");
+  if (!parameterCount || !/^\d+$/.test(parameterCount)) return null;
+
+  const bytesPerParameter = /\b(?:fp32|32[- ]?bit)\b/i.test(text) ? 4
+    : /\b(?:fp16|bf16|16[- ]?bit)\b/i.test(text) ? 2
+      : /\b(?:int8|8[- ]?bit)\b/i.test(text) ? 1
+        : null;
+  if (!bytesPerParameter) return null;
+
+  const divisor = /\bgib\b/i.test(text) ? 1_073_741_824
+    : /\bmib\b/i.test(text) ? 1_048_576
+      : /\bgb\b/i.test(text) ? 1_000_000_000
+        : /\bmb\b/i.test(text) ? 1_000_000
+          : 1;
+  return `${parameterCount} * ${bytesPerParameter} / ${divisor}`;
+}
+
 function requestedTimezone(text: string): string {
   const explicitIana = text.match(/\b[A-Za-z]+\/[A-Za-z_+-]+\b/)?.[0];
   if (explicitIana) return explicitIana;
@@ -261,6 +280,16 @@ function requestedResponseStyle(text: string): ResponseStyleName | null {
   }
   const strictOutput = /\b(?:json|yaml|code|table|only|exactly|strict|formal|professional|sans emoji|no emoji|one sentence|two sentences|une phrase|deux phrases)\b/i;
   return strictOutput.test(text) ? null : "emoji";
+}
+
+function explicitEmojiResponse(text: string): string | null {
+  if (!/\b(?:show|send|give|display|montre|affiche|envoie|donne).{0,24}\b(?:smiley|emoji|emoticon|[eé]motic[oô]ne)\b/i.test(text)) {
+    return null;
+  }
+  if (/\b(?:sad|triste|cry|pleure)\b/i.test(text)) return "😢";
+  if (/\b(?:love|heart|amour|coeur|cœur)\b/i.test(text)) return "❤️";
+  if (/\b(?:laugh|rire|dr[oô]le)\b/i.test(text)) return "😂";
+  return "🙂";
 }
 
 function getActiveTool(name: AgentToolName) {
@@ -518,6 +547,17 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         setMessages(nextMessages);
       };
 
+      const emojiResponse = mode === "TR-MoE-v2" ? explicitEmojiResponse(text) : null;
+      if (emojiResponse) {
+        assistantContent = `<|final_start|>${emojiResponse}<|final_end|>`;
+        publishAssistantContent(assistantContent);
+        const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
+        setTokenStats({ tokens: 0, elapsed: finalElapsed, streaming: false });
+        setStreaming(false);
+        abortControllerRef.current = null;
+        return;
+      }
+
       const conversationMessages: ApiMessage[] = newMessages.map(({ role, content }) => ({ role, content }));
       conversationMessages[conversationMessages.length - 1] = { role: "user", content: modelPrompt };
       const routedTools = mode === "TR-MoE-v2" && !options.research
@@ -617,23 +657,35 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           context_metrics: planningContextMetrics,
         };
         const choice = planning.choices?.[0];
-        const parsedToolCall = streamedToolCall;
+        let parsedToolCall = streamedToolCall;
 
         if (!parsedToolCall && activeTool.name === "calculator") {
-          if (routedTools.length > 1) {
-            throw new Error("The model did not produce the chained calculator call.");
+          const previousToolResult = [...chatMessages].reverse().find((message) => message.role === "tool")?.content;
+          const fallbackExpression = previousToolResult
+            ? resolveChainedCalculatorExpression(text, previousToolResult)
+            : null;
+          if (fallbackExpression) {
+            parsedToolCall = {
+              function: {
+                name: "calculator",
+                arguments: JSON.stringify({ expression: fallbackExpression }),
+              },
+            };
+          } else if (routedTools.length > 1) {
+            throw new Error("The model did not produce a valid chained calculator call.");
+          } else {
+            assistantContent = extractPlanningReasoning(choice?.message?.content)
+              || choice?.message?.content
+              || "";
+            tokenCountRef.current = planning.usage?.completion_tokens ?? 0;
+            publishAssistantContent(assistantContent);
+            const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
+            setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
+            setStreaming(false);
+            setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
+            abortControllerRef.current = null;
+            return;
           }
-          assistantContent = extractPlanningReasoning(choice?.message?.content)
-            || choice?.message?.content
-            || "";
-          tokenCountRef.current = planning.usage?.completion_tokens ?? 0;
-          publishAssistantContent(assistantContent);
-          const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
-          setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
-          setStreaming(false);
-          setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
-          abortControllerRef.current = null;
-          return;
         }
 
         const toolCall = parsedToolCall ?? (activeTool.name === "search_knowledge_base"
