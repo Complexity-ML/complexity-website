@@ -170,7 +170,23 @@ function resolveCalculatorExpression(text: string, proposed: string): string {
 
   return proposed
     .replace(/\\(?:times|cdot)/g, "*")
-    .replace(/\\div/g, "/");
+    .replace(/\\div/g, "/")
+    .replace(/[×·]/g, "*")
+    .replace(/÷/g, "/")
+    .replace(/[−–—]/g, "-")
+    .replace(/\*\*/g, "^");
+}
+
+function extractExplicitCalculatorExpression(text: string): string | null {
+  const structured = resolveCalculatorExpression(text, "");
+  if (structured) return structured;
+
+  const candidate = text
+    .match(/[()\d.,\s+\-*/%^×÷·−–—]+/g)
+    ?.map((part) => part.trim())
+    .filter((part) => /\d/.test(part) && /[+\-*/%^×÷·−–—]/.test(part))
+    .sort((left, right) => right.length - left.length)[0];
+  return candidate ? resolveCalculatorExpression(text, candidate) : null;
 }
 
 function resolveChainedCalculatorExpression(text: string, toolResult: string): string | null {
@@ -634,7 +650,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           const previousToolResult = [...chatMessages].reverse().find((message) => message.role === "tool")?.content;
           const fallbackExpression = previousToolResult
             ? resolveChainedCalculatorExpression(text, previousToolResult)
-            : null;
+            : extractExplicitCalculatorExpression(text);
           if (fallbackExpression) {
             parsedToolCall = {
               function: {
