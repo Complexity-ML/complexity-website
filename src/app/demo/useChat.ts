@@ -230,16 +230,41 @@ function parseStreamedToolCall(
       ? content.slice(thinkEnd + "<|think_end|>".length)
       : content;
   const json = firstJsonObject(payload);
-  if (!json) return null;
+  if (json) {
+    try {
+      const parsed = JSON.parse(json) as { name?: unknown; arguments?: unknown };
+      if (parsed.name === expectedName && parsed.arguments && typeof parsed.arguments === "object") {
+        return {
+          function: {
+            name: expectedName,
+            arguments: JSON.stringify(parsed.arguments),
+          },
+        };
+      }
+    } catch {
+      // Fall through to the fragment parser below.
+    }
+  }
+
+  // Small models sometimes close the outer object before emitting `name`, for
+  // example: {"arguments":{"expression":"2+2"}},"name":"calculator"}.
+  // Recover the model-generated fields without deriving or replacing values.
+  const name = payload.match(/"name"\s*:\s*"([^"]+)"/)?.[1];
+  const argumentsMarker = /"arguments"\s*:/.exec(payload);
+  if (name !== expectedName || !argumentsMarker) return null;
+  const argumentsJson = firstJsonObject(
+    payload.slice(argumentsMarker.index + argumentsMarker[0].length),
+  );
+  if (!argumentsJson) return null;
   try {
-    const parsed = JSON.parse(json) as { name?: unknown; arguments?: unknown };
-    if (parsed.name !== expectedName || !parsed.arguments || typeof parsed.arguments !== "object") {
+    const parsedArguments = JSON.parse(argumentsJson) as unknown;
+    if (!parsedArguments || typeof parsedArguments !== "object" || Array.isArray(parsedArguments)) {
       return null;
     }
     return {
       function: {
         name: expectedName,
-        arguments: JSON.stringify(parsed.arguments),
+        arguments: JSON.stringify(parsedArguments),
       },
     };
   } catch {
