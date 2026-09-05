@@ -3,15 +3,14 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { Mode, Message } from "./config";
 import {
-  CALCULATOR_SYSTEM_PROMPT,
   CALCULATOR_TOOL,
   DEFAULT_MODE,
   ENDPOINTS,
   MAINTENANCE,
   MODEL_NAMES,
-  KNOWLEDGE_SEARCH_SYSTEM_PROMPT,
   KNOWLEDGE_SEARCH_TOOL,
   SYSTEM_PROMPTS,
+  getToolSystemPrompt,
   modeQueryValue,
 } from "./config";
 import {
@@ -394,15 +393,13 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         && !calculatorEnabled
         && shouldOfferKnowledgeSearch(text);
       const activeTool = calculatorEnabled
-        ? { name: "calculator", definition: CALCULATOR_TOOL }
+        ? { name: "calculator" as const, definition: CALCULATOR_TOOL }
         : knowledgeSearchEnabled
-          ? { name: "search_knowledge_base", definition: KNOWLEDGE_SEARCH_TOOL }
+          ? { name: "search_knowledge_base" as const, definition: KNOWLEDGE_SEARCH_TOOL }
           : null;
-      const systemPrompt = calculatorEnabled
-        ? CALCULATOR_SYSTEM_PROMPT
-        : knowledgeSearchEnabled
-          ? KNOWLEDGE_SEARCH_SYSTEM_PROMPT
-          : SYSTEM_PROMPTS[mode];
+      const systemPrompt = activeTool
+        ? getToolSystemPrompt(activeTool.name)
+        : SYSTEM_PROMPTS[mode];
       let chatMessages: ApiMessage[] = systemPrompt
         ? [{ role: "system", content: systemPrompt }, ...conversationMessages]
         : conversationMessages;

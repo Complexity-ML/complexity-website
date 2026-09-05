@@ -51,13 +51,6 @@ export const SYSTEM_PROMPTS: Partial<Record<Mode, string>> = {
   ].join(" "),
 };
 
-export const CALCULATOR_SYSTEM_PROMPT = [
-  "You are an agent. Think only when useful and use a tool whenever it is required.",
-  "Available tools:\n[{\"function\":{\"description\":\"Evaluate an arithmetic expression exactly.\",\"name\":\"calculator\",\"parameters\":{\"properties\":{\"expression\":{\"description\":\"Arithmetic expression to evaluate.\",\"type\":\"string\"}},\"required\":[\"expression\"],\"type\":\"object\"},\"return\":{\"description\":\"Exact numeric result.\",\"type\":\"string\"}},\"type\":\"function\"}]",
-  "Follow the user's requested language, format, and length exactly.",
-  "Answer directly and do not repeat yourself.",
-].join(" ");
-
 export const CALCULATOR_TOOL = {
   type: "function",
   function: {
@@ -80,12 +73,6 @@ export const CALCULATOR_TOOL = {
     },
   },
 } as const;
-
-export const KNOWLEDGE_SEARCH_SYSTEM_PROMPT = [
-  "You are an agent. Think only when useful and use a tool whenever it is required.",
-  "Available tools:\n[{\"function\":{\"description\":\"Search the TR-HASH knowledge base for relevant facts.\",\"name\":\"search_knowledge_base\",\"parameters\":{\"properties\":{\"query\":{\"description\":\"Question or keywords to search for.\",\"type\":\"string\"}},\"required\":[\"query\"],\"type\":\"object\"},\"return\":{\"description\":\"Relevant passages from the knowledge base.\",\"type\":\"string\"}},\"type\":\"function\"}]",
-  "Answer in one concise sentence, in the user's language, using only the retrieved passage.",
-].join(" ");
 
 export const KNOWLEDGE_SEARCH_TOOL = {
   type: "function",
@@ -110,9 +97,39 @@ export const KNOWLEDGE_SEARCH_TOOL = {
   },
 } as const;
 
+export type AgentToolName = "calculator" | "search_knowledge_base";
+
+// Two-dimensional prompt table: one row per selected tool, with only the
+// phases that tool needs. General chat receives none of these instructions.
+export const TOOL_SYSTEM_PROMPT_MATRIX: ReadonlyArray<
+  readonly [AgentToolName, readonly string[]]
+> = [
+  [
+    "calculator",
+    [
+      'For arithmetic, call calculator immediately. Copy the complete expression: "A times B" -> "A * B"; "A plus B" -> "A + B"; "subtract B from A" -> "A - B". Do not calculate mentally. After a tool result, copy it exactly.',
+      'Available tools:\n[{"function":{"description":"Evaluate arithmetic.","name":"calculator","parameters":{"properties":{"expression":{"type":"string"}},"required":["expression"],"type":"object"}},"type":"function"}]',
+    ],
+  ],
+  [
+    "search_knowledge_base",
+    [
+      "Call search_knowledge_base when the answer requires a TR-HASH fact. Use the user's complete question as query.",
+      'Available tools:\n[{"function":{"description":"Search the TR-HASH knowledge base for relevant facts.","name":"search_knowledge_base","parameters":{"properties":{"query":{"type":"string"}},"required":["query"],"type":"object"}},"type":"function"}]',
+      "After the tool result, answer in the user's language using only the retrieved passage.",
+    ],
+  ],
+];
+
+export function getToolSystemPrompt(name: AgentToolName): string {
+  const row = TOOL_SYSTEM_PROMPT_MATRIX.find(([toolName]) => toolName === name);
+  if (!row) throw new Error(`Missing system prompt for tool: ${name}`);
+  return row[1].join("\n");
+}
+
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE-v2":
-    "The released 100.4M-parameter Agentic SFT checkpoint, trained for three epochs on 200,000 examples with its native 32K-vocabulary tokenizer.",
+    "The released 100.4M-parameter Agentic SFT checkpoint, trained for three epochs on 500,000 examples with its native 32K-vocabulary tokenizer.",
   "TR-MoE-v1":
     "The released 32,000-token full-SFT checkpoint cited by the public preprint.",
 };
