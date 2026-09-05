@@ -28,5 +28,6 @@ export async function POST(request: Request) {
     status: matches.length ? "ready" : "empty",
     matches: matches.map(({ id, title, score }) => ({ id, title, score })),
     context: knowledgeContext(matches),
+    passage: matches[0]?.content,
   });
 }

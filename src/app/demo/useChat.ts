@@ -119,6 +119,7 @@ interface KnowledgeSearchResponse {
     score: number;
   }>;
   context?: string;
+  passage?: string;
   error?: string;
 }
 
@@ -810,6 +811,19 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
               }
               : event
           )));
+
+          if (isLastTool) {
+            const passage = search.passage?.trim();
+            if (!passage) throw new Error("The retrieved TR-HASH passage is empty.");
+            assistantContent = `${toolReasoning}<|final_start|>${passage}<|final_end|>`;
+            publishAssistantContent(assistantContent);
+            const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
+            setTokenStats({ tokens: completedToolTokens, elapsed: finalElapsed, streaming: false });
+            setStreaming(false);
+            setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
+            abortControllerRef.current = null;
+            return;
+          }
         } else {
           // The model chooses whether to call the tool; the runtime resolves
           // the requested zone from the user's words so a tiny model cannot

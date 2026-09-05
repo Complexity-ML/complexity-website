@@ -13,7 +13,7 @@ export const KNOWLEDGE_DOCUMENTS: KnowledgeDocument[] = [
   {
     id: "agentic-100m-parameters",
     title: "TR-HASH 100M Agentic SFT parameter count",
-    content: "The public Agentic SFT model contains exactly 100,366,720 trainable parameters.",
+    content: "The public Agentic SFT checkpoint has exactly 100,366,720 trainable parameters in total (about 100.4M). This is the complete trainable parameter count, not a subset of a larger count.",
     keywords: ["100M", "parameter", "parameters", "parameter count", "model size"],
   },
   {
