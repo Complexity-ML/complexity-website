@@ -7,6 +7,7 @@ import {
   Activity,
   Bot,
   CheckCircle2,
+  Info,
   MessageSquareText,
   ScrollText,
   SlidersHorizontal,
@@ -87,6 +88,8 @@ export function DemoShell() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const userScrolledUp = useRef(false);
+  const saveNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [saveNoticeVisible, setSaveNoticeVisible] = useState(false);
 
   const suggestions = useMemo(
     () => SUGGESTIONS[activeMode]
@@ -192,6 +195,10 @@ export function DemoShell() {
     return () => element.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => () => {
+    if (saveNoticeTimer.current) clearTimeout(saveNoticeTimer.current);
+  }, []);
+
   useEffect(() => {
     if (!userScrolledUp.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: chat.streaming ? "instant" : "smooth" });
@@ -199,8 +206,14 @@ export function DemoShell() {
   }, [chat.messages.length, chat.streaming, streamedContentLength]);
 
   const handleSend = useCallback(() => {
-    if (!convos.activeId && chat.input.trim() && !convos.isFull) {
-      convos.createConversation(chat.mode);
+    if (!convos.activeId && chat.input.trim()) {
+      if (convos.isFull) {
+        setSaveNoticeVisible(true);
+        if (saveNoticeTimer.current) clearTimeout(saveNoticeTimer.current);
+        saveNoticeTimer.current = setTimeout(() => setSaveNoticeVisible(false), 5000);
+      } else {
+        convos.createConversation(chat.mode);
+      }
     }
     chat.sendMessage(undefined, {
       research: AGENT_MODE_ENABLED && sourceAgent.subagentEnabled,
@@ -269,6 +282,19 @@ export function DemoShell() {
 
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-[#111722] text-[#e8eef7]">
+      {saveNoticeVisible && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed left-1/2 top-4 z-[100] flex w-[min(92vw,440px)] -translate-x-1/2 items-start gap-3 rounded-xl border border-amber-300/25 bg-[#202839]/98 px-4 py-3 shadow-[0_16px_48px_rgba(0,0,0,.45)] backdrop-blur-xl"
+        >
+          <Info className="mt-0.5 size-4 shrink-0 text-amber-300" />
+          <div>
+            <p className="text-xs font-semibold text-[#eef3fa]">Saved chats full</p>
+            <p className="mt-0.5 text-[11px] leading-4 text-[#aeb9c9]">This inference will run without being saved. Delete a saved chat to make room.</p>
+          </div>
+        </div>
+      )}
       <section className="relative flex min-w-0 flex-1 overflow-hidden">
         {leftPanel === "chats" && (
           <AILabPanel eyebrow="workspace" title="Chats" onClose={() => setLeftPanel(null)}>
