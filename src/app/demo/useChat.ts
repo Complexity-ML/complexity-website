@@ -602,7 +602,10 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...completionBody(planningMessages, true),
-            max_tokens: Math.min(params.maxTokens, 256),
+            max_tokens: Math.min(
+              params.maxTokens,
+              activeTool.name === "calculator" ? 160 : 96,
+            ),
             temperature: 0,
             top_k: 0,
             top_p: 1,
