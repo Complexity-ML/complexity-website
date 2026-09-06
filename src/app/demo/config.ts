@@ -55,6 +55,7 @@ export const CALCULATOR_TOOL = {
         },
       },
       required: ["expression"],
+      additionalProperties: false,
     },
   },
 } as const;
@@ -72,6 +73,7 @@ export const KNOWLEDGE_SEARCH_TOOL = {
         },
       },
       required: ["query"],
+      additionalProperties: false,
     },
   },
 } as const;
@@ -88,6 +90,7 @@ export const DATE_TIME_TOOL = {
           type: "string",
         },
       },
+      additionalProperties: false,
     },
   },
 } as const;
