@@ -262,10 +262,8 @@ function newConversationCacheId(): string {
   return `conversation-${crypto.randomUUID()}`;
 }
 
-function planningTokenBudget(tool: AgentToolName): number {
-  if (tool === "search_knowledge_base") return 512;
-  if (tool === "calculator") return 192;
-  return 160;
+function planningTokenBudget(): number {
+  return 512;
 }
 
 function getBaseUrl(mode: Mode): string {
@@ -550,7 +548,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...completionBody(planningMessages, true),
-            max_tokens: Math.min(params.maxTokens, planningTokenBudget(activeTool.name)),
+            max_tokens: Math.min(params.maxTokens, planningTokenBudget()),
             temperature: 0,
             top_k: 0,
             top_p: 1,
