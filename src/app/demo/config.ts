@@ -162,7 +162,7 @@ export function getToolSystemPrompt(name: AgentToolName, phase: ToolPromptPhase 
 
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE-v2":
-    "The released 100.4M-parameter Agentic SFT checkpoint, trained for three epochs on 500,000 examples with its native 32K-vocabulary tokenizer.",
+    "The released 100.4M-parameter Agentic SFT checkpoint, trained for three epochs on 1,007,473 examples with its native 32K-vocabulary tokenizer.",
   "TR-MoE-v1":
     "The released 32,000-token full-SFT checkpoint cited by the public preprint.",
 };

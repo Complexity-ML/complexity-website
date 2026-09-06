@@ -26,11 +26,11 @@ export const KNOWLEDGE_DOCUMENTS: KnowledgeDocument[] = [
     id: "agentic-100m-sft",
     title: "Agentic 100M SFT stage",
     content: [
-      "The released 100M Agentic checkpoint was instruction-tuned for three epochs on 500,000 examples, with 25,000 held-out examples.",
-      "The SFT mixture contains general instruction examples, verified reasoning and arithmetic, execution-checked code, constraint following, tool calls, no-call decisions, and final answers after tool results.",
-      "The selected epoch-3 checkpoint at step 7,743 reached a matched validation loss of 1.150476 and perplexity of 3.16.",
+      "The released 100M Agentic checkpoint was instruction-tuned for three epochs on 1,007,473 examples: 1,000,000 examples selected from the published Agentic SFT 2M corpus plus all 7,473 tokenized GSM8K train examples.",
+      "The SFT mixture contains general conversations, verified compact reasoning, Python code, constraint following, direct answers with tools available, complete agentic trajectories, and supervised mathematical reasoning.",
+      "The selected epoch-3 checkpoint at step 16,728 reached a matched validation loss of 1.162109 and perplexity of 3.20 over 13,303,759 supervised evaluation tokens.",
     ].join(" "),
-    keywords: ["SFT", "training", "epochs", "500000", "instruction", "tool use", "refinement"],
+    keywords: ["SFT", "training", "epochs", "1007473", "1M", "instruction", "tool use", "refinement"],
   },
   {
     id: "agentic-tokenizer-protocol",
@@ -58,7 +58,7 @@ export const KNOWLEDGE_DOCUMENTS: KnowledgeDocument[] = [
     id: "public-agentic-demo",
     title: "Public 100M Agentic demo deployment",
     content: [
-      "The public demo serves AETHORIA-AI/TR-HASH-MoE-100M-Agentic-SFT-500K through TR-Hash-i64.",
+      "The public demo serves AETHORIA-AI/TR-HASH-MoE-100M-Agentic-SFT-1M from the repository root through TR-Hash-i64.",
       "The model is loaded in full precision on the public Space with quantization set to none.",
       "The demo exposes expert activation telemetry for four experts with top-2 routing.",
     ].join(" "),

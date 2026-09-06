@@ -18,8 +18,8 @@ const MODE_DISCLAIMERS: Record<Mode, string> = {
 const proof: Record<Mode, Array<{ icon: typeof Route; label: string; value: string }>> = {
   "TR-MoE-v2": [
     { icon: Route, label: "routing", value: "token-ID hash top-2" },
-    { icon: Scale, label: "training", value: "100.4M / 500K SFT examples" },
-    { icon: Zap, label: "serving", value: "32K context · TR-Hash-i64" },
+    { icon: Scale, label: "training", value: "100.4M / 1,007,473 SFT examples" },
+    { icon: Zap, label: "serving", value: "2,048 context · 32K vocab · TR-Hash-i64" },
   ],
   "TR-MoE-v1": [
     { icon: Route, label: "routing", value: "token-ID hash top-2" },
