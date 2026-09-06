@@ -17,7 +17,11 @@ import {
 } from "./sampling";
 import { useEndpointHealth } from "./useEndpointHealth";
 import { useExpertActivity } from "./useExpertActivity";
-import { routeDemoAgentTools } from "@/lib/demo-tool-router";
+import {
+  DIRECT_ANSWER_SYSTEM_PROMPT,
+  requestsExplicitReasoning,
+  routeDemoAgentTools,
+} from "@/lib/demo-tool-router";
 
 export interface TokenStats {
   tokens: number;
@@ -523,6 +527,21 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         ? routeDemoAgentTools(text)
         : [];
       let chatMessages: ApiMessage[] = conversationMessages;
+
+      // Keep the 100M prompt cascade small. Direct chat gets one tested
+      // anti-repetition instruction; explicit reasoning stays on the native
+      // no-system SFT path, and tool requests receive only their tool matrix.
+      if (
+        mode === "TR-MoE-v2"
+        && !options.research
+        && routedTools.length === 0
+        && !requestsExplicitReasoning(text)
+      ) {
+        chatMessages = [
+          { role: "system", content: DIRECT_ANSWER_SYSTEM_PROMPT },
+          ...chatMessages,
+        ];
+      }
 
       const completionBody = (requestMessages: ApiMessage[], stream: boolean) => ({
         messages: requestMessages,

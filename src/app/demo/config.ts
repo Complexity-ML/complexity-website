@@ -140,6 +140,25 @@ const COMMON_SUGGESTIONS: SuggestionGroup[] = [
   },
 ];
 
+// Keep the compact Agentic picker on prompts checked against the public 1M
+// checkpoint with its direct-answer system instruction.
+const AGENTIC_DIRECT_SUGGESTIONS: SuggestionGroup[] = [
+  {
+    label: "direct chat",
+    prompts: [
+      "Hello",
+      "What is a neural network? Explain it to a beginner in two sentences.",
+    ],
+  },
+  {
+    label: "quick facts",
+    prompts: [
+      "What is the capital of France? Answer in one sentence.",
+      "Name the four seasons in one sentence.",
+    ],
+  },
+];
+
 export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
   "TR-MoE-v2": [
     {
@@ -163,7 +182,7 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
         "What is the verified owner of Project-4109-771-2?",
       ],
     },
-    ...COMMON_SUGGESTIONS,
+    ...AGENTIC_DIRECT_SUGGESTIONS,
   ],
   "TR-MoE-v1": COMMON_SUGGESTIONS,
 };
