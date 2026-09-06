@@ -10,8 +10,6 @@ import {
   MAINTENANCE,
   MODEL_NAMES,
   KNOWLEDGE_SEARCH_TOOL,
-  SYSTEM_PROMPTS,
-  getToolSystemPrompt,
   modeQueryValue,
 } from "./config";
 import {
@@ -532,10 +530,6 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
       const routedTools = mode === "TR-MoE-v2" && !options.research
         ? routeDemoAgentTools(text)
         : [];
-      const baseSystemPrompt = SYSTEM_PROMPTS[mode];
-      let finalSystemPrompt = routedTools.length > 0
-        ? undefined
-        : baseSystemPrompt;
       let chatMessages: ApiMessage[] = conversationMessages;
 
       const completionBody = (requestMessages: ApiMessage[], stream: boolean) => ({
@@ -550,21 +544,16 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         stream,
       });
 
-      // Execute a bounded plan one tool at a time. Only the current tool row is
-      // present in the system prompt, so chaining does not overload the 100M
-      // model with every schema at once.
+      // Execute a bounded plan one tool at a time. The OpenAI-compatible tools
+      // field carries only the active schema; no synthetic system instruction
+      // is added around the model's native chat template.
       const seenToolCalls = new Set<string>();
       let completedToolTokens = 0;
       let toolReasoning = "";
       for (let toolIndex = 0; toolIndex < routedTools.length; toolIndex++) {
         const activeTool = getActiveTool(routedTools[toolIndex]);
         const isLastTool = toolIndex === routedTools.length - 1;
-        const toolSystemPrompt = getToolSystemPrompt(activeTool.name, "plan");
-        finalSystemPrompt = getToolSystemPrompt(activeTool.name, "final");
-        const planningMessages: ApiMessage[] = [
-          { role: "system", content: toolSystemPrompt },
-          ...chatMessages,
-        ];
+        const planningMessages: ApiMessage[] = chatMessages;
         const planningResponse = await fetch(`${base}/v1/chat/completions`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -861,13 +850,10 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
       // The deployed model is instruction/chat tuned. Send the full
       // conversation through the server-side chat template instead of
       // treating the latest user message as an unformatted base completion.
-      const finalChatMessages: ApiMessage[] = finalSystemPrompt
-        ? [{ role: "system", content: finalSystemPrompt }, ...chatMessages]
-        : chatMessages;
       const response = await fetch(`${base}/v1/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(completionBody(finalChatMessages, true)),
+        body: JSON.stringify(completionBody(chatMessages, true)),
         signal: controller.signal,
       });
 

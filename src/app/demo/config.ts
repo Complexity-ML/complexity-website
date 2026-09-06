@@ -42,10 +42,6 @@ export const MODEL_NAMES: Record<Mode, string> = {
   "TR-MoE-v1": "TR-HASH MoE 200M · Full SFT v1",
 };
 
-export const SYSTEM_PROMPTS: Partial<Record<Mode, string>> = {
-  "TR-MoE-v2": "Answer directly and briefly in the user's language and requested format.",
-};
-
 export const CALCULATOR_TOOL = {
   type: "function",
   function: {
@@ -115,50 +111,6 @@ export const DATE_TIME_TOOL = {
 } as const;
 
 export type AgentToolName = "calculator" | "search_knowledge_base" | "date_time";
-export type ToolPromptPhase = "plan" | "final";
-
-// V-shaped prompt cascade: route into one tool row for planning, then converge
-// on its short final contract without repeating the tool schema.
-export const TOOL_SYSTEM_PROMPT_MATRIX: ReadonlyArray<
-  readonly [AgentToolName, Readonly<Record<ToolPromptPhase, readonly string[]>>]
-> = [
-  [
-    "calculator",
-    {
-      plan: [
-        'Translate the whole problem before calling calculator. For A groups of B followed by removing C, use A*B-C after substituting the user\'s numbers. Include every operation and use only digits, parentheses, decimal dots, and + - * / % ^.',
-        'Available tools:\n[{"function":{"description":"Evaluate arithmetic.","name":"calculator","parameters":{"properties":{"expression":{"type":"string"}},"required":["expression"],"type":"object"}},"type":"function"}]',
-      ],
-      final: ["Return the exact calculator result briefly in the user's requested format."],
-    },
-  ],
-  [
-    "search_knowledge_base",
-    {
-      plan: [
-        "Call search_knowledge_base with the user's complete question.",
-        'Available tools:\n[{"function":{"description":"Search the TR-HASH knowledge base for relevant facts.","name":"search_knowledge_base","parameters":{"properties":{"query":{"type":"string"}},"required":["query"],"type":"object"}},"type":"function"}]',
-      ],
-      final: ["Answer directly and briefly in the user's language using only the retrieved passage."],
-    },
-  ],
-  [
-    "date_time",
-    {
-      plan: [
-        "Call date_time immediately. Use Europe/Paris when no time zone is specified.",
-        'Available tools:\n[{"function":{"description":"Get the current date and time.","name":"date_time","parameters":{"properties":{"timezone":{"type":"string"}},"type":"object"}},"type":"function"}]',
-      ],
-      final: ["Return the exact date and time briefly in the user's requested format."],
-    },
-  ],
-];
-
-export function getToolSystemPrompt(name: AgentToolName, phase: ToolPromptPhase = "plan"): string {
-  const row = TOOL_SYSTEM_PROMPT_MATRIX.find(([toolName]) => toolName === name);
-  if (!row) throw new Error(`Missing system prompt for tool: ${name}`);
-  return row[1][phase].join("\n");
-}
 
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE-v2":
