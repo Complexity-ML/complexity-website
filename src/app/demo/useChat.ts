@@ -45,6 +45,7 @@ export interface ContextMetrics {
 interface SSEChunk {
   content: string;
   contextMetrics: ContextMetrics | null;
+  toolCalls: ToolCallResponse[];
 }
 
 export interface MonitorData {
@@ -81,24 +82,13 @@ interface ApiMessage {
 }
 
 interface ToolCallResponse {
+  index?: number;
+  id?: string;
+  type?: string;
   function?: {
     name?: string;
     arguments?: string;
   };
-}
-
-interface ChatCompletionResponse {
-  choices?: Array<{
-    message?: {
-      content?: string | null;
-      tool_calls?: ToolCallResponse[];
-    };
-    finish_reason?: string;
-  }>;
-  usage?: {
-    completion_tokens?: number;
-  };
-  context_metrics?: ContextMetrics;
 }
 
 interface CalculatorResponse {
@@ -304,7 +294,10 @@ async function* readSSE(response: Response): AsyncGenerator<SSEChunk> {
           const data = JSON.parse(payload);
           const content = data.choices?.[0]?.delta?.content ?? data.choices?.[0]?.text ?? "";
           const contextMetrics = data.context_metrics ?? null;
-          if (content || contextMetrics) yield { content, contextMetrics };
+          const toolCalls = data.choices?.[0]?.delta?.tool_calls ?? [];
+          if (content || contextMetrics || toolCalls.length > 0) {
+            yield { content, contextMetrics, toolCalls };
+          }
         } catch { /* skip malformed */ }
       }
     }
@@ -556,7 +549,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            ...completionBody(planningMessages, false),
+            ...completionBody(planningMessages, true),
             max_tokens: Math.min(params.maxTokens, planningTokenBudget(activeTool.name)),
             temperature: 0,
             top_k: 0,
@@ -579,32 +572,47 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           );
         }
 
-        // Tool planning uses the structured response because the runtime's SSE
-        // completion can contain the JSON call in text while omitting
-        // `delta.tool_calls`. The non-streaming response reliably exposes the
-        // parsed call in `message.tool_calls`.
-        const planning = await planningResponse.json() as ChatCompletionResponse;
-        const choice = planning.choices?.[0];
-        const planningContent = choice?.message?.content ?? "";
-        const planningTokens = planning.usage?.completion_tokens ?? 0;
-        if (planning.context_metrics) setContextMetrics(planning.context_metrics);
-        const parsedToolCall = choice?.message?.tool_calls?.[0]
+        let planningContent = "";
+        let planningTokens = 0;
+        const streamedToolCalls = new Map<number, ToolCallResponse>();
+        for await (const chunk of readSSE(planningResponse)) {
+          if (controller.signal.aborted) break;
+          if (chunk.contextMetrics) setContextMetrics(chunk.contextMetrics);
+          if (chunk.content) {
+            planningContent += chunk.content;
+            planningTokens++;
+            const visiblePlanning = visiblePlanningReasoning(planningContent);
+            if (visiblePlanning) {
+              assistantContent = `${toolReasoning}${visiblePlanning}`;
+              tokenCountRef.current = completedToolTokens + planningTokens;
+              const elapsed = (performance.now() - streamStartRef.current) / 1000;
+              setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
+              publishAssistantContent(assistantContent);
+            }
+          }
+          for (const fragment of chunk.toolCalls) {
+            const index = fragment.index ?? 0;
+            const current = streamedToolCalls.get(index) ?? { function: {} };
+            streamedToolCalls.set(index, {
+              index,
+              id: fragment.id ?? current.id,
+              type: fragment.type ?? current.type,
+              function: {
+                name: `${current.function?.name ?? ""}${fragment.function?.name ?? ""}`,
+                arguments: `${current.function?.arguments ?? ""}${fragment.function?.arguments ?? ""}`,
+              },
+            });
+          }
+        }
+        const parsedToolCall = [...streamedToolCalls.values()]
+          .find((call) => call.function?.name === activeTool.name)
           ?? parseStreamedToolCall(planningContent, activeTool.name);
 
-        const visiblePlanning = visiblePlanningReasoning(planningContent);
-        if (visiblePlanning) {
-          assistantContent = `${toolReasoning}${visiblePlanning}`;
-          tokenCountRef.current = completedToolTokens + planningTokens;
-          const elapsed = (performance.now() - streamStartRef.current) / 1000;
-          setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
-          publishAssistantContent(assistantContent);
-        }
-
         if (!parsedToolCall) {
-          assistantContent = extractPlanningReasoning(choice?.message?.content)
-            || choice?.message?.content
+          assistantContent = extractPlanningReasoning(planningContent)
+            || planningContent
             || "";
-          tokenCountRef.current = planning.usage?.completion_tokens ?? 0;
+          tokenCountRef.current = completedToolTokens + planningTokens;
           publishAssistantContent(assistantContent);
           const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
           setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
@@ -616,7 +624,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
 
         const toolCall = parsedToolCall;
 
-        const planningReasoning = visiblePlanningReasoning(choice?.message?.content ?? "");
+        const planningReasoning = visiblePlanningReasoning(planningContent);
         if (planningReasoning) {
           toolReasoning += planningReasoning;
           assistantContent = toolReasoning;
@@ -805,7 +813,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
 
         const canonicalToolCall = `<|tool_call_start|>${JSON.stringify({ name: activeTool.name, arguments: toolArguments })}<|tool_call_end|>`;
         const rawToolCall = parsedToolCall
-          ? choice?.message?.content || canonicalToolCall
+          ? planningContent || canonicalToolCall
           : canonicalToolCall;
         chatMessages = [
           ...chatMessages,
