@@ -556,7 +556,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            ...completionBody(planningMessages, true),
+            ...completionBody(planningMessages, false),
             max_tokens: Math.min(params.maxTokens, planningTokenBudget(activeTool.name)),
             temperature: 0,
             top_k: 0,
@@ -579,45 +579,26 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           );
         }
 
-        let planningContent = "";
-        let planningTokens = 0;
-        let planningContextMetrics: ContextMetrics | undefined;
-        for await (const chunk of readSSE(planningResponse)) {
-          if (controller.signal.aborted) break;
-          if (chunk.contextMetrics) {
-            planningContextMetrics = chunk.contextMetrics;
-            setContextMetrics(chunk.contextMetrics);
-          }
-          if (!chunk.content) continue;
-          planningContent += chunk.content;
-          planningTokens++;
-          const visibleReasoning = visiblePlanningReasoning(planningContent);
-          const looksLikeToolCall = planningContent.includes("<|tool_call_start|>")
-            || /^\s*\{\s*"(?:arguments|name)"\s*:/.test(planningContent);
-          const visiblePlanning = visibleReasoning
-            || (looksLikeToolCall ? "" : planningContent);
-          if (visiblePlanning) {
-            assistantContent = `${toolReasoning}${visiblePlanning}`;
-            tokenCountRef.current = completedToolTokens + planningTokens;
-            const elapsed = (performance.now() - streamStartRef.current) / 1000;
-            setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
-            publishAssistantContent(assistantContent);
-          }
-        }
-
-        const streamedToolCall = parseStreamedToolCall(planningContent, activeTool.name);
-        const planning: ChatCompletionResponse = {
-          choices: [{
-            message: {
-              content: planningContent,
-              tool_calls: streamedToolCall ? [streamedToolCall] : [],
-            },
-          }],
-          usage: { completion_tokens: planningTokens },
-          context_metrics: planningContextMetrics,
-        };
+        // Tool planning uses the structured response because the runtime's SSE
+        // completion can contain the JSON call in text while omitting
+        // `delta.tool_calls`. The non-streaming response reliably exposes the
+        // parsed call in `message.tool_calls`.
+        const planning = await planningResponse.json() as ChatCompletionResponse;
         const choice = planning.choices?.[0];
-        const parsedToolCall = streamedToolCall;
+        const planningContent = choice?.message?.content ?? "";
+        const planningTokens = planning.usage?.completion_tokens ?? 0;
+        if (planning.context_metrics) setContextMetrics(planning.context_metrics);
+        const parsedToolCall = choice?.message?.tool_calls?.[0]
+          ?? parseStreamedToolCall(planningContent, activeTool.name);
+
+        const visiblePlanning = visiblePlanningReasoning(planningContent);
+        if (visiblePlanning) {
+          assistantContent = `${toolReasoning}${visiblePlanning}`;
+          tokenCountRef.current = completedToolTokens + planningTokens;
+          const elapsed = (performance.now() - streamStartRef.current) / 1000;
+          setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
+          publishAssistantContent(assistantContent);
+        }
 
         if (!parsedToolCall) {
           assistantContent = extractPlanningReasoning(choice?.message?.content)
