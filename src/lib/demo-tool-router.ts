@@ -1,7 +1,5 @@
 export type DemoAgentTool = "calculator" | "search_knowledge_base" | "date_time";
 
-export const DIRECT_ANSWER_SYSTEM_PROMPT = "Answer directly. Do not repeat yourself.";
-
 function numberCount(text: string): number {
   return text.match(/\d+(?:[.,]\d+)?/g)?.length ?? 0;
 }
@@ -32,12 +30,6 @@ function isCalculatorRequest(text: string): boolean {
 function isKnowledgeCalculationRequest(text: string): boolean {
   const conversion = /\b(?:memory|storage|size|bytes?|bits?|kib|mib|gib|kb|mb|gb|fp16|fp32|int8|percentage|percent|ratio|difference|convert|conversion|m[eé]moire|stockage|octets?|taille|pourcentage|rapport|diff[eé]rence|convertir)\b/i;
   return isKnowledgeRequest(text) && conversion.test(text);
-}
-
-export function requestsExplicitReasoning(text: string): boolean {
-  const problemLead = /^\s*(?:problem|probl[eè]me)\b/i;
-  const reasoningCue = /\b(?:reasoning|reason step by step|think step by step|step-by-step|solve|prove|derive|why|raisonnement|raisonne|r[eé]sous|r[eé]soudre|d[eé]montre|d[eé]duis|pourquoi)\b/i;
-  return problemLead.test(text) || reasoningCue.test(text);
 }
 
 /**
