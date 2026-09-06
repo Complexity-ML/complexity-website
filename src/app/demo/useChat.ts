@@ -564,7 +564,10 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
             repetition_penalty: 1,
             frequency_penalty: 0,
             tools: TOOL_DEFINITION_MATRIX[activeTool.name],
-            tool_choice: "auto",
+            // The deterministic router already selected this tool from strong
+            // intent evidence. Requiring a call prevents the 500K checkpoint
+            // from ending after its planning envelope without emitting JSON.
+            tool_choice: "required",
           }),
           signal: controller.signal,
         });
