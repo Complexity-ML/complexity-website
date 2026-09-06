@@ -561,7 +561,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
             ...completionBody(planningMessages, true),
             max_tokens: Math.min(
               params.maxTokens,
-              activeTool.name === "calculator" ? 512 : 96,
+              activeTool.name === "calculator" ? 192 : 96,
             ),
             temperature: 0,
             top_k: 0,
@@ -594,8 +594,12 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           planningContent += chunk.content;
           planningTokens++;
           const visibleReasoning = visiblePlanningReasoning(planningContent);
-          if (visibleReasoning) {
-            assistantContent = `${toolReasoning}${visibleReasoning}`;
+          const looksLikeToolCall = planningContent.includes("<|tool_call_start|>")
+            || /^\s*\{\s*"(?:arguments|name)"\s*:/.test(planningContent);
+          const visiblePlanning = visibleReasoning
+            || (looksLikeToolCall ? "" : planningContent);
+          if (visiblePlanning) {
+            assistantContent = `${toolReasoning}${visiblePlanning}`;
             tokenCountRef.current = completedToolTokens + planningTokens;
             const elapsed = (performance.now() - streamStartRef.current) / 1000;
             setTokenStats({ tokens: tokenCountRef.current, elapsed, streaming: true });
