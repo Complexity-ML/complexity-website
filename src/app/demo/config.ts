@@ -46,21 +46,15 @@ export const CALCULATOR_TOOL = {
   type: "function",
   function: {
     name: "calculator",
-    description: "Evaluate a mathematical arithmetic expression exactly.",
+    description: "Evaluate arithmetic.",
     parameters: {
       type: "object",
       properties: {
         expression: {
           type: "string",
-          description: "Arithmetic using numbers, parentheses, +, -, *, /, %, and ^.",
         },
       },
       required: ["expression"],
-      additionalProperties: false,
-    },
-    return: {
-      description: "Exact numeric result.",
-      type: "string",
     },
   },
 } as const;
@@ -69,21 +63,15 @@ export const KNOWLEDGE_SEARCH_TOOL = {
   type: "function",
   function: {
     name: "search_knowledge_base",
-    description: "Search the TR-HASH knowledge base for relevant facts.",
+    description: "Search the available knowledge base.",
     parameters: {
       type: "object",
       properties: {
         query: {
           type: "string",
-          description: "Question or keywords to search for.",
         },
       },
       required: ["query"],
-      additionalProperties: false,
-    },
-    return: {
-      description: "Relevant passages from the knowledge base.",
-      type: "string",
     },
   },
 } as const;
@@ -92,20 +80,14 @@ export const DATE_TIME_TOOL = {
   type: "function",
   function: {
     name: "date_time",
-    description: "Get the current date and time in UTC, Europe/Paris, and a requested IANA time zone.",
+    description: "Get the current date and time.",
     parameters: {
       type: "object",
       properties: {
         timezone: {
           type: "string",
-          description: "IANA time zone. Use Europe/Paris for Paris and UTC for UTC.",
         },
       },
-      additionalProperties: false,
-    },
-    return: {
-      description: "The same current instant formatted in UTC, Europe/Paris, and the requested time zone.",
-      type: "object",
     },
   },
 } as const;

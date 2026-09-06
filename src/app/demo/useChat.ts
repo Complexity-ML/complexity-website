@@ -621,37 +621,21 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         const choice = planning.choices?.[0];
         const parsedToolCall = streamedToolCall;
 
-        if (!parsedToolCall && activeTool.name === "calculator") {
-          if (routedTools.length > 1) {
-            throw new Error("The model did not produce a valid chained calculator call.");
-          } else {
-            assistantContent = extractPlanningReasoning(choice?.message?.content)
-              || choice?.message?.content
-              || "";
-            tokenCountRef.current = planning.usage?.completion_tokens ?? 0;
-            publishAssistantContent(assistantContent);
-            const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
-            setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
-            setStreaming(false);
-            setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
-            abortControllerRef.current = null;
-            return;
-          }
+        if (!parsedToolCall) {
+          assistantContent = extractPlanningReasoning(choice?.message?.content)
+            || choice?.message?.content
+            || "";
+          tokenCountRef.current = planning.usage?.completion_tokens ?? 0;
+          publishAssistantContent(assistantContent);
+          const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
+          setTokenStats({ tokens: tokenCountRef.current, elapsed: finalElapsed, streaming: false });
+          setStreaming(false);
+          setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
+          abortControllerRef.current = null;
+          return;
         }
 
-        const toolCall = parsedToolCall ?? (activeTool.name === "search_knowledge_base"
-          ? {
-            function: {
-              name: "search_knowledge_base",
-              arguments: JSON.stringify({ query: text }),
-            },
-          }
-          : {
-            function: {
-              name: "date_time",
-              arguments: JSON.stringify({ timezone: "Europe/Paris" }),
-            },
-          });
+        const toolCall = parsedToolCall;
 
         const planningReasoning = visiblePlanningReasoning(choice?.message?.content ?? "");
         if (planningReasoning) {
