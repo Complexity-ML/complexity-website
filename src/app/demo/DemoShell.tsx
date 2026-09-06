@@ -94,7 +94,7 @@ export function DemoShell() {
   const suggestions = useMemo(
     () => SUGGESTIONS[activeMode]
       .flatMap((group) => group.prompts.slice(0, 2).map((prompt) => ({ label: group.label, prompt })))
-      .slice(0, activeMode === "TR-MoE-v2" ? 10 : 6),
+      .slice(0, 6),
     [activeMode],
   );
 

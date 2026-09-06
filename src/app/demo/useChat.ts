@@ -276,6 +276,12 @@ function newConversationCacheId(): string {
   return `conversation-${crypto.randomUUID()}`;
 }
 
+function planningTokenBudget(tool: AgentToolName): number {
+  if (tool === "search_knowledge_base") return 512;
+  if (tool === "calculator") return 192;
+  return 160;
+}
+
 function getBaseUrl(mode: Mode): string {
   return ENDPOINTS[mode].replace(/\/+$/, "");
 }
@@ -556,7 +562,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
       });
 
       // Execute a bounded plan one tool at a time. Each request carries the
-      // matching two-tool matrix learned during Agentic SFT. TR-Hash-i64 turns
+      // single active schema learned by the 500K checkpoint. TR-Hash-i64 turns
       // it into the short native `Available tools` system message.
       const seenToolCalls = new Set<string>();
       let completedToolTokens = 0;
@@ -570,10 +576,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...completionBody(planningMessages, true),
-            max_tokens: Math.min(
-              params.maxTokens,
-              activeTool.name === "calculator" ? 192 : 96,
-            ),
+            max_tokens: Math.min(params.maxTokens, planningTokenBudget(activeTool.name)),
             temperature: 0,
             top_k: 0,
             top_p: 1,

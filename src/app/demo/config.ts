@@ -94,12 +94,12 @@ export const DATE_TIME_TOOL = {
 
 export type AgentToolName = "calculator" | "search_knowledge_base" | "date_time";
 
-// Match the two-tool system matrices used by the Agentic SFT trajectories.
+// The 500K checkpoint was trained with one active tool schema at a time.
 // TR-Hash-i64 serializes the selected row as `Available tools:\n[...]`.
 export const TOOL_DEFINITION_MATRIX = {
-  calculator: [CALCULATOR_TOOL, KNOWLEDGE_SEARCH_TOOL],
-  search_knowledge_base: [KNOWLEDGE_SEARCH_TOOL, DATE_TIME_TOOL],
-  date_time: [DATE_TIME_TOOL, CALCULATOR_TOOL],
+  calculator: [CALCULATOR_TOOL],
+  search_knowledge_base: [KNOWLEDGE_SEARCH_TOOL],
+  date_time: [DATE_TIME_TOOL],
 } as const;
 
 export const DESCRIPTIONS: Record<Mode, string> = {
@@ -140,25 +140,6 @@ const COMMON_SUGGESTIONS: SuggestionGroup[] = [
   },
 ];
 
-// Keep the compact Agentic picker on prompts checked against the public 1M
-// checkpoint with its direct-answer system instruction.
-const AGENTIC_DIRECT_SUGGESTIONS: SuggestionGroup[] = [
-  {
-    label: "direct chat",
-    prompts: [
-      "Hello",
-      "What is a neural network? Explain it to a beginner in two sentences.",
-    ],
-  },
-  {
-    label: "quick facts",
-    prompts: [
-      "What is the capital of France? Answer in one sentence.",
-      "Name the four seasons in one sentence.",
-    ],
-  },
-];
-
 export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
   "TR-MoE-v2": [
     {
@@ -182,7 +163,7 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
         "How much memory do the TR-HASH 100M Agentic model's trainable parameters require in FP16, in MiB?",
       ],
     },
-    ...AGENTIC_DIRECT_SUGGESTIONS,
+    ...COMMON_SUGGESTIONS,
   ],
   "TR-MoE-v1": COMMON_SUGGESTIONS,
 };
