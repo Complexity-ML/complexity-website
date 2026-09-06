@@ -37,7 +37,9 @@ export function WelcomeScreen({
   totalRequests: number | null;
   onSelectPrompt: (prompt: string) => void;
 }) {
-  const prompts = SUGGESTIONS[mode].flatMap((group) => group.prompts.slice(0, 2).map((prompt) => ({ prompt, group: group.label }))).slice(0, 6);
+  const prompts = SUGGESTIONS[mode]
+    .flatMap((group) => group.prompts.slice(0, 2).map((prompt) => ({ prompt, group: group.label })))
+    .slice(0, mode === "TR-MoE-v2" ? 10 : 6);
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-7xl flex-col justify-center px-4 py-8 sm:px-6 lg:py-12">
