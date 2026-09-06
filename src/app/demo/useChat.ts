@@ -125,22 +125,6 @@ interface DateTimeValue {
   utc_offset: string;
 }
 
-function formatDateTimeAnswer(dateTime: Required<Omit<DateTimeResponse, "error">>, text: string): string {
-  const instant = new Date(dateTime.instant_utc);
-  const french = /\b(?:quelle?|heure|actuellement|maintenant|aujourd['’]hui)\b/i.test(text);
-  const locale = french ? "fr-FR" : "en-GB";
-  const format = (timezone: string) => new Intl.DateTimeFormat(locale, {
-    timeZone: timezone,
-    dateStyle: "full",
-    timeStyle: "medium",
-  }).format(instant);
-  const paris = `${format("Europe/Paris")} (${dateTime.paris.utc_offset})`;
-  const utc = `${format("UTC")} (${dateTime.utc.utc_offset})`;
-  return french
-    ? `À Paris : ${paris}. En UTC : ${utc}.`
-    : `Paris: ${paris}. UTC: ${utc}.`;
-}
-
 function normalizeCalculatorExpression(proposed: string): string {
   return proposed
     .replace(/\\(?:times|cdot)/g, "*")
@@ -541,7 +525,6 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
       let toolReasoning = "";
       for (let toolIndex = 0; toolIndex < routedTools.length; toolIndex++) {
         const activeTool: { name: AgentToolName } = { name: routedTools[toolIndex] };
-        const isLastTool = toolIndex === routedTools.length - 1;
         const planningMessages: ApiMessage[] = chatMessages;
         const planningResponse = await fetch(`${base}/v1/chat/completions`, {
           method: "POST",
@@ -678,20 +661,6 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
               : event
           )));
 
-          if (isLastTool) {
-            const unit = /\bmib\b/i.test(text) ? " MiB"
-              : /\bgib\b/i.test(text) ? " GiB"
-                : /\b(?:bytes?|octets?)\b/i.test(text) ? " bytes"
-                  : "";
-            assistantContent = `${toolReasoning}<|final_start|>${calculation.result}${unit}<|final_end|>`;
-            publishAssistantContent(assistantContent, true);
-            const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
-            setTokenStats({ tokens: completedToolTokens, elapsed: finalElapsed, streaming: false });
-            setStreaming(false);
-            setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
-            abortControllerRef.current = null;
-            return;
-          }
         } else if (activeTool.name === "search_knowledge_base") {
           const query = toolArguments.query;
           if (typeof query !== "string") {
@@ -734,18 +703,6 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
               : event
           )));
 
-          if (isLastTool) {
-            const passage = search.passage?.trim();
-            if (!passage) throw new Error("The retrieved TR-HASH passage is empty.");
-            assistantContent = `${toolReasoning}<|final_start|>${passage}<|final_end|>`;
-            publishAssistantContent(assistantContent, true);
-            const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
-            setTokenStats({ tokens: completedToolTokens, elapsed: finalElapsed, streaming: false });
-            setStreaming(false);
-            setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
-            abortControllerRef.current = null;
-            return;
-          }
         } else {
           // The model chooses whether to call the tool; the runtime resolves
           // the requested zone from the user's words so a tiny model cannot
@@ -791,22 +748,6 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
               : event
           )));
 
-          if (isLastTool) {
-            const exactAnswer = formatDateTimeAnswer({
-              instant_utc: dateTime.instant_utc,
-              utc: dateTime.utc,
-              paris: dateTime.paris,
-              requested: dateTime.requested,
-            }, text);
-            assistantContent = `${toolReasoning}<|final_start|>${exactAnswer}<|final_end|>`;
-            publishAssistantContent(assistantContent, true);
-            const finalElapsed = (performance.now() - streamStartRef.current) / 1000;
-            setTokenStats({ tokens: completedToolTokens, elapsed: finalElapsed, streaming: false });
-            setStreaming(false);
-            setResearchEvents((events) => events.map((event) => ({ ...event, active: false })));
-            abortControllerRef.current = null;
-            return;
-          }
         }
 
         const canonicalToolCall = `<|tool_call_start|>${JSON.stringify({ name: activeTool.name, arguments: toolArguments })}<|tool_call_end|>`;
