@@ -3,13 +3,11 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { AgentToolName, Mode, Message } from "./config";
 import {
-  CALCULATOR_TOOL,
-  DATE_TIME_TOOL,
   DEFAULT_MODE,
   ENDPOINTS,
   MAINTENANCE,
   MODEL_NAMES,
-  KNOWLEDGE_SEARCH_TOOL,
+  TOOL_DEFINITION_MATRIX,
   modeQueryValue,
 } from "./config";
 import {
@@ -268,12 +266,6 @@ function parseStreamedToolCall(
   } catch {
     return null;
   }
-}
-
-function getActiveTool(name: AgentToolName) {
-  if (name === "calculator") return { name, definition: CALCULATOR_TOOL };
-  if (name === "search_knowledge_base") return { name, definition: KNOWLEDGE_SEARCH_TOOL };
-  return { name, definition: DATE_TIME_TOOL };
 }
 
 function newConversationCacheId(): string {
@@ -544,14 +536,14 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
         stream,
       });
 
-      // Execute a bounded plan one tool at a time. The OpenAI-compatible tools
-      // field carries only the active schema; no synthetic system instruction
-      // is added around the model's native chat template.
+      // Execute a bounded plan one tool at a time. Each request carries the
+      // matching two-tool matrix learned during Agentic SFT. TR-Hash-i64 turns
+      // it into the short native `Available tools` system message.
       const seenToolCalls = new Set<string>();
       let completedToolTokens = 0;
       let toolReasoning = "";
       for (let toolIndex = 0; toolIndex < routedTools.length; toolIndex++) {
-        const activeTool = getActiveTool(routedTools[toolIndex]);
+        const activeTool: { name: AgentToolName } = { name: routedTools[toolIndex] };
         const isLastTool = toolIndex === routedTools.length - 1;
         const planningMessages: ApiMessage[] = chatMessages;
         const planningResponse = await fetch(`${base}/v1/chat/completions`, {
@@ -568,7 +560,7 @@ export function useChat(initialMode: Mode = DEFAULT_MODE) {
             top_p: 1,
             repetition_penalty: 1,
             frequency_penalty: 0,
-            tools: [activeTool.definition],
+            tools: TOOL_DEFINITION_MATRIX[activeTool.name],
             tool_choice: "auto",
           }),
           signal: controller.signal,

@@ -94,6 +94,14 @@ export const DATE_TIME_TOOL = {
 
 export type AgentToolName = "calculator" | "search_knowledge_base" | "date_time";
 
+// Match the two-tool system matrices used by the Agentic SFT trajectories.
+// TR-Hash-i64 serializes the selected row as `Available tools:\n[...]`.
+export const TOOL_DEFINITION_MATRIX = {
+  calculator: [CALCULATOR_TOOL, KNOWLEDGE_SEARCH_TOOL],
+  search_knowledge_base: [KNOWLEDGE_SEARCH_TOOL, DATE_TIME_TOOL],
+  date_time: [DATE_TIME_TOOL, CALCULATOR_TOOL],
+} as const;
+
 export const DESCRIPTIONS: Record<Mode, string> = {
   "TR-MoE-v2":
     "The released 100.4M-parameter Agentic SFT checkpoint, trained for three epochs on 1,007,473 examples with its native 32K-vocabulary tokenizer.",
@@ -137,22 +145,22 @@ export const SUGGESTIONS: Record<Mode, SuggestionGroup[]> = {
     {
       label: "calculator",
       prompts: [
-        "What is 927 × 43? Give only the result.",
-        "A workshop packs 17 boxes of 24 parts, then removes 85 parts. How many parts remain?",
+        "For request CALC-4101, a workshop packs 17 boxes of 24 parts, then removes 85 parts. How many remain?",
+        "For request CALC-4102, a workshop packs 48 boxes of 13 parts, then removes 77 parts. How many remain?",
       ],
     },
     {
       label: "date & time",
       prompts: [
-        "What time is it in Paris right now? Include UTC.",
-        "Quelle date et quelle heure est-il actuellement à Paris et en UTC ?",
+        "For request DT-4105, what is the current date and time in UTC?",
+        "For request DT-4106, what is the current date and time in Europe/Paris?",
       ],
     },
     {
-      label: "knowledge",
+      label: "synthetic RAG",
       prompts: [
-        "How many trainable parameters does the TR-HASH 100M Agentic model have?",
-        "How much memory do the TR-HASH 100M Agentic model's trainable parameters require in FP16, in MiB?",
+        "What is the verified owner of Project-4108-548-5?",
+        "What is the verified owner of Project-4109-771-2?",
       ],
     },
     ...COMMON_SUGGESTIONS,

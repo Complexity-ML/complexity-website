@@ -5,9 +5,10 @@ function numberCount(text: string): number {
 }
 
 function isKnowledgeRequest(text: string): boolean {
+  const syntheticProjectLookup = /\bProject-\d+-\d+-\d+\b/i;
   const domain = /\b(?:tr[- ]?hash|piqa|agentic|acc_norm|lm[- ]eval|mlx|100m|200m|checkpoint|refinement|raffinement|sft|moe)\b/i;
   const fact = /\b(?:parameter|parameters|param[eè]tre|param[eè]tres|expert|experts|layer|layers|couche|couches|tokenizer|tokeniseur|architecture|scorer|score|evaluation|eval|training|entra[iî]nement|precision|quantization|combien|how many|which|what|quel|quelle)\b/i;
-  return domain.test(text) && fact.test(text);
+  return syntheticProjectLookup.test(text) || (domain.test(text) && fact.test(text));
 }
 
 function isCurrentDateTimeRequest(text: string): boolean {

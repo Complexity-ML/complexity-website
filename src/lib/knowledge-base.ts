@@ -11,6 +11,18 @@ export interface KnowledgeMatch extends KnowledgeDocument {
 
 export const KNOWLEDGE_DOCUMENTS: KnowledgeDocument[] = [
   {
+    id: "synthetic-project-4108",
+    title: "Synthetic RAG record for Project-4108-548-5",
+    content: "This is a synthetic public-demo fixture. The verified owner of Project-4108-548-5 is Team Aurora.",
+    keywords: ["Project-4108-548-5", "verified owner", "Team Aurora", "synthetic RAG"],
+  },
+  {
+    id: "synthetic-project-4109",
+    title: "Synthetic RAG record for Project-4109-771-2",
+    content: "This is a synthetic public-demo fixture. The verified owner of Project-4109-771-2 is Team Meridian.",
+    keywords: ["Project-4109-771-2", "verified owner", "Team Meridian", "synthetic RAG"],
+  },
+  {
     id: "agentic-100m-parameters",
     title: "TR-HASH 100M Agentic SFT parameter count",
     content: "The public Agentic SFT checkpoint has exactly 100,366,720 trainable parameters in total. This is the complete trainable parameter count.",
